@@ -1,0 +1,5 @@
+export default {
+    INVALID_TOKEN: 20001,
+    TOKEN_EXPIRE: 20002,
+    FORBIDDEN: 20003,
+}
