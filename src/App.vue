@@ -44,7 +44,7 @@ watch(() => route.path, (newPath) => {
 
 <style scoped>
 #app-root {
-    height: 100%;
+    /* height: 100%; */
     overflow-x: hidden;
 }
 

@@ -1,0 +1,10 @@
+export default {
+    title: '交易',
+    icon: 'logo-usd',
+    children: [
+        {
+            title: '交易记录',
+            path: '/trade/trans'
+        },
+    ]
+}

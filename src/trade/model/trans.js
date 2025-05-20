@@ -33,7 +33,7 @@ function doZhuanRu(data) {
 		let tranData = new Transaction();
 		tranData.action = "zhuanRu";
 		tranData.actionLabel = t.bussFlagName;
-		tranData.amount = float(t.dealBalance);
+		tranData.amount = Number(t.dealBalance);
 		tranData.createdAt = ymd(t.dealDate);
 		tranData.amount = Math.abs(tranData.amount);
 		tranData.orderNO = i;
@@ -50,7 +50,7 @@ function doZhuanChu(data) {
 		let tranData = new Transaction();
 		tranData.action = "zhuanChu"
 		tranData.actionLabel = t.bussFlagName
-		tranData.amount = float(t.dealBalance)
+		tranData.amount = Number(t.dealBalance)
 		tranData.createdAt = ymd(t.dealDate)
 		tranData.amount = Math.abs(tranData.amount)
 		tranData.orderNO = i
@@ -70,14 +70,14 @@ function doMaiRu(data) {
 		tranData.actionLabel = t.bussFlagName
 		tranData.stockId = stockId
 		tranData.stockName = t.stockName
-		tranData.price = Math.abs(float(t.dealPrice))
-		tranData.count = Math.abs(float(t.dealNum))
-		tranData.amount = float(t.dealBalance)
-		tranData.yongJin = Math.abs(float(t.handingFee2))
-		tranData.yinHuaShui = Math.abs(float(t.stampTax))
-		tranData.guoHuFei = Math.abs(float(t.transferFee2))
-		tranData.jingShouFei = Math.abs(float(t.exchangeFare0))
-		tranData.zhengGuanFei = Math.abs(float(t.exchangeFare3))
+		tranData.price = Math.abs(Number(t.dealPrice))
+		tranData.count = Math.abs(Number(t.dealNum))
+		tranData.amount = Number(t.dealBalance)
+		tranData.yongJin = Math.abs(Number(t.handingFee2))
+		tranData.yinHuaShui = Math.abs(Number(t.stampTax))
+		tranData.guoHuFei = Math.abs(Number(t.transferFee2))
+		tranData.jingShouFei = Math.abs(Number(t.exchangeFare0))
+		tranData.zhengGuanFei = Math.abs(Number(t.exchangeFare3))
 		tranData.createdAt = ymd(t.dealDate)
 		// 买时花的钱， 买股票本身花的钱加上各种手续费
 		tranData.amount = tranData.price * tranData.count 
@@ -103,14 +103,14 @@ function doMaiChu(data) {
 		tranData.actionLabel = t.bussFlagName
 		tranData.stockId = stockId
 		tranData.stockName = t.stockName
-		tranData.price = Math.abs(float(t.dealPrice))
-		tranData.count = Math.abs(float(t.dealNum))
-		tranData.amount = float(t.dealBalance)
-		tranData.yongJin = Math.abs(float(t.handingFee2))
-		tranData.yinHuaShui = Math.abs(float(t.stampTax))
-		tranData.guoHuFei = Math.abs(float(t.transferFee2))
-		tranData.jingShouFei = Math.abs(float(t.exchangeFare0))
-		tranData.zhengGuanFei = Math.abs(float(t.exchangeFare3))
+		tranData.price = Math.abs(Number(t.dealPrice))
+		tranData.count = Math.abs(Number(t.dealNum))
+		tranData.amount = Number(t.dealBalance)
+		tranData.yongJin = Math.abs(Number(t.handingFee2))
+		tranData.yinHuaShui = Math.abs(Number(t.stampTax))
+		tranData.guoHuFei = Math.abs(Number(t.transferFee2))
+		tranData.jingShouFei = Math.abs(Number(t.exchangeFare0))
+		tranData.zhengGuanFei = Math.abs(Number(t.exchangeFare3))
 		tranData.createdAt = ymd(t.dealDate)
 		// 卖出后得到的钱， 减去各种手续费
 		tranData.amount = tranData.price * tranData.count
@@ -135,7 +135,7 @@ function doGuXiRuZhang(data) {
 		tranData.actionLabel = t.bussFlagName
 		tranData.stockId = t.stockCode
 		tranData.stockName = t.stockName
-		tranData.amount = float(t.dealBalance)
+		tranData.amount = Number(t.dealBalance)
 		tranData.createdAt = ymd(t.dealDate)
 		tranData.amount = Math.abs(tranData.amount)
 		tranData.orderNO = i
@@ -152,7 +152,7 @@ function doPiLiangLiXiGuiBen(data) {
 		let tranData = new Transaction();
 		tranData.action = "pllxgbRu"
 		tranData.actionLabel = t.bussFlagName
-		tranData.amount = float(t.dealBalance)
+		tranData.amount = Number(t.dealBalance)
 		tranData.createdAt = ymd(t.dealDate)
 		tranData.amount = Math.abs(tranData.amount)
 		tranData.orderNO = i
@@ -172,7 +172,7 @@ function doHongLiChaYiShuiKouShui(data) {
 		tranData.actionLabel = t.bussFlagName
 		tranData.stockId = t.stockCode
 		tranData.stockName = t.stockName
-		tranData.amount = float(t.dealBalance)
+		tranData.amount = Number(t.dealBalance)
 		tranData.createdAt = ymd(t.dealDate)
 		tranData.amount = Math.abs(tranData.amount)
 		tranData.orderNO = i
@@ -193,7 +193,7 @@ function doHongGuRuZhang(data) {
 		tranData.actionLabel = t.bussFlagName
 		tranData.stockId = stockId
 		tranData.stockName = t.stockName
-		tranData.count = float(t.dealNum)
+		tranData.count = Number(t.dealNum)
 		tranData.createdAt = ymd(t.dealDate)
 		tranData.count = Math.abs(tranData.count)
 		tranData.orderNO = i
@@ -202,7 +202,7 @@ function doHongGuRuZhang(data) {
 }
 
 function comparePrice(firstTran, trans) {
-	for (let i = 0; i < data.length; i++) {
+	for (let i = 0; i < trans.length; i++) {
 		if (trans[i] == firstTran) {
 			continue
         }
@@ -243,6 +243,4 @@ function init() {
 
 init();
 
-export default {
-    trans
-}
+export default trans;

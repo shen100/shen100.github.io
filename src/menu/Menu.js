@@ -1,3 +1,6 @@
+
+import tradeMenu from '../trade/menu/menu.js'
+
 export default [
     {
         title: '游戏',
@@ -35,5 +38,6 @@ export default [
             { title: '新增用户' },
             { title: '活跃用户' }
         ]
-    }
+    },
+    tradeMenu
 ]
