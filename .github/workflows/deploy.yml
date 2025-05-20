@@ -2,7 +2,7 @@ name: Build and Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-  workflow_dispatch:
+  workflow_dispatch: # 当workflow_dispatch:没有额外参数时，它只是简单地添加了一个"Run workflow"按钮，不需要任何输入参数就能手动触发工作流
 
 jobs:
   build-and-deploy:
@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
       
       - name: Install dependencies
         run: npm install
