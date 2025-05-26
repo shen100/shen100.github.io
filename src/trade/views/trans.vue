@@ -2,18 +2,47 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formatMoney } from '../util/money';
+import { formatLocalYMD } from '../util/date';
 import trans from '../model/trans'
 
 const route = useRoute()
 const router = useRouter()
 
 let data = ref({
-    trans: []
+    trans: [],
+    filteredTrans: [],
+    startDate: new Date(new Date().getTime() - 365 * 24 * 3600 * 1000),
+    endDate: new Date(),
+    stockInput: ''
 })
 
 onMounted(async () => {
     data.value.trans = trans;
 })
+
+function onSearch() {
+    data.value.filteredTrans = [];
+    for (let i = 0; i < data.value.trans.length; i++) {
+        let tranData = data.value.trans[i];
+        console.log(typeof tranData.createdAt, tranData.createdAt, typeof data.value.startDate, data.value.startDate);
+        if (data.value.startDate) {
+            if (tranData.createdAt < formatLocalYMD(data.value.startDate)) {
+                continue;
+            }
+        }
+        if (data.value.endDate) {
+            if (tranData.createdAt > formatLocalYMD(data.value.endDate)) {
+                continue;
+            }
+        }
+        if (data.value.stockInput) {
+            if (tranData.stockName.indexOf(data.value.stockInput) < 0 && tranData.stockCode.indexOf(data.value.stockInput) < 0) {
+                continue;
+            }
+        }
+        data.value.filteredTrans.push(tranData);
+    }
+}
 
 function displayActionLabel(tranData) {
     let arr = [ "maiRu", "maiChu", "guXiRu", "hlcysKouShui", "hongGuRu" ];
@@ -81,7 +110,16 @@ function displayRate(value1, value2) {
 
 <template>
     <div>
-        <Card v-for="(tranData, i) in data.trans" :key="i" class="tran-data">
+        <Card>
+            <div class="search-box">
+                <DatePicker type="date" :model-value="data.startDate" placeholder="开始日期" style="width: 200px;" />
+                <DatePicker type="date" :model-value="data.endDate" placeholder="结束日期" style="width: 200px; margin-left: 15px" />
+                <Input v-model="data.stockInput" placeholder="股票" style="width: 200px; margin-left: 15px" />
+                <Button type="primary" @click="onSearch" icon="ios-search" style="margin-left: 15px">查询</Button>
+            </div>
+
+        </Card>
+        <Card v-for="(tranData, i) in data.filteredTrans" :key="i" class="tran-data">
             <div>
                 <div class="tran-item-row">
                     <div v-if="ifShowStock(tranData)" class="tran-label">证券名称</div>
@@ -149,6 +187,11 @@ function displayRate(value1, value2) {
 </template>
 
 <style scoped>
+.search-box {
+    display: flex;
+    flex-direction: row;
+    padding: 20px 0;
+}
 .tran-data {
     padding: 15px 20px;
     background-color: #fff;
