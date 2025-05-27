@@ -1,3 +1,10 @@
+<template>
+    <div class="candle-box" :style="{minWidth: `${data.boxWidth}px`}">
+        <div class="candle-bg-box" :style="{width: `${data.boxWidth}px`, height: `${data.boxHeight}px`, backgroundColor: data.boxBgColor, top: `${data.boxPosY}px`}"></div>
+        <div class="candle-inner-white-box" :style="{width: `${data.boxWhiteWidth}px`, height: `${data.boxWhiteHeight}px`, top: `${data.boxWhitePosY}px`}"></div>
+    </div>
+</template>
+
 <script setup>
 import { onMounted, ref } from 'vue'
 
@@ -15,80 +22,92 @@ const props = defineProps([
 ])
 
 let data = ref({
-    boxWidth: '0px',
-    boxHeight: '0px',
+    boxWidth: '0',
+    boxHeight: '0',
+    boxBgColor: '#ffffff',
     boxPosX: 0,
     boxPosY: 0,
-    filledBoxWidth: '0px',
-    filledBoxHeight: '0px',
-    filledBoxPosX: 0,
-    filledBoxPosY: 0,
-    boxWhiteWidth: '0px',
-    boxWhiteHeight: '0px',
+    boxWhiteWidth: '0',
+    boxWhiteHeight: '0',
     boxWhitePosX: 0,
     boxWhitePosY: 0,
-    bgColor: '#ffffff',
     lineColor: '#ffffff',
     linePosX: 0,
     linePosY: 0,
-    lineWidth: 0
+    lineWidth: 0,
+    lineHeight: 0,
 })
 
 onMounted(async () => {
-    data.value.boxWidth = '16px';
-    if (candleType == "week") {
-		data.value.boxWidth = '22px';
-    } else if (candleType == "month") {
-		data.value.boxWidth = '30px';
-    } else if(candleType == "year") {
-		data.value.boxWidth = '40px';
+    data.value.boxWidth = '8';
+    if (props.candleType == "week") {
+        data.value.boxWidth = '22';
+    } else if (props.candleType == "month") {
+        data.value.boxWidth = '30';
+    } else if (props.candleType == "year") {
+        data.value.boxWidth = '40';
     }
 
-    var priceDt = highPriceInAll - lowPriceInAll;
-	var lineRate = (highPrice - lowPrice) / priceDt;
-	var boxRate = Math.abs((closePrice - openPrice) / priceDt);
-	line.size.y = Math.max(props.maxCandleHeight * lineRate, 2);
-	data.value.boxHeight = Math.max(props.maxCandleHeight * boxRate, 2);
-    data.filledBoxWidth = data.value.boxWidth;
-    data.filledBoxHeight = data.value.boxHeight;
-	data.value.boxWhiteWidth = data.value.boxWidth - 6;
-	data.value.boxWhiteHeight = data.value.boxHeight - 6;
+    var priceDt = props.highPriceInAll - props.lowPriceInAll;
+    var lineRate = (props.highPrice - props.lowPrice) / priceDt;
+    var boxRate = Math.abs((props.closePrice - props.openPrice) / priceDt);
+    data.value.lineHeight = Math.max(props.maxCandleHeight * lineRate, 2);
+    data.value.boxHeight = Math.max(props.maxCandleHeight * boxRate, 2);
+    data.value.boxWhiteWidth = data.value.boxWidth - 2;
+    data.value.boxWhiteHeight = data.value.boxHeight - 2;
 	
-	var lineY = (props.highPriceInAll - props.highPrice) / priceDt * props.maxCandleHeight;
-	var boxY = (props.highPriceInAll - Math.max(props.openPrice, props.closePrice)) / priceDt * props.maxCandleHeight;
-	data.value.boxPosY = boxY;
-	data.value.filledBoxPosY = boxY;
-	data.value.boxWhitePosX = 3;
-	data.value.boxWhitePosY = boxY + 3;
-	data.value.linePosY = lineY;
-	data.value.linePosX = (data.value.boxWidth - data.value.lineWidth) / 2;
+    var lineY = (props.highPriceInAll - props.highPrice) / priceDt * props.maxCandleHeight;
+    var boxY = (props.highPriceInAll - Math.max(props.openPrice, props.closePrice)) / priceDt * props.maxCandleHeight;
+    data.value.boxPosY = boxY;
+    data.value.boxWhitePosY = boxY + 1;
+    data.value.linePosY = lineY;
+    data.value.linePosX = (data.value.boxWidth - data.value.lineWidth) / 2;
 	
-	if (props.closePrice > props.openPrice) {
-		rise();
+    if (props.closePrice > props.openPrice) {
+        rise();
     } else if (props.closePrice === props.openPrice) {
-		equal();
+        equal();
     } else {
-		crash();
+        crash();
     }
 })
 
 function rise() {
-	data.value.bgColor = "#ee2500";
-	data.value.lineColor = "#ee2500";
+    data.value.boxBgColor = "#ee2500";
+    data.value.lineColor = "#ee2500";
     data.value.filledBoxVisible = false;
 }
 
 function equal() {
-    data.value.bgColor = "#868686";
-	data.value.lineColor = "#868686";
+    data.value.boxBgColor = "#868686";
+    data.value.lineColor = "#868686";
     data.value.filledBoxVisible = false;
 }
 
 function crash() {
-    data.value.bgColor = "#02b33d";
-	data.value.lineColor = "#02b33d";
+    data.value.boxBgColor = "#02b33d";
+    data.value.lineColor = "#02b33d";
     data.value.filledBoxVisible = false;
     data.value.boxVisible = true;
 }
 
 </script>
+
+<style scoped>
+.candle-box {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 4px;
+}
+
+.candle-bg-box {
+    position: absolute;
+}
+
+.candle-inner-white-box {
+    background-color: #fff;
+    position: absolute;
+    left: 1px;
+}
+</style>
