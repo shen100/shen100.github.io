@@ -9,11 +9,13 @@ let settings = {
     }
 };
 let investedStocks = [];
+let trackedStocks = [];
 let allStocks = [];
 
 function init() {
     settings = JSON.parse(localStorage.getItem('tradeSettings') || JSON.stringify(settings));
     investedStocks = JSON.parse(localStorage.getItem('tradeInvestedStocks') || '[]');
+    trackedStocks = JSON.parse(localStorage.getItem('tradeTrackedStocks') || '[]');
     let localAllStocks = JSON.parse(localStorage.getItem('tradeAllStocks') || '{"items": []}');
     allStocks = localAllStocks.items.map(stock => {
         let stockData = {};
@@ -34,6 +36,7 @@ init();
 
 export default {
     settings,
+    trackedStocks,
     investedStocks,
     allStocks,
     setSettings: function(newSettings) {

@@ -11,6 +11,10 @@ export default {
             path: '/trade/invested_kcharts'
         },
         {
+            title: '跟踪K线',
+            path: '/trade/tracked_kcharts'
+        },
+        {
             title: '全部K线',
             path: '/trade/all_kcharts'
         },
