@@ -32,7 +32,7 @@ import { formatLocalYMD, parseLocalYMDString } from '../../util/date';
 const itemRefs = ref([]);
 
 const props = defineProps([
-    'stockMap',
+    'stocks',
 ]);
 
 let data = ref({
@@ -47,7 +47,7 @@ onMounted(async () => {
 });
 
 watch(
-    () => props.stockMap,
+    () => props.stocks,
     (newValue, oldValue) => {
         onRequest(data.value.type);
     }
@@ -64,7 +64,7 @@ function onEndDateChange(dateStr, dateType, type) {
 }
 
 async function onRequest(type) {
-    if (!props.stockMap) {
+    if (!props.stocks) {
         return;
     }
     console.log("onRequest", type, data.value.start, data.value.end);
@@ -89,13 +89,13 @@ async function onRequest(type) {
     }
 
 	if (data.value.kCharts.length <= 0) {
-		for (let stockId in props.stockMap) {
+        props.stocks.forEach(stock => {
             data.value.kCharts.push({
-                stockId,
-                stockFullId: props.stockMap[stockId].stockFullId,
-                stockName: props.stockMap[stockId].stockName
+                stockId: stock.stockId,
+                stockFullId: stock.stockFullId,
+                stockName: stock.stockName
             });
-        }
+        });
     }
 
     await nextTick();

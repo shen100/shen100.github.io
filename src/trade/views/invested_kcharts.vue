@@ -1,6 +1,6 @@
 <template>
     <div>
-        <KChartList :stockMap="data.investedStockMap"></KChartList>
+        <KChartList :stocks="data.investedStocks"></KChartList>
     </div>
 </template>
 
@@ -10,11 +10,11 @@ import KChartList from './components/kchart_list.vue';
 import store from '../model/store';
 
 let data = ref({
-    investedStockMap: null,
+    investedStocks: null,
 })
 
 onMounted(async () => {
-    data.value.investedStockMap = store.investedStockMap;
+    data.value.investedStocks = store.investedStocks;
 });
 </script>
 
