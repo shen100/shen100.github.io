@@ -38,7 +38,6 @@ const props = defineProps([
     'type',
     'start',
     'end',
-    'page'
 ]);
 
 let data = ref({
@@ -49,10 +48,9 @@ let data = ref({
 })
 
 onMounted(async () => {
-    data.value.type = props.type;
-    data.value.start = props.start;
-    data.value.end = props.end;
-    data.value.page = props.page;
+    data.value.type = props.type || data.value.type;
+    data.value.start = props.start || data.value.start;
+    data.value.end = props.end || data.value.end;
     onRequest(props.type);
 });
 
@@ -81,13 +79,6 @@ watch(
     () => props.end,
     (newValue, oldValue) => {
         data.value.end = newValue;
-    }
-)
-
-watch(
-    () => props.page,
-    (newValue, oldValue) => {
-        data.value.page = newValue;
     }
 )
 
