@@ -1,6 +1,12 @@
 import { formatLocalYMD } from '../util/date';
 
 let settings = {
+    investedStockKChart: {
+        type: 'year',
+        start: '2000-01-01',
+        end: formatLocalYMD(new Date()), // 2025-06-12
+        page: 1
+    },
     trackedStockKChart: {
         type: 'year',
         start: '2000-01-01',
@@ -49,4 +55,16 @@ export default {
         settings = newSettings;
         localStorage.setItem('tradeSettings', JSON.stringify(settings));
     },
+    addTrackedStock: function(stock) {
+        if (!trackedStocks.some(s => s.stockId === stock.stockId)) {
+            trackedStocks.push(stock);
+            localStorage.setItem('tradeTrackedStocks', JSON.stringify(trackedStocks));
+        }
+    },
+    addInvestedStock: function(stock) {
+        if (!investedStocks.some(s => s.stockId === stock.stockId)) {
+            investedStocks.push(stock);
+            localStorage.setItem('tradeInvestedStocks', JSON.stringify(investedStocks));
+        }
+    }
 }

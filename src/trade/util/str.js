@@ -15,3 +15,7 @@ export function findFromRight(str, char) {
   
     return str.length - reversedIndex - 1;
 }
+
+export function trim(str) {
+    return str.replace(/^\s+|\s+$/g, '');
+}

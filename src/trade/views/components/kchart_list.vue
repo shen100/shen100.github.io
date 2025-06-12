@@ -16,20 +16,43 @@
                     <Button @click="onTypeChange('month')" :type="data.type === 'month' ? 'primary' : 'default'">月</Button>
                     <Button @click="onTypeChange('year')" :type="data.type === 'year' ? 'primary' : 'default'">年</Button>
                 </ButtonGroup>
+                <div class="space-all"></div>
+                <Button type="primary" @click="data.addModalVisible = true" icon="md-add">添加</Button>
             </div>
         </Card>
         <div v-if="data.kCharts && data.kCharts.length">
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" />
         </div>
+        <Modal
+            v-model="data.addModalVisible"
+            title="添加">
+            <Form label-position="left" :label-width="150">
+                <FormItem label="股票代码">
+                    <Input v-model="data.stockId"></Input>
+                </FormItem>
+                <FormItem label="股票代码(全称)">
+                    <Input v-model="data.stockFullId"></Input>
+                </FormItem>
+                <FormItem label="股票名称">
+                    <Input v-model="data.stockName"></Input>
+                </FormItem>
+            </Form>
+            <template #footer>
+                <Button type="text" @click="onAddCancel">取消</Button>
+                <Button type="primary" @click="onAddOK">确定</Button>
+            </template>
+        </Modal>
     </div>
 </template>
 
 <script setup>
 import { nextTick, onMounted, ref, watch } from 'vue';
+import { Message } from 'view-ui-plus';
 import KChart from './kchart.vue';
 import { formatLocalYMD, parseLocalYMDString } from '../../util/date';
+import { trim } from '../../util/str';
 
-const emit = defineEmits(['start-change', 'end-change', 'type-change']);
+const emit = defineEmits(['start-change', 'end-change', 'type-change', 'stock-add']);
 
 const itemRefs = ref([]);
 
@@ -44,7 +67,11 @@ let data = ref({
     type: 'day',
     kCharts: [],
     start: formatLocalYMD(new Date(new Date().getTime() - 180 * 24 * 3600 * 1000)),
-    end: formatLocalYMD(new Date()) // 2025-06-12
+    end: formatLocalYMD(new Date()), // 2025-06-12
+    addModalVisible: false,
+    stockId: '',
+    stockFullId: '',
+    stockName: '',
 })
 
 onMounted(async () => {
@@ -151,6 +178,46 @@ async function onRequest(type) {
         }
     });
 }
+
+function onAddOK() {
+    data.value.stockId = trim(data.value.stockId);
+    data.value.stockFullId = trim(data.value.stockFullId);
+    data.value.stockName = trim(data.value.stockName);
+    if (!data.value.stockId) {
+        Message.error({
+            duration: 10,
+            content: '股票代码不能为空'
+        });
+        return;
+    }
+    if (!data.value.stockFullId) {
+        Message.error({
+            duration: 10,
+            content: '股票代码(全称)不能为空'
+        });
+        return;
+    }
+    if (!data.value.stockName) {
+        Message.error({
+            duration: 10,
+            content: '股票名称不能为空'
+        });
+        return;
+    }
+    data.value.addModalVisible = false;
+    emit('stock-add', {
+        stockId: data.value.stockId,
+        stockFullId: data.value.stockFullId,
+        stockName: data.value.stockName
+    });
+}
+
+function onAddCancel() {
+    data.value.addModalVisible = false;
+    data.value.stockId = '';
+    data.value.stockFullId = '';
+    data.value.stockName = '';
+}
 </script>
 
 <style scoped>
@@ -169,5 +236,9 @@ async function onRequest(type) {
 
 .button-group {
     margin-left: 10px;
+}
+
+.space-all {
+    flex: 1;
 }
 </style>
