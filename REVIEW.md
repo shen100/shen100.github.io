@@ -1,4 +1,6 @@
 trade
+  util
+    str.js
   views
     components
       kchart_list.vue

@@ -1,5 +1,9 @@
 export default {
     investedStockMap: {
+        "601012": {
+            "stockFullId": "sh601012",
+            "stockName": "隆基绿能"
+        }, 
         "600305": {
             "stockFullId": "sh600305",
             "stockName": "恒顺醋业"
@@ -15,10 +19,6 @@ export default {
         "600905": {
             "stockFullId": "sh600905",
             "stockName": "三峡能源"
-        }, 
-        "601012": {
-            "stockFullId": "sh601012",
-            "stockName": "隆基绿能"
         }, 
         "601633": {
             "stockFullId": "sh601633",

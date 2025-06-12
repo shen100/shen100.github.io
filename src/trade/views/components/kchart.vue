@@ -1,7 +1,18 @@
 <template>
     <div class="kchart-container">
 		<div class="stock-name">{{ data.stockName }}</div>
-        <div v-if="data.dataLoaded" class="candle-container">
+		<div class="space"></div>
+		<div class="y-axis" :style="{top: `${data.yAxis1}px`}"></div>
+		<div class="y-axis-txt" :style="{top: `${data.yAxis1}px`}">{{ data.yAxisText1 }}</div>
+		<div class="y-axis" :style="{top: `${data.yAxis2}px`}"></div>
+		<div class="y-axis-txt" :style="{top: `${data.yAxis2}px`}">{{ data.yAxisText2 }}</div>
+		<div class="y-axis" :style="{top: `${data.yAxis3}px`}"></div>
+		<div class="y-axis-txt" :style="{top: `${data.yAxis3}px`}">{{ data.yAxisText3 }}</div>
+		<div class="y-axis" :style="{top: `${data.yAxis4}px`}"></div>
+		<div class="y-axis-txt" :style="{top: `${data.yAxis4}px`}">{{ data.yAxisText4 }}</div>
+		<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
+		<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
+        <div v-if="data.dataLoaded" class="candles-container">
 			<Candle
 				v-for="(item, i) in data.myKList" :key="i"
 				:candleType="data.type"
@@ -10,13 +21,9 @@
 				:closePrice="item[2]"
 				:highPrice="item[3]"
 				:lowPrice="item[4]"
-				:volume="item[5]"
 				:lowPriceInAll="data.lowPriceInAll"
 				:highPriceInAll="data.highPriceInAll"
-				:maxCandleHeight="data.maxHeight"
-				:lowVolumeInAll="data.lowVolumeInAll"
-				:highVolumeInAll="data.highVolumeInAll"
-				:maxVolumeHeight="data.maxVolumeHeight"
+				:candleMaxHeight="data.candleMaxHeight"
 			/>
         </div>
     </div>
@@ -25,12 +32,8 @@
 <script setup>
 import axios from 'axios';
 import { onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import { findFromRight } from '../../util/str';
 import Candle from '../components/candle.vue';
-
-const route = useRoute()
-const router = useRouter()
 
 let data = ref({
 	dataLoaded: false,
@@ -38,14 +41,15 @@ let data = ref({
 	stockName: '',
     lowPriceInAll: 0,
 	highPriceInAll: 0,
-	lowVolumeInAll: 0,
-	highVolumeInAll: 0,
-    maxHeight: 300,
-    maxVolumeHeight: 170,
+    candleMaxHeight: 200,
+	start: '',
     end: '',
     myKList: [],
-    candles: [],
-    volumes: [],
+	yAxis1: 0,
+    yAxis2: 0,
+    yAxis3: 0,
+    yAxis4: 0,
+    yAxis5: 0,
     yAxisText1: '',
     yAxisText2: '',
     yAxisText3: '',
@@ -57,14 +61,19 @@ onMounted(async () => {
 
 });
 
-async function requestDayK(stock, start, end, count) {
+function resetData(stock, start, end, count) {
 	data.value.dataLoaded = false;
 	data.value.stockName = stock.stockName;
+	data.value.myKList = [];
+	data.value.start = start;
     data.value.end = end;
+}
+
+async function requestDayK(stock, start, end, count) {
+	resetData(stock, start, end, count);
     var url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
 	url += (stock.stockFullId + ",day," + start + "," + end + "," + count + ",qfq");
     let res = await axios.get(url);
-	
 	/*
     [
 		"2021-03-10", 0-交易日
@@ -76,6 +85,7 @@ async function requestDayK(stock, start, end, count) {
 	]
     */
 	if (!(res.data && res.data.data)) {
+		data.value.dataLoaded = true;
 		return;
     }
 	let myKList = [];
@@ -84,7 +94,7 @@ async function requestDayK(stock, start, end, count) {
     } else {
 		myKList = res.data.data[stock.stockFullId].day;
     }
-	updateMyKList(myKList);
+	convertKListToNumbers(myKList);
 	requestToday(stock.stockFullId)
 }
 
@@ -105,17 +115,17 @@ async function requestToday(stockFullId) {
 	if (!jsonStr) {
         return;
     }
-	var todayStr = ""
-	var index =  jsonStr.indexOf('"');
+	var todayStr = "";
+	var index = jsonStr.indexOf('"');
 	if (index > 0) {
-		todayStr = jsonStr.substr(index + 1);
+		todayStr = jsonStr.substring(index + 1);
     }
 	index = findFromRight(todayStr, '"');
 	if (index > 0) {
-		todayStr = todayStr.substr(0, index)
+		todayStr = todayStr.substring(0, index)
     }
 
-	var todayData = todayStr.split('~');
+	let todayData = todayStr.split('~');
 	const kData = [
 		data.value.end,
 		todayData[5],  // 开盘价
@@ -124,18 +134,18 @@ async function requestToday(stockFullId) {
 		todayData[34], // 最低价
 		todayData[6],  // 总手
 	];
-	updateMyKList([ ...data.value.myKList, kData ]);
+	convertKListToNumbers([ ...data.value.myKList, kData ]);
 	updateChart("day");
 }
 
 async function requestWeekK(stock, start, end, count) {
-	data.value.dataLoaded = false;
-	data.value.stockName = stock.stockName;
+	resetData(stock, start, end, count);
 	var url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
 	url += (stock.stockFullId + ",week," + start + "," + end + "," + count + ",qfq");
 	let res = await axios.get(url);
 	
 	if (!(res.data && res.data.data)) {
+		data.value.dataLoaded = true;
 		return;
     }
 		
@@ -150,19 +160,19 @@ async function requestWeekK(stock, start, end, count) {
 	for (let i = 0; i < myKList.length; i++) {
 		dates.push(myKList[i][0]); // 之前请求成交量用了dates
     }
-	updateMyKList(myKList);
-	updateChart("week")
+	convertKListToNumbers(myKList);
+	updateChart("week");
 }
 
 async function requestMonthK(stock, start, end, count) {
-	data.value.dataLoaded = false;
-	data.value.stockName = stock.stockName;
+	resetData(stock, start, end, count);
 	var url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=";
 	url += (stock.stockFullId + ",month," + start + "," + end + "," + count + ",qfq");
 
 	let res = await axios.get(url);
 	
 	if (!(res.data && res.data.data)) {
+		data.value.dataLoaded = true;
 		return;
     }
 		
@@ -177,19 +187,19 @@ async function requestMonthK(stock, start, end, count) {
 	for (let i = 0; i < myKList.length; i++) {
 		dates.push(myKList[i][0]); // 之前请求成交量用了dates
     }
-	updateMyKList(myKList);
+	convertKListToNumbers(myKList);
 	updateChart("month")
 }
 
 async function requestYearK(stock, start, end, count) {
-	data.value.dataLoaded = false;
-	data.value.stockName = stock.stockName;
+	resetData(stock, start, end, count);
 	var url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
 	url += (stock.stockFullId + ",month," + start + "," + end + "," + count + ",qfq");
 
 	let res = await axios.get(url);
 	
 	if (!(res.data && res.data.data)) {
+		data.value.dataLoaded = true;
 		return;
     }
 		
@@ -207,10 +217,10 @@ async function requestYearK(stock, start, end, count) {
 
     for (let i = 0; i < monthData.length; i++) {
 		let arr = monthData[i];
-		let year = arr[0].substr(0, 4);
+		let year = arr[0].substr(0, 4); // arr[0] 是日期字符串，2019-08-30
 		if (!yearMap[year]) {
 			yearMap[year] = [
-				arr[0],
+				arr[0], // 2019-08-30
 				arr[1], // 1-开盘价
 				0, // 2-收盘价
 				0, // 3-最高价
@@ -236,9 +246,9 @@ async function requestYearK(stock, start, end, count) {
 		if (i + 1 < monthData.length) {
 			let nextYear = monthData[i + 1][0].substr(0, 4)
 			if (curYear != nextYear) {
-				yearMap[curYear][2] = arr[2]
-				yearMap[curYear][3] = '' + maxPrice;
-				yearMap[curYear][4] = '' + minPrice;
+				yearMap[curYear][2] = arr[2]; // 2-收盘价
+				yearMap[curYear][3] = '' + maxPrice; // 最高价
+				yearMap[curYear][4] = '' + minPrice; // 最低价
 				// 以每年的最后一个交易日作为这年的日期
 				yearMap[curYear][0] = arr[0];
             }
@@ -252,20 +262,13 @@ async function requestYearK(stock, start, end, count) {
     }
 
 	let yearList = [];
-	let yearTmpList = [];
 	for (let key in yearMap) {
-		yearTmpList.push({
+		yearList.push({
 			"year": key,
 			"data": yearMap[key]
 		});
     }
-
-	yearTmpList.sort((a, b) => a.year > b.year ? -1 : 1);
-	
-    for (let i = 0; i < yearTmpList.length; i++) {
-		yearTmpList[i].data[5] = '' + yearTmpList[i].data[5];
-		yearList.push(yearTmpList[i].data);
-    }
+	yearList.sort((a, b) => a.year > b.year ? 1 : -1);
 
 	let myKList = yearList;
 	
@@ -273,11 +276,11 @@ async function requestYearK(stock, start, end, count) {
     for (let i = 0; i < myKList.length; i++) {
 		dates.push(myKList[i][0]); // 之前请求成交量用了dates
     }
-	updateMyKList(myKList);
+	convertKListToNumbers(myKList);
 	updateChart("year")
 }
 
-function updateMyKList(myKList) {
+function convertKListToNumbers(myKList) {
 	for (let i = 0; i < myKList.length; i++) {
 		myKList[i][1] = Number(myKList[i][1]);
 		myKList[i][2] = Number(myKList[i][2]);
@@ -288,46 +291,40 @@ function updateMyKList(myKList) {
 	data.value.myKList = myKList;
 }
 
-function updateChart(candleType) {
-	let lowPriceInAll = 10000000
-	let highPriceInAll = -10000000
-	let lowVolumeInAll = 10000000
-	let highVolumeInAll = -10000000
+function updateChart(type) {
+	let lowPriceInAll = 10000000;
+	let highPriceInAll = -10000000;
 
-	data.value.candles = [];
-    data.value.volumes = [];
-    data.value.candleType = candleType;
+    data.value.type = type;
 
 	const myKList = data.value.myKList;
-
     for (let i = 0; i < myKList.length; i++) {
 		var highPrice = myKList[i][3];
 		var lowPrice = myKList[i][4];
-		var vol = Number(myKList[i][5])
 		if (lowPrice < lowPriceInAll) {
-			lowPriceInAll = lowPrice
+			lowPriceInAll = lowPrice;
         }
 		if (highPrice > highPriceInAll) {
-			highPriceInAll = highPrice
-        }
-		if (vol > highVolumeInAll) {
-			highVolumeInAll = vol
-        }
-		if (vol < lowVolumeInAll) {
-			lowVolumeInAll = vol
+			highPriceInAll = highPrice;
         }
     }
 
 	data.value.lowPriceInAll = lowPriceInAll;
 	data.value.highPriceInAll = highPriceInAll;
 	
-	var incAxis = (highPriceInAll - lowPriceInAll) / 4
+
+	data.value.yAxis1 = 0 * data.value.candleMaxHeight / 4 + 55;
+	data.value.yAxis2 = 1 * data.value.candleMaxHeight / 4 + 55;
+	data.value.yAxis3 = 2 * data.value.candleMaxHeight / 4 + 55;
+	data.value.yAxis4 = 3 * data.value.candleMaxHeight / 4 + 55;
+	data.value.yAxis5 = 4 * data.value.candleMaxHeight / 4 + 55;
+
+	var incAxis = (highPriceInAll - lowPriceInAll) / 4;
 	data.value.yAxisText1 = highPriceInAll.toFixed(2);
 	data.value.yAxisText2 = (highPriceInAll - incAxis).toFixed(2);
 	data.value.yAxisText3 = (highPriceInAll - 2 * incAxis).toFixed(2);
 	data.value.yAxisText4 = (highPriceInAll - 3 * incAxis).toFixed(2);
-	data.value.yAxisText5 = (lowPriceInAll).toFixed(2);
-
+	data.value.yAxisText5 = lowPriceInAll.toFixed(2);
 	data.value.dataLoaded = true;
 }
 
@@ -338,9 +335,10 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 .kchart-container {
 	background-color: #fff;
 	height: 570px;
-	padding: 20px;
+	padding: 15px 20px 20px 20px;
 	box-sizing: border-box;
 	margin-bottom: 20px;
+	position: relative;
 }
 
 .stock-name {
@@ -351,12 +349,27 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	line-height: 30px;
 }
 
-.candle-container {
+.space {
+	height: 10px;
+}
+
+.y-axis {
+	height: 1px;
+	background-color: #f2f2f2;
+	position: absolute;
+	width: calc(100vw - 320px);
+}
+
+.y-axis-txt {
+	position: absolute;
+	font-size: 12px;
+}
+
+.candles-container {
 	display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
-    width: calc(100vw - 340px);
-    white-space: nowrap;
-	height: 520px;
+    width: calc(100vw - 320px);
+	height: 200px; /* 和 data.candleMaxHeight 一样的值 */
 }
 </style>
