@@ -14,7 +14,7 @@ let allStocks = [];
 function init() {
     settings = JSON.parse(localStorage.getItem('tradeSettings') || JSON.stringify(settings));
     investedStocks = JSON.parse(localStorage.getItem('tradeInvestedStocks') || '[]');
-    let localAllStocks = JSON.parse(localStorage.getItem('tradeAllStocks') || '[]');
+    let localAllStocks = JSON.parse(localStorage.getItem('tradeAllStocks') || '{"items": []}');
     allStocks = localAllStocks.items.map(stock => {
         let stockData = {};
         localAllStocks.fields.forEach((field, i) => {
