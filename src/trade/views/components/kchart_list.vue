@@ -43,7 +43,7 @@ const props = defineProps([
 let data = ref({
     type: 'day',
     kCharts: [],
-    start: formatLocalYMD(new Date(new Date().getTime() - 105 * 24 * 3600 * 1000)),
+    start: formatLocalYMD(new Date(new Date().getTime() - 180 * 24 * 3600 * 1000)),
     end: formatLocalYMD(new Date()) // 2025-06-12
 })
 
