@@ -261,14 +261,20 @@ async function requestYearK(stock, start, end, count) {
         }
     }
 
+	let yearTmpList = [];
 	let yearList = [];
 	for (let key in yearMap) {
-		yearList.push({
+		yearTmpList.push({
 			"year": key,
 			"data": yearMap[key]
 		});
     }
-	yearList.sort((a, b) => a.year > b.year ? 1 : -1);
+	yearTmpList.sort((a, b) => a.year > b.year ? 1 : -1);
+
+	for (let i = 0; i < yearTmpList.length; i++) {
+		yearList.push(yearTmpList[i].data);
+    }
+
 
 	let myKList = yearList;
 	
@@ -334,7 +340,7 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 <style scoped>
 .kchart-container {
 	background-color: #fff;
-	height: 570px;
+	height: 280px;
 	padding: 15px 20px 20px 20px;
 	box-sizing: border-box;
 	margin-bottom: 20px;

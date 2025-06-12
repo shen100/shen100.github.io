@@ -1,5 +1,6 @@
 import Trans from '../views/trans.vue';
-import InvestedKcharts from '../views/invested_kcharts.vue'
+import InvestedKCharts from '../views/invested_kcharts.vue';
+import AllStocKCharts from '../views/all_stock_kcharts.vue'
 
 const routeList = [
     {
@@ -10,7 +11,12 @@ const routeList = [
     {
         path: '/trade/invested_kcharts',
         name: 'investedKcharts',
-        component: InvestedKcharts,
+        component: InvestedKCharts,
+    },
+    {
+        path: '/trade/all_kcharts',
+        name: 'allKcharts',
+        component: AllStocKCharts,
     },
 ];
 

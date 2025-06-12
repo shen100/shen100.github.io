@@ -1,6 +1,6 @@
 <template>
     <div>
-        <KChartList :stocks="data.investedStocks"></KChartList>
+        <KChartList type="day" :stocks="data.investedStocks"></KChartList>
     </div>
 </template>
 

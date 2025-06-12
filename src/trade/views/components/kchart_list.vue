@@ -11,14 +11,14 @@
                     type="date" placeholder="Select date" style="width: 200px" 
                     @on-change="(dateStr, dateType) => onEndDateChange(dateStr, dateType, data.type)" />
                 <ButtonGroup class="button-group">
-                    <Button @click="onRequest('day')" :type="data.type === 'day' ? 'primary' : 'default'">天</Button>
-                    <Button @click="onRequest('week')" :type="data.type === 'week' ? 'primary' : 'default'">周</Button>
-                    <Button @click="onRequest('month')" :type="data.type === 'month' ? 'primary' : 'default'">月</Button>
-                    <Button @click="onRequest('year')" :type="data.type === 'year' ? 'primary' : 'default'">年</Button>
+                    <Button @click="onTypeChange('day')" :type="data.type === 'day' ? 'primary' : 'default'">天</Button>
+                    <Button @click="onTypeChange('week')" :type="data.type === 'week' ? 'primary' : 'default'">周</Button>
+                    <Button @click="onTypeChange('month')" :type="data.type === 'month' ? 'primary' : 'default'">月</Button>
+                    <Button @click="onTypeChange('year')" :type="data.type === 'year' ? 'primary' : 'default'">年</Button>
                 </ButtonGroup>
             </div>
         </Card>
-        <div>
+        <div v-if="data.kCharts && data.kCharts.length">
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" />
         </div>
     </div>
@@ -29,10 +29,16 @@ import { nextTick, onMounted, ref, watch } from 'vue';
 import KChart from './kchart.vue';
 import { formatLocalYMD, parseLocalYMDString } from '../../util/date';
 
+const emit = defineEmits(['start-change', 'end-change', 'type-change']);
+
 const itemRefs = ref([]);
 
 const props = defineProps([
     'stocks',
+    'type',
+    'start',
+    'end',
+    'page'
 ]);
 
 let data = ref({
@@ -43,7 +49,11 @@ let data = ref({
 })
 
 onMounted(async () => {
-    onRequest('day');
+    data.value.type = props.type;
+    data.value.start = props.start;
+    data.value.end = props.end;
+    data.value.page = props.page;
+    onRequest(props.type);
 });
 
 watch(
@@ -53,18 +63,54 @@ watch(
     }
 )
 
+watch(
+    () => props.type,
+    (newValue, oldValue) => {
+        data.value.type = newValue;
+    }
+)
+
+watch(
+    () => props.start,
+    (newValue, oldValue) => {
+        data.value.start = newValue;
+    }
+)
+
+watch(
+    () => props.end,
+    (newValue, oldValue) => {
+        data.value.end = newValue;
+    }
+)
+
+watch(
+    () => props.page,
+    (newValue, oldValue) => {
+        data.value.page = newValue;
+    }
+)
+
 function onStartDateChange(dateStr, dateType, type) {
     data.value.start = dateStr;
     onRequest(type);
+    emit('start-change', dateStr);
 }
 
 function onEndDateChange(dateStr, dateType, type) {
     data.value.end = dateStr;
     onRequest(type);
+    emit('end-change', dateStr);
+}
+
+function onTypeChange(type) {
+    data.value.type = type;
+    onRequest(type);
+    emit('type-change', type);
 }
 
 async function onRequest(type) {
-    if (!props.stocks) {
+    if (!(props.stocks && props.stocks.length > 0)) {
         return;
     }
     console.log("onRequest", type, data.value.start, data.value.end);
@@ -87,16 +133,14 @@ async function onRequest(type) {
     } else if (type === "year") {
 		count = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
     }
-
-	if (data.value.kCharts.length <= 0) {
-        props.stocks.forEach(stock => {
-            data.value.kCharts.push({
-                stockId: stock.stockId,
-                stockFullId: stock.stockFullId,
-                stockName: stock.stockName
-            });
+    data.value.kCharts = [];
+    props.stocks.forEach(stock => {
+        data.value.kCharts.push({
+            stockId: stock.stockId,
+            stockFullId: stock.stockFullId,
+            stockName: stock.stockName
         });
-    }
+    });
 
     await nextTick();
 

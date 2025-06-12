@@ -10,5 +10,9 @@ export default {
             title: '持仓K线',
             path: '/trade/invested_kcharts'
         },
+        {
+            title: '全部K线',
+            path: '/trade/all_kcharts'
+        },
     ]
 }
