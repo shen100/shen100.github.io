@@ -352,10 +352,10 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 }
 
 .candle-container {
-	display: flex;  /* or display: inline-flex; */
+	display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
-    width: calc(100vw - 340px); /* or any specific width */
+    width: calc(100vw - 340px);
     white-space: nowrap;
 	height: 520px;
 }

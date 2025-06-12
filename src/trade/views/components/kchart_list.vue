@@ -32,45 +32,41 @@ let data = ref({
 })
 
 onMounted(async () => {
-    requestKData('day');
+    onRequest('day');
 });
 
 watch(
     () => props.stockMap,
     (newValue, oldValue) => {
-        requestKData(data.value.type);
+        onRequest(data.value.type);
     }
 )
 
-function onRequest(type) {
-    requestKData(type);
-}
-
-async function requestKData(type) {
+async function onRequest(type) {
     if (!props.stockMap) {
         return;
     }
     data.value.type = type;
     let timestamp = new Date().getTime() + 8 * 3600 * 1000;
     let startTimestamp;
-	let start;
+	let start, end;
 	let count;
 	
     if (type === "day") {
-		count = 365;
+		count = 365; // 365天
 		startTimestamp = timestamp - count * 24 * 3600 * 1000;
     } else if (type === "week") {
-		count = 300
+		count = 300; // 300周
 		startTimestamp = timestamp - count * 7 * 24 * 3600 * 1000;
     } else if (type === "month") {
-        count = 120;
+        count = 120; // 120月
 		startTimestamp = timestamp - count / 12 * 365 * 24 * 3600 * 1000;
     } else if (type === "year") {
-		count = 28 * 12;
+		count = 28 * 12; // 28年
 		startTimestamp = timestamp - count / 12 * 365 * 24 * 3600 * 1000;
     }
     start = new Date(startTimestamp).toISOString().slice(0, 10);
-    let end = new Date(timestamp).toISOString().slice(0, 10);
+    end = new Date(timestamp).toISOString().slice(0, 10);
 
 	if (data.value.kCharts.length <= 0) {
 		for (let stockId in props.stockMap) {
@@ -87,13 +83,14 @@ async function requestKData(type) {
 	itemRefs.value.forEach((el, index) => {
         if (el) {
             let stock = data.value.kCharts[index];
-            if (data.value.type == "day") {
+            let requestType = data.value.type;
+            if (requestType == "day") {
                 el.requestDayK(stock, start, end, count);
-            } else if (data.value.type == "week") {
+            } else if (requestType == "week") {
                 el.requestWeekK(stock, start, end, count);
-            } else if (data.value.type == "month") {
+            } else if (requestType == "month") {
                 el.requestMonthK(stock, start, end, count);
-            } else if (data.value.type == "year") {
+            } else if (requestType == "year") {
                 el.requestYearK(stock, start, end, count);
             }
         }
