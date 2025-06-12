@@ -1,6 +1,12 @@
 import { formatLocalYMD } from '../util/date';
 
 let settings = {
+    trackedStockKChart: {
+        type: 'year',
+        start: '2000-01-01',
+        end: formatLocalYMD(new Date()), // 2025-06-12
+        page: 1
+    },
     allStockKChart: {
         type: 'year',
         start: '2000-01-01',
