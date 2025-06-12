@@ -50,7 +50,7 @@ import { nextTick, onMounted, ref, watch } from 'vue';
 import { Message } from 'view-ui-plus';
 import KChart from './kchart.vue';
 import { formatLocalYMD, parseLocalYMDString } from '../../util/date';
-import { trim } from '../../util/str';
+import { replaceAllSpace } from '../../util/str';
 
 const emit = defineEmits(['start-change', 'end-change', 'type-change', 'stock-add']);
 
@@ -180,9 +180,9 @@ async function onRequest(type) {
 }
 
 function onAddOK() {
-    data.value.stockId = trim(data.value.stockId);
-    data.value.stockFullId = trim(data.value.stockFullId);
-    data.value.stockName = trim(data.value.stockName);
+    data.value.stockId = replaceAllSpace(data.value.stockId);
+    data.value.stockFullId = replaceAllSpace(data.value.stockFullId);
+    data.value.stockName = replaceAllSpace(data.value.stockName);
     if (!data.value.stockId) {
         Message.error({
             duration: 10,

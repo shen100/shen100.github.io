@@ -19,3 +19,7 @@ export function findFromRight(str, char) {
 export function trim(str) {
     return str.replace(/^\s+|\s+$/g, '');
 }
+
+export function replaceAllSpace(str) {
+    return str.replace(/\s+/g, '');
+}
