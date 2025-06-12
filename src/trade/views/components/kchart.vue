@@ -1,6 +1,9 @@
 <template>
     <div class="kchart-container">
-		<div class="stock-name">{{ data.stockName }}</div>
+		<div class="stock-name">
+			<div class="stock-name-txt">{{ data.stockName }}</div>
+			<div v-if="data.stockData" class="stock-name-txt" style="margin-left: 10px;">(总市值&nbsp;{{ data.stockData.zongShiZhi }})</div>
+		</div>
 		<div class="space"></div>
 		<div class="y-axis" :style="{top: `${data.yAxis1}px`}"></div>
 		<div class="y-axis-txt" :style="{top: `${data.yAxis1}px`}">{{ data.yAxisText1 }}</div>
@@ -38,6 +41,7 @@ import Candle from '../components/candle.vue';
 let data = ref({
 	dataLoaded: false,
 	type: 'day',
+	stockData: null,
 	stockName: '',
     lowPriceInAll: 0,
 	highPriceInAll: 0,
@@ -63,15 +67,33 @@ onMounted(async () => {
 
 function resetData(stock, start, end, count) {
 	data.value.dataLoaded = false;
+	data.value.stockData = null;
 	data.value.stockName = stock.stockName;
 	data.value.myKList = [];
 	data.value.start = start;
     data.value.end = end;
 }
 
+async function requestStockDetail(stock) {
+	if (data.value.stockData && data.value.stockData.stockId === stock.stockId) {
+		return;
+	}
+	let url = `https://sqt.gtimg.cn/?q=${stock.stockFullId}&fmt=json&app=wzq&t=${Date.now()}`;
+    let res = await axios.get(url);
+	if (!(res.data && res.data[stock.stockFullId])) {
+		return;
+	}
+	let arr = res.data[stock.stockFullId] || [];
+	data.value.stockData = {
+		stockId: stock.stockId,
+		zongShiZhi: Number(arr[45] || '0').toFixed(2) + '亿', // 总市值
+	}
+}
+
 async function requestDayK(stock, start, end, count) {
 	resetData(stock, start, end, count);
-    var url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
+	requestStockDetail(stock);
+    let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
 	url += (stock.stockFullId + ",day," + start + "," + end + "," + count + ",qfq");
     let res = await axios.get(url);
 	/*
@@ -99,7 +121,7 @@ async function requestDayK(stock, start, end, count) {
 }
 
 async function requestToday(stockFullId) {
-	var url = "https://qt.gtimg.cn/q=" + stockFullId;
+	let url = "https://qt.gtimg.cn/q=" + stockFullId;
 
 	let res = await axios.get(url, {
         responseType: 'arraybuffer' 
@@ -115,8 +137,8 @@ async function requestToday(stockFullId) {
 	if (!jsonStr) {
         return;
     }
-	var todayStr = "";
-	var index = jsonStr.indexOf('"');
+	let todayStr = "";
+	let index = jsonStr.indexOf('"');
 	if (index > 0) {
 		todayStr = jsonStr.substring(index + 1);
     }
@@ -140,7 +162,8 @@ async function requestToday(stockFullId) {
 
 async function requestWeekK(stock, start, end, count) {
 	resetData(stock, start, end, count);
-	var url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
+	requestStockDetail(stock);
+	let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
 	url += (stock.stockFullId + ",week," + start + "," + end + "," + count + ",qfq");
 	let res = await axios.get(url);
 	
@@ -166,7 +189,8 @@ async function requestWeekK(stock, start, end, count) {
 
 async function requestMonthK(stock, start, end, count) {
 	resetData(stock, start, end, count);
-	var url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=";
+	requestStockDetail(stock);
+	let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=";
 	url += (stock.stockFullId + ",month," + start + "," + end + "," + count + ",qfq");
 
 	let res = await axios.get(url);
@@ -193,7 +217,8 @@ async function requestMonthK(stock, start, end, count) {
 
 async function requestYearK(stock, start, end, count) {
 	resetData(stock, start, end, count);
-	var url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
+	requestStockDetail(stock);
+	let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
 	url += (stock.stockFullId + ",month," + start + "," + end + "," + count + ",qfq");
 
 	let res = await axios.get(url);
@@ -278,7 +303,7 @@ async function requestYearK(stock, start, end, count) {
 
 	let myKList = yearList;
 	
-	var dates = [];
+	let dates = [];
     for (let i = 0; i < myKList.length; i++) {
 		dates.push(myKList[i][0]); // 之前请求成交量用了dates
     }
@@ -305,8 +330,8 @@ function updateChart(type) {
 
 	const myKList = data.value.myKList;
     for (let i = 0; i < myKList.length; i++) {
-		var highPrice = myKList[i][3];
-		var lowPrice = myKList[i][4];
+		let highPrice = myKList[i][3];
+		let lowPrice = myKList[i][4];
 		if (lowPrice < lowPriceInAll) {
 			lowPriceInAll = lowPrice;
         }
@@ -325,7 +350,7 @@ function updateChart(type) {
 	data.value.yAxis4 = 3 * data.value.candleMaxHeight / 4 + 55;
 	data.value.yAxis5 = 4 * data.value.candleMaxHeight / 4 + 55;
 
-	var incAxis = (highPriceInAll - lowPriceInAll) / 4;
+	let incAxis = (highPriceInAll - lowPriceInAll) / 4;
 	data.value.yAxisText1 = highPriceInAll.toFixed(2);
 	data.value.yAxisText2 = (highPriceInAll - incAxis).toFixed(2);
 	data.value.yAxisText3 = (highPriceInAll - 2 * incAxis).toFixed(2);
@@ -349,10 +374,16 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 
 .stock-name {
 	text-align: center;
-	font-size: 22px;
-	font-weight: 700;
+	font-size: 0;
+}
+
+.stock-name-txt {
+	display: inline-block;
+	vertical-align: top;
 	height: 30px;
 	line-height: 30px;
+	font-size: 22px;
+	font-weight: 700;
 }
 
 .space {
