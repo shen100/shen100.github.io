@@ -15,7 +15,7 @@
 		<div class="y-axis-txt" :style="{top: `${data.yAxis4}px`}">{{ data.yAxisText4 }}</div>
 		<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
 		<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
-		<div class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
+		<div v-if="data.activeCandleData" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
 			<div class="y-axis-price-line-price">{{ data.yAxisPriceLinePrice }}</div>
 		</div>
         <div v-if="data.dataLoaded" class="candles-container">
