@@ -3,8 +3,8 @@ export default {
     icon: 'logo-usd',
     children: [
         {
-            title: '交易记录',
-            path: '/trade/trans'
+            title: '数据看板',
+            path: '/trade/dashboard'
         },
         {
             title: '持仓K线',
@@ -17,6 +17,10 @@ export default {
         {
             title: '全部K线',
             path: '/trade/all_kcharts'
+        },
+        {
+            title: '交易记录',
+            path: '/trade/trans'
         },
     ]
 }

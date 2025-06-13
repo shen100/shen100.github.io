@@ -66,5 +66,8 @@ export default {
             investedStocks.push(stock);
             localStorage.setItem('tradeInvestedStocks', JSON.stringify(investedStocks));
         }
+    },
+    updateStockMarketStats: function(stats) {
+        localStorage.setItem('tradeStockMarketStats', JSON.stringify(stats));
     }
 }
