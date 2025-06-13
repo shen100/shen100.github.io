@@ -154,7 +154,6 @@ async function requestAllStockDetail() {
 		data.value.shiZhi2000.percent = (data.value.shiZhi2000.count / theCount * 100).toFixed(2);
 		data.value.shiZhi5000.percent = (data.value.shiZhi5000.count / theCount * 100).toFixed(2);
 		data.value.shiZhi10000.percent = (data.value.shiZhi10000.count / theCount * 100).toFixed(2);
-		break;
 	}
 	data.value.shiZhiList = [
 		{
