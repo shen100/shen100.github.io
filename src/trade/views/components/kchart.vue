@@ -1,8 +1,12 @@
 <template>
     <div class="kchart-container">
-		<div class="stock-name">
-			<div class="stock-name-txt">{{ data.stockName }}</div>
-			<div v-if="data.stockData" class="stock-name-txt" style="margin-left: 10px;">(总市值&nbsp;{{ data.stockData.zongShiZhi }})</div>
+		<div class="stock-name" @mouseleave="onStockNameMouseLeave">
+			<div class="stock-name-txt" @mouseenter="onStockNameMouseEnter">
+				{{ data.stockData ? `${data.stockName}&nbsp;(总市值&nbsp;${data.stockData.zongShiZhi})` : data.stockName }}
+			</div>
+			<div v-if="props.addToTrackingEnabled" class="add-to-tracking">
+				<Button v-if="data.addToTrackingBtnVisible" @click="onShowAddToTrackingModal" type="primary" size="small">加入跟踪K线</Button>
+			</div>
 		</div>
 		<div class="space"></div>
 		<div class="y-axis" :style="{top: `${data.yAxis1}px`}"></div>
@@ -46,10 +50,17 @@ import { findFromRight } from '../../util/str';
 import Candle from '../components/candle.vue';
 import StockInfoPopup from '../components/stock_info_popup.vue';
 
+const emit = defineEmits(['add-to-tracking']);
+
+const props = defineProps([
+    'addToTrackingEnabled',
+]);
+
 let data = ref({
 	dataLoaded: false,
 	type: 'day',
-	stockData: null,
+	stock: null, // { "stockFullId": "sz000858", "stockId": "000858", "stockName": "五粮液" }
+	stockData: null, //  { stockId: '000858', zongShiZhi: '4623.77亿' }
 	stockName: '',
     lowPriceInAll: 0,
 	highPriceInAll: 0,
@@ -70,6 +81,7 @@ let data = ref({
     yAxisText4: '',
     yAxisText5: '',
 	activeCandleData: null,
+	addToTrackingBtnVisible: false,
 })
 
 onMounted(async () => {
@@ -78,6 +90,7 @@ onMounted(async () => {
 
 function resetData(stock, start, end, count) {
 	data.value.dataLoaded = false;
+	data.value.stock = stock;
 	data.value.stockData = null;
 	data.value.stockName = stock.stockName;
 	data.value.myKList = [];
@@ -383,6 +396,18 @@ function onCandleMouseMove(i, candleData) {
 	data.value.yAxisPriceLinePrice = candleData.price;
 }
 
+function onStockNameMouseEnter() {
+	data.value.addToTrackingBtnVisible = true;
+}
+
+function onStockNameMouseLeave() {
+	data.value.addToTrackingBtnVisible = false;
+}
+
+function onShowAddToTrackingModal() {
+	emit('add-to-tracking', data.value.stock);
+}
+
 defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 </script>
 
@@ -453,5 +478,15 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
     overflow-x: auto;
     width: calc(100vw - 320px);
 	height: 201px; /* 比 data.candleMaxHeight 高出 1px */
+}
+
+.add-to-tracking {
+	width: 200px;
+	height: 30px;
+	line-height: 30px;
+	display: inline-block;
+	vertical-align: top;
+	margin-left: 20px;
+	text-align: left;
 }
 </style>

@@ -21,22 +21,14 @@
             </div>
         </Card>
         <div v-if="data.kCharts && data.kCharts.length">
-            <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" />
+            <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" 
+                :addToTrackingEnabled="props.addToTrackingEnabled"
+                @add-to-tracking="onAddToTracking" />
         </div>
         <Modal
             v-model="data.addModalVisible"
-            title="添加">
-            <Form label-position="left" :label-width="150">
-                <FormItem label="股票代码">
-                    <Input v-model="data.stockId"></Input>
-                </FormItem>
-                <FormItem label="股票代码(全称)">
-                    <Input v-model="data.stockFullId"></Input>
-                </FormItem>
-                <FormItem label="股票名称">
-                    <Input v-model="data.stockName"></Input>
-                </FormItem>
-            </Form>
+            title="跟踪K线">
+            <div>确定要加入到跟踪K线?</div>
             <template #footer>
                 <Button type="text" @click="onAddCancel">取消</Button>
                 <Button type="primary" @click="onAddOK">确定</Button>
@@ -61,6 +53,7 @@ const props = defineProps([
     'type',
     'start',
     'end',
+    'addToTrackingEnabled'
 ]);
 
 let data = ref({
@@ -179,31 +172,17 @@ async function onRequest(type) {
     });
 }
 
+function onAddToTracking(stock) {
+    data.value.stockId = stock.stockId;
+    data.value.stockFullId = stock.stockFullId;
+    data.value.stockName = stock.stockName;
+    data.value.addModalVisible = true;
+}
+
 function onAddOK() {
     data.value.stockId = replaceAllSpace(data.value.stockId);
     data.value.stockFullId = replaceAllSpace(data.value.stockFullId);
     data.value.stockName = replaceAllSpace(data.value.stockName);
-    if (!data.value.stockId) {
-        Message.error({
-            duration: 10,
-            content: '股票代码不能为空'
-        });
-        return;
-    }
-    if (!data.value.stockFullId) {
-        Message.error({
-            duration: 10,
-            content: '股票代码(全称)不能为空'
-        });
-        return;
-    }
-    if (!data.value.stockName) {
-        Message.error({
-            duration: 10,
-            content: '股票名称不能为空'
-        });
-        return;
-    }
     data.value.addModalVisible = false;
     emit('stock-add', {
         stockId: data.value.stockId,

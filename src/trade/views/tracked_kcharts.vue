@@ -5,6 +5,7 @@
             :end="data.end"
             :page="data.page"
             :stocks="data.curStocks"
+            :addToTrackingEnabled="false"
             @start-change="onStartChange"
             @end-change="onEndChange"
             @type-change="onTypeChange"
