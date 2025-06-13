@@ -18,13 +18,15 @@ let settings = {
         start: '2000-01-01',
         end: formatLocalYMD(new Date()), // 2025-06-12
         page: 1
-    }
+    },
 };
 let investedStocks = [];
 let trackedStocks = [];
 let allStocks = [];
+let stockMarketStats = null;
 
 function init() {
+    stockMarketStats = JSON.parse(localStorage.getItem('tradeStockMarketStats') || 'null');
     settings = JSON.parse(localStorage.getItem('tradeSettings') || JSON.stringify(settings));
     investedStocks = JSON.parse(localStorage.getItem('tradeInvestedStocks') || '[]');
     trackedStocks = JSON.parse(localStorage.getItem('tradeTrackedStocks') || '[]');
@@ -51,6 +53,7 @@ export default {
     trackedStocks,
     investedStocks,
     allStocks,
+    stockMarketStats,
     setSettings: function(newSettings) {
         settings = newSettings;
         localStorage.setItem('tradeSettings', JSON.stringify(settings));

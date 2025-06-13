@@ -1,7 +1,12 @@
 <template>
     <div>
 		<Card>
-			<div class="total-shizhi-txt">总市值: {{ (data.shiZhi.amount / 10000).toFixed(2) }}万亿 &nbsp;({{ data.shiZhi.count }}家)</div>
+			<div class="total-shizhi-txt">
+				<template v-if="data.shiZhi && data.shiZhi.amount">
+					总市值: {{ (data.shiZhi.amount / 10000).toFixed(2) }}万亿 &nbsp;({{ data.shiZhi.count }}家)
+				</template>
+				<Icon @click="requestAllStockDetail" type="md-refresh" style="cursor: pointer;" />
+			</div>
 			<Table border :columns="data.columns" :data="data.shiZhiList">
 				<template #shiZhi0="{ row }">
 					<div>{{ row.shiZhi0.count }}家 ({{ row.shiZhi0.percent }}%)</div>
@@ -33,6 +38,7 @@
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import store from '../model/store';
+import { formatLocalYMD } from '../util/date';
 import { Card } from 'view-ui-plus';
 
 let data = ref({
@@ -103,7 +109,10 @@ let data = ref({
 })
 
 onMounted(async () => {
-	requestAllStockDetail();
+	if (store.stockMarketStats) {
+		data.value.shiZhi = store.stockMarketStats.shiZhi;
+		data.value.shiZhiList = store.stockMarketStats.shiZhiList;
+	}
 });
 
 async function requestAllStockDetail() {
@@ -145,6 +154,7 @@ async function requestAllStockDetail() {
 		data.value.shiZhi2000.percent = (data.value.shiZhi2000.count / theCount * 100).toFixed(2);
 		data.value.shiZhi5000.percent = (data.value.shiZhi5000.count / theCount * 100).toFixed(2);
 		data.value.shiZhi10000.percent = (data.value.shiZhi10000.count / theCount * 100).toFixed(2);
+		break;
 	}
 	data.value.shiZhiList = [
 		{
@@ -157,7 +167,11 @@ async function requestAllStockDetail() {
 			shiZhi10000: data.value.shiZhi10000
 		}
 	];
-	store.updateStockMarketStats(data.value.shiZhiList);
+	store.updateStockMarketStats({
+		shiZhi: data.value.shiZhi,
+		shiZhiList: data.value.shiZhiList,
+		updatedAt: formatLocalYMD(new Date())
+	});
 }
 
 async function requestStockDetail(stock) {
