@@ -27,8 +27,11 @@
 				:lowPriceInAll="data.lowPriceInAll"
 				:highPriceInAll="data.highPriceInAll"
 				:candleMaxHeight="data.candleMaxHeight"
+				@mouse-over="(candleData) => onCandleMouseOver(i, candleData)"
+				@mouse-out="() => onCandleMouseOut(i)"
 			/>
         </div>
+		<StockInfoPopup v-if="data.activeCandleData" :info="data.activeCandleData" />
     </div>
 </template>
 
@@ -37,6 +40,7 @@ import axios from 'axios';
 import { onMounted, ref } from 'vue'
 import { findFromRight } from '../../util/str';
 import Candle from '../components/candle.vue';
+import StockInfoPopup from '../components/stock_info_popup.vue';
 
 let data = ref({
 	dataLoaded: false,
@@ -59,6 +63,7 @@ let data = ref({
     yAxisText3: '',
     yAxisText4: '',
     yAxisText5: '',
+	activeCandleData: null,
 })
 
 onMounted(async () => {
@@ -359,6 +364,13 @@ function updateChart(type) {
 	data.value.dataLoaded = true;
 }
 
+function onCandleMouseOver(i, candleData) {
+	data.value.activeCandleData = candleData;
+}
+
+function onCandleMouseOut(i) {
+	data.value.activeCandleData = null;
+}
 defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 </script>
 

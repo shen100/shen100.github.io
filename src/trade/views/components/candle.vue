@@ -1,9 +1,11 @@
 <template>
-    <div :id="'candle-container-' + date" class="candle-container" :style="{minWidth: `${data.boxWidth}px`}">
+    <div :id="'candle-container-' + date" @mouseenter="onMouseOver"
+        @mouseleave="onMouseOut" class="candle-container" :style="{minWidth: `${data.boxWidth + 2}px`}">
         <div class="candle-line" :style="candlelineStyle"></div>
         <div class="candle-box" :style="candleBoxStyle">
             <div :style="candleInnerBoxStyle"></div>
         </div>
+        <div v-if="data.isMouseOver" class="full-line" :style="{left: `${data.lineX}px`}"></div>
     </div>
 </template>
 
@@ -21,7 +23,9 @@ const props = defineProps([
     'lowPriceInAll',
     'highPriceInAll',
     'candleMaxHeight',
-])
+]);
+
+const emit = defineEmits(['mouse-over', 'mouse-out']);
 
 let data = ref({
     boxWidth: 7,
@@ -34,6 +38,7 @@ let data = ref({
     lineY: 0,
     lineWidth: 1,
     lineHeight: 0,
+    isMouseOver: false,
 });
 
 const candlelineStyle = computed(() => {
@@ -99,7 +104,25 @@ onMounted(async () => {
     data.value.boxY = boxY;
     data.value.lineY = lineY;
     data.value.lineX = (data.value.boxWidth - data.value.lineWidth) / 2;
-})
+});
+
+function onMouseOver() {
+    data.value.isMouseOver = true;
+    emit('mouse-over', {
+        stockId: props.stockId,
+        candleType: props.candleType,
+        date: props.date,
+        lowPrice: props.lowPrice,
+        highPrice: props.highPrice,
+        openPrice: props.openPrice,
+        closePrice: props.closePrice
+    });
+}
+
+function onMouseOut() {
+    data.value.isMouseOver = false;
+    emit('mouse-out');
+}
 </script>
 
 <style scoped>
@@ -107,7 +130,7 @@ onMounted(async () => {
     position: relative;
     display: inline-block;
     vertical-align: top;
-    margin-right: 2px;
+    margin-right: 0;
 }
 
 .candle-box {
@@ -116,5 +139,11 @@ onMounted(async () => {
 
 .candle-line {
     position: absolute;
+}
+
+.full-line {
+    position: absolute;
+    border-left: 1px dashed #cecece;
+    height: 100%;
 }
 </style>
