@@ -365,7 +365,7 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 <style scoped>
 .kchart-container {
 	background-color: #fff;
-	height: 280px;
+	height: 290px;
 	padding: 15px 20px 20px 20px;
 	box-sizing: border-box;
 	margin-bottom: 20px;
@@ -407,6 +407,6 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
     flex-wrap: nowrap;
     overflow-x: auto;
     width: calc(100vw - 320px);
-	height: 200px; /* 和 data.candleMaxHeight 一样的值 */
+	height: 201px; /* 比 data.candleMaxHeight 高出 1px */
 }
 </style>
