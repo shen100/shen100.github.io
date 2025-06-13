@@ -210,6 +210,9 @@ function onAddOK() {
         stockFullId: data.value.stockFullId,
         stockName: data.value.stockName
     });
+    data.value.stockId = '';
+    data.value.stockFullId = '';
+    data.value.stockName = '';
 }
 
 function onAddCancel() {
