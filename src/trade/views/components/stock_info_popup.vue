@@ -29,9 +29,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { formatLocalYMD } from '../../util/date';
-
 const props = defineProps(['info']);
 
 </script>
@@ -51,7 +48,7 @@ const props = defineProps(['info']);
 .stock-info-popup-txt-box {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
 }
 
 .space {

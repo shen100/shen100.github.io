@@ -15,6 +15,9 @@
 		<div class="y-axis-txt" :style="{top: `${data.yAxis4}px`}">{{ data.yAxisText4 }}</div>
 		<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
 		<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
+		<div class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
+			<div class="y-axis-price-line-price">{{ data.yAxisPriceLinePrice }}</div>
+		</div>
         <div v-if="data.dataLoaded" class="candles-container">
 			<Candle
 				v-for="(item, i) in data.myKList" :key="i"
@@ -29,6 +32,7 @@
 				:candleMaxHeight="data.candleMaxHeight"
 				@mouse-over="(candleData) => onCandleMouseOver(i, candleData)"
 				@mouse-out="() => onCandleMouseOut(i)"
+				@mouse-move="(candleData) => onCandleMouseMove(i, candleData)"
 			/>
         </div>
 		<StockInfoPopup v-if="data.activeCandleData" :info="data.activeCandleData" />
@@ -58,6 +62,8 @@ let data = ref({
     yAxis3: 0,
     yAxis4: 0,
     yAxis5: 0,
+	yAxisPriceLine: 0,
+	yAxisPriceLinePrice: 0,
     yAxisText1: '',
     yAxisText2: '',
     yAxisText3: '',
@@ -371,6 +377,12 @@ function onCandleMouseOver(i, candleData) {
 function onCandleMouseOut(i) {
 	data.value.activeCandleData = null;
 }
+
+function onCandleMouseMove(i, candleData) {
+	data.value.yAxisPriceLine = candleData.y + 55;
+	data.value.yAxisPriceLinePrice = candleData.price;
+}
+
 defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 </script>
 
@@ -412,6 +424,27 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 .y-axis-txt {
 	position: absolute;
 	font-size: 12px;
+}
+
+.y-axis-price-line {
+	position: absolute;
+	z-index: 2;
+	border-top: 1px dashed #cecece;
+	left: 0;
+	width: calc(100vw - 320px);
+	pointer-events: none;
+}
+
+.y-axis-price-line-price {
+	position: absolute;
+	top: -10px;
+	height: 20px;
+	line-height: 20px;
+	font-size: 12px;
+	background-color: #e7e7e7;
+    color: #222;
+    width: 40px;
+    text-align: center;
 }
 
 .candles-container {

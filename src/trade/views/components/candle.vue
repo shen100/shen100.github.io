@@ -1,6 +1,8 @@
 <template>
-    <div :id="'candle-container-' + date" @mouseenter="onMouseOver"
-        @mouseleave="onMouseOut" class="candle-container" :style="{minWidth: `${data.boxWidth + 2}px`}">
+    <div :id="'candle-container-' + date"
+        @mouseenter="onMouseOver"
+        @mouseleave="onMouseOut"
+        @mousemove="onMouseMove" class="candle-container" :style="{minWidth: `${data.boxWidth + 2}px`}">
         <div class="candle-line" :style="candlelineStyle"></div>
         <div class="candle-box" :style="candleBoxStyle">
             <div :style="candleInnerBoxStyle"></div>
@@ -25,7 +27,7 @@ const props = defineProps([
     'candleMaxHeight',
 ]);
 
-const emit = defineEmits(['mouse-over', 'mouse-out']);
+const emit = defineEmits(['mouse-over', 'mouse-out', 'mouse-move']);
 
 let data = ref({
     boxWidth: 7,
@@ -123,6 +125,17 @@ function onMouseOut() {
     data.value.isMouseOver = false;
     emit('mouse-out');
 }
+
+function onMouseMove(event) {
+    if (event.target === event.currentTarget) {
+        let y = Math.min(event.offsetY, props.candleMaxHeight);
+        let priceDt = props.highPriceInAll - props.lowPriceInAll;
+        let price = props.highPriceInAll - (y / props.candleMaxHeight * priceDt);
+        price = price.toFixed(2);
+
+        emit('mouse-move', { price, y });
+    }
+}
 </script>
 
 <style scoped>
@@ -135,15 +148,18 @@ function onMouseOut() {
 
 .candle-box {
     position: absolute;
+    pointer-events: none;
 }
 
 .candle-line {
     position: absolute;
+    pointer-events: none;
 }
 
 .full-line {
     position: absolute;
     border-left: 1px dashed #cecece;
     height: 100%;
+    pointer-events: none;
 }
 </style>
