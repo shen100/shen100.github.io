@@ -115,7 +115,25 @@ onMounted(async () => {
 	}
 });
 
+function resetData() {
+	const defaultData = { count: 0, percent: 0 };
+	data.value.shiZhiList = [];
+	data.value.shiZhi0 = { ...defaultData };
+	data.value.shiZhi100 = { ...defaultData };
+	data.value.shiZhi500 = { ...defaultData };
+	data.value.shiZhi1000 = { ...defaultData };
+	data.value.shiZhi2000 = { ...defaultData };
+	data.value.shiZhi5000 = { ...defaultData };
+	data.value.shiZhi10000 = { ...defaultData };
+	data.value.shiZhi = {
+		amount: 0,
+		count: 0,
+		percent: 0
+	};
+}
+
 async function requestAllStockDetail() {
+	resetData();
 	let allStocks = store.allStocks || [];
 	let concurrence = 100;
 	for (let i = 0; i < allStocks.length; i += concurrence) {
