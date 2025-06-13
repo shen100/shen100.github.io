@@ -10,7 +10,7 @@
             @type-change="onTypeChange"
             @stock-add="onStockAdd"></KChartList>
         <div class="page-container">
-            <Page @on-change="onPageChange" :modelValue="data.page" :total="data.total" simple />
+            <Page @on-change="onPageChange" :modelValue="data.page" :page-size="data.pageSize" :total="data.total" simple />
         </div>
         <div class="space"></div>
     </div>
