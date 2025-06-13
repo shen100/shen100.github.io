@@ -5,11 +5,10 @@
             :end="data.end"
             :page="data.page"
             :stocks="data.curStocks"
-            :addToTrackingEnabled="true"
+            :addToTrackingEnabled="false"
             @start-change="onStartChange"
             @end-change="onEndChange"
-            @type-change="onTypeChange"
-            @stock-add="onStockAdd"></KChartList>
+            @type-change="onTypeChange"></KChartList>
         <div class="page-container">
             <Page @on-change="onPageChange" :modelValue="data.page" :page-size="data.pageSize" :total="data.total" simple />
         </div>
@@ -66,12 +65,6 @@ function onTypeChange(type) {
     store.setSettings(store.settings);
 }
 
-function onStockAdd(stock) {
-    store.addInvestedStock(stock);
-    data.value.total = store.investedStocks.length;
-    let start = (data.value.page - 1) * data.value.pageSize;
-    data.value.curStocks = store.investedStocks.slice(start, start + data.value.pageSize);
-}
 </script>
 
 <style scoped>

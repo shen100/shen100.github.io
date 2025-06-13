@@ -17,7 +17,6 @@
                     <Button @click="onTypeChange('year')" :type="data.type === 'year' ? 'primary' : 'default'">年</Button>
                 </ButtonGroup>
                 <div class="space-all"></div>
-                <Button type="primary" @click="data.addModalVisible = true" icon="md-add">添加</Button>
             </div>
         </Card>
         <div v-if="data.kCharts && data.kCharts.length">

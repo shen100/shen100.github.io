@@ -8,7 +8,8 @@
             :addToTrackingEnabled="true"
             @start-change="onStartChange"
             @end-change="onEndChange"
-            @type-change="onTypeChange"></KChartList>
+            @type-change="onTypeChange"
+            @stock-add="onStockAdd"></KChartList>
         <div class="page-container">
             <Page @on-change="onPageChange" :modelValue="data.page" :page-size="data.pageSize" :total="data.total" simple />
         </div>
@@ -63,6 +64,10 @@ function onPageChange(page) {
 function onTypeChange(type) {
     store.settings.allStockKChart.type = type;
     store.setSettings(store.settings);
+}
+
+function onStockAdd(stock) {
+    store.addTrackedStock(stock);
 }
 </script>
 
