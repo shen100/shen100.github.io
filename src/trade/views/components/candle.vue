@@ -88,12 +88,14 @@ onMounted(async () => {
     let priceDt = props.highPriceInAll - props.lowPriceInAll;
     let lineRate = (props.highPrice - props.lowPrice) / priceDt;
     let boxRate = Math.abs((props.closePrice - props.openPrice) / priceDt);
-    data.value.lineHeight = props.candleMaxHeight * lineRate; // 每根蜡烛的最高价和最低价连线的高度
-    data.value.boxHeight = props.candleMaxHeight * boxRate; // 每根蜡烛的开盘价和收盘价的实体高度
+    data.value.lineHeight = Math.floor(props.candleMaxHeight * lineRate); // 每根蜡烛的最高价和最低价连线的高度
+    data.value.boxHeight = Math.floor(props.candleMaxHeight * boxRate); // 每根蜡烛的开盘价和收盘价的实体高度
 	
     let lineY = (props.highPriceInAll - props.highPrice) / priceDt * props.candleMaxHeight;
+    lineY = Math.floor(lineY);
     // 计算candle-box的Y坐标, 用 开盘价、收盘价的最大值同 highPriceInAll 比较
     let boxY = (props.highPriceInAll - Math.max(props.openPrice, props.closePrice)) / priceDt * props.candleMaxHeight;
+    boxY = Math.floor(boxY);
     data.value.boxY = boxY;
     data.value.lineY = lineY;
     data.value.lineX = (data.value.boxWidth - data.value.lineWidth) / 2;
