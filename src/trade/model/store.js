@@ -20,12 +20,15 @@ let settings = {
         page: 1
     },
 };
+
+let tuShareToken = '';
 let investedStocks = [];
 let trackedStocks = [];
 let allStocks = [];
 let stockMarketStats = null;
 
 function init() {
+    tuShareToken = localStorage.getItem('tradeTuShareToken') || '';
     stockMarketStats = JSON.parse(localStorage.getItem('tradeStockMarketStats') || 'null');
     settings = JSON.parse(localStorage.getItem('tradeSettings') || JSON.stringify(settings));
     investedStocks = JSON.parse(localStorage.getItem('tradeInvestedStocks') || '[]');
@@ -49,6 +52,7 @@ function init() {
 init();
 
 export default {
+    tuShareToken,
     settings,
     trackedStocks,
     investedStocks,
@@ -72,5 +76,8 @@ export default {
     },
     updateStockMarketStats: function(stats) {
         localStorage.setItem('tradeStockMarketStats', JSON.stringify(stats));
+    },
+    updateCompositeIndex: function(compositeIndex) {
+        localStorage.setItem('tradeCompositeIndex', JSON.stringify(compositeIndex));
     }
 }

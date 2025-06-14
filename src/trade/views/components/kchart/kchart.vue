@@ -46,9 +46,9 @@
 <script setup>
 import axios from 'axios';
 import { onMounted, ref } from 'vue'
-import { findFromRight } from '../../util/str';
-import Candle from '../components/candle.vue';
-import StockInfoPopup from '../components/stock_info_popup.vue';
+import { findFromRight } from '../../../util/str';
+import Candle from './candle.vue';
+import StockInfoPopup from './stock_info_popup.vue';
 
 const emit = defineEmits(['add-to-tracking']);
 

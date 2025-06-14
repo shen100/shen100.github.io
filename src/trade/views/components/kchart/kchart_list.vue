@@ -38,10 +38,9 @@
 
 <script setup>
 import { nextTick, onMounted, ref, watch } from 'vue';
-import { Message } from 'view-ui-plus';
 import KChart from './kchart.vue';
-import { formatLocalYMD, parseLocalYMDString } from '../../util/date';
-import { replaceAllSpace } from '../../util/str';
+import { formatLocalYMD, parseLocalYMDString } from '../../../util/date';
+import { replaceAllSpace } from '../../../util/str';
 
 const emit = defineEmits(['start-change', 'end-change', 'type-change', 'stock-add']);
 

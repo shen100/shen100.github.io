@@ -31,6 +31,12 @@
 				</template>
 			</Table>
 		</Card>
+		<Card>
+			<div class="total-shizhi-txt">
+				大盘指数
+				<Icon @click="requestAllDailyBasic" type="md-refresh" style="cursor: pointer;" />
+			</div>
+		</Card>
     </div>
 </template>
 
@@ -39,7 +45,6 @@ import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import store from '../model/store';
 import { formatLocalYMD } from '../util/date';
-import { Card } from 'view-ui-plus';
 
 let data = ref({
 	columns: [
@@ -72,7 +77,6 @@ let data = ref({
 			slot: 'shiZhi10000'
 		}
 	],
-	shiZhiList: [],
 	shiZhi0: { // 100亿以下
 		count: 0,
 		percent: 0,
@@ -101,11 +105,12 @@ let data = ref({
 		count: 0,
 		percent: 0,
 	},
+	shiZhiList: [], // 市值分布列表
 	shiZhi: {
-		amount: 0, // 总市值
-		count: 0,
-		percent: 0,
-	}
+		amount: 0, // 所有公司的总市值
+		count: 0, // 一共有多少个公司
+	},
+	compositeIndex: null // 综合指数
 })
 
 onMounted(async () => {
@@ -128,7 +133,6 @@ function resetData() {
 	data.value.shiZhi = {
 		amount: 0,
 		count: 0,
-		percent: 0
 	};
 }
 
@@ -187,7 +191,7 @@ async function requestAllStockDetail() {
 	store.updateStockMarketStats({
 		shiZhi: data.value.shiZhi,
 		shiZhiList: data.value.shiZhiList,
-		updatedAt: formatLocalYMD(new Date())
+		updatedAt: new Date().toISOString()
 	});
 }
 
@@ -201,6 +205,115 @@ async function requestStockDetail(stock) {
 	return {
 		stockId: stock.stockId,
 		zongShiZhi: Number(arr[45] || '0'), // 总市值
+	}
+}
+
+function sleep(timeout) {
+	return new Promise(resolve => setTimeout(resolve, timeout));
+}
+
+async function requestAllDailyBasic() {
+	let allStocks = store.allStocks || [];
+	let concurrence = 200;
+	let compositeIndex = {};
+	for (let i = 0; i < allStocks.length; i += concurrence) {
+		console.log('requestAllDailyBasic', i, new Date().toISOString());
+		let startTime = new Date().getTime();
+		let tasks = [];
+		for (let j = i; j < i + concurrence && j < allStocks.length; j++) {
+			tasks.push(requestDailyBasic(allStocks[j]));
+		}
+		let list = await Promise.all(tasks);
+		for (let stock of list) {
+			if (!stock) {
+				continue;
+			}
+			stock.items.forEach(item => {
+				compositeIndex[item.trade_date] = compositeIndex[item.trade_date] || {
+					index0: { amount: 0, count: 0 },
+					index100: { amount: 0, count: 0 },
+					index500: { amount: 0, count: 0 },
+					index1000: { amount: 0, count: 0 },
+					index2000: { amount: 0, count: 0 },
+					index5000: { amount: 0, count: 0 },
+					index10000: { amount: 0, count: 0 }
+				};
+				if (item.total_mv < 100) {
+					compositeIndex[item.trade_date]['index0'].count += 1;
+					compositeIndex[item.trade_date]['index0'].amount += item.total_mv;
+				} else if (item.total_mv < 500) {
+					compositeIndex[item.trade_date]['index100'].count += 1;
+					compositeIndex[item.trade_date]['index100'].amount += item.total_mv;
+				} else if (item.total_mv < 1000) {
+					compositeIndex[item.trade_date]['index500'].count += 1;
+					compositeIndex[item.trade_date]['index500'].amount += item.total_mv;
+				} else if (item.total_mv < 2000) {
+					compositeIndex[item.trade_date]['index1000'].count += 1;
+					compositeIndex[item.trade_date]['index1000'].amount += item.total_mv;
+				} else if (item.total_mv < 5000) {
+					compositeIndex[item.trade_date]['index2000'].count += 1;
+					compositeIndex[item.trade_date]['index2000'].amount += item.total_mv;
+				} else if (item.total_mv < 10000) {
+					compositeIndex[item.trade_date]['index5000'].count += 1;
+					compositeIndex[item.trade_date]['index5000'].amount += item.total_mv;
+				} else {
+					compositeIndex[item.trade_date]['index10000'].count += 1;
+					compositeIndex[item.trade_date]['index10000'].amount += item.total_mv;
+				}
+			});
+		}
+		let endTime = new Date().getTime();
+		let timeout = 60 - (endTime - startTime);
+		if (timeout <= 0) {
+			timeout = 0;
+		}
+		timeout += 1;
+		await sleep(timeout * 1000);
+	}
+	console.log('compositeIndex', compositeIndex);
+	console.log('compositeIndex', JSON.stringify(compositeIndex));
+
+	store.updateCompositeIndex({
+		compositeIndex,
+		updatedAt: new Date().toISOString()
+	});
+}
+
+async function requestDailyBasic(stock) {
+	let url = 'https://api.tushare.pro';
+	let before = 20; // 查询多少年前的数据
+	let startDate = formatLocalYMD(new Date(new Date().getTime() - before * 365 * 24 * 3600 * 1000)).replace(/-/g, '');
+	let endDate = formatLocalYMD(new Date()).replace(/-/g, '');
+	const reqData = {
+		method: 'post',
+		url,
+		headers: {
+			'content-type': 'application/json',
+		},
+		data: {
+			token: store.tuShareToken,
+			api_name: 'daily_basic',
+			params: {
+				ts_code: stock.ts_code,
+				start_date: startDate,
+				end_date: endDate
+			}
+		}
+	};
+	const res = await axios(reqData);
+	if (!(res.data.code === 0 && res.data.data && res.data.data.items)) {
+		return null;
+	}
+	let items = res.data.data.items.map((item) => {
+		return {
+			trade_date: item[1], // 交易日期
+			total_mv: item[16] / 10000, // 总市值原始数据是万元，转换为亿
+		}
+	});
+	return {
+		stockId: stock.stockId,
+		ts_code: stock.ts_code,
+		items
 	}
 }
 

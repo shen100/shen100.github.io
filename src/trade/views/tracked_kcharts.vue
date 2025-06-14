@@ -18,7 +18,7 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import KChartList from './components/kchart_list.vue';
+import KChartList from './components/kchart/kchart_list.vue';
 import store from '../model/store';
 import { formatLocalYMD } from '../util/date';
 
