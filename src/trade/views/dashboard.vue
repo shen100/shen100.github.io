@@ -8,25 +8,25 @@
 			</div>
 			<Table border :columns="data.columns" :data="data.shiZhiList">
 				<template #shiZhi0="{ row }">
-					<div>{{ row.shiZhi0.count }}家 ({{ row.shiZhi0.percent }}%)</div>
+					<div class="goto-kcharts" @click="gotoKCharts('shiZhi0')">{{ row.shiZhi0.count }}家 ({{ row.shiZhi0.percent }}%)</div>
 				</template>
 				<template #shiZhi1="{ row }">
-					<div>{{ row.shiZhi1.count }}家 ({{ row.shiZhi1.percent }}%)</div>
+					<div class="goto-kcharts" @click="gotoKCharts('shiZhi1')">{{ row.shiZhi1.count }}家 ({{ row.shiZhi1.percent }}%)</div>
 				</template>
 				<template #shiZhi2="{ row }">
-					<div>{{ row.shiZhi2.count }}家 ({{ row.shiZhi2.percent }}%)</div>
+					<div class="goto-kcharts" @click="gotoKCharts('shiZhi2')">{{ row.shiZhi2.count }}家 ({{ row.shiZhi2.percent }}%)</div>
 				</template>
 				<template #shiZhi3="{ row }">
-					<div>{{ row.shiZhi3.count }}家 ({{ row.shiZhi3.percent }}%)</div>
+					<div class="goto-kcharts" @click="gotoKCharts('shiZhi3')">{{ row.shiZhi3.count }}家 ({{ row.shiZhi3.percent }}%)</div>
 				</template>
 				<template #shiZhi4="{ row }">
-					<div>{{ row.shiZhi4.count }}家 ({{ row.shiZhi4.percent }}%)</div>
+					<div class="goto-kcharts" @click="gotoKCharts('shiZhi4')">{{ row.shiZhi4.count }}家 ({{ row.shiZhi4.percent }}%)</div>
 				</template>
 				<template #shiZhi5="{ row }">
-					<div>{{ row.shiZhi5.count }}家 ({{ row.shiZhi5.percent }}%)</div>
+					<div class="goto-kcharts" @click="gotoKCharts('shiZhi5')">{{ row.shiZhi5.count }}家 ({{ row.shiZhi5.percent }}%)</div>
 				</template>
 				<template #shiZhi6="{ row }">
-					<div @click="gotoKCharts('shiZhi6')">{{ row.shiZhi6.count }}家 ({{ row.shiZhi6.percent }}%)</div>
+					<div class="goto-kcharts" @click="gotoKCharts('shiZhi6')">{{ row.shiZhi6.count }}家 ({{ row.shiZhi6.percent }}%)</div>
 				</template>
 			</Table>
 		</Card>
@@ -492,5 +492,13 @@ function gotoKCharts(shiZhiType) {
 .refresh {
 	margin-left: 10px;
 	margin-right: 5px;
+}
+
+.goto-kcharts {
+	cursor: pointer;
+}
+
+.goto-kcharts:hover {
+	color: #409eff;
 }
 </style>

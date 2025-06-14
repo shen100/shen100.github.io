@@ -12,6 +12,7 @@
             @stock-add="onStockAdd"></KChartList>
         <div class="page-container">
             <Page @on-change="onPageChange" :modelValue="data.page" :page-size="data.pageSize" :total="data.total" simple />
+            <div style="margin-left: 10px;">共 {{ data.total }} 条</div>
         </div>
         <div class="space"></div>
     </div>
@@ -144,7 +145,9 @@ function onStockAdd(stock) {
 <style scoped>
 .page-container {
     margin-top: 20px;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .space {
