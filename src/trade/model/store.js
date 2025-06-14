@@ -26,6 +26,47 @@ let investedStocks = [];
 let trackedStocks = [];
 let allStocks = [];
 let stockMarketStats = null;
+let compositeIndex = null;
+
+function initCompositeIndex() {
+    compositeIndex = JSON.parse(localStorage.getItem('tradeCompositeIndex') || 'null');
+    if (!compositeIndex) {
+        return;
+    }
+    let dateMap = {};
+    // compositeIndex 为
+    // {
+    //     "index0": {
+    //         "20050620": {
+    //             "amount": 0, 
+    //             "count": 0
+    //         }
+    //     }
+    // }
+    for (let key in compositeIndex) {
+        // key index0
+        if (key === 'updatedAt') {
+            continue;
+        }
+        // date 20050620
+        for (let date in compositeIndex[key]) {
+            dateMap[date] = true;
+        }
+    }
+    for (let key in compositeIndex) {
+        if (key === 'updatedAt') {
+            continue;
+        }
+        for (let date in dateMap) {
+            if (!compositeIndex[key][date]) {
+                compositeIndex[key][date] = {
+                    amount: 0,
+                    count: 0,
+                };
+            }
+        }
+    }
+}
 
 function init() {
     tuShareToken = localStorage.getItem('tradeTuShareToken') || '';
@@ -47,6 +88,8 @@ function init() {
         });
         return stockData;
     });
+
+    initCompositeIndex();
 }
 
 init();
@@ -58,6 +101,7 @@ export default {
     investedStocks,
     allStocks,
     stockMarketStats,
+    compositeIndex,
     setSettings: function(newSettings) {
         settings = newSettings;
         localStorage.setItem('tradeSettings', JSON.stringify(settings));

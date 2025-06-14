@@ -3,9 +3,10 @@
 		<Card>
 			<div class="total-shizhi-txt">
 				<template v-if="data.shiZhi && data.shiZhi.amount">
-					总市值: {{ (data.shiZhi.amount / 10000).toFixed(2) }}万亿 &nbsp;({{ data.shiZhi.count }}家)
+					<div>总市值: {{ (data.shiZhi.amount / 10000).toFixed(2) }}万亿 &nbsp;({{ data.shiZhi.count }}家) </div>
+					<Icon class="refresh" @click="requestAllStockDetail" type="md-refresh" style="cursor: pointer;" />
+					<div class="updated-at">{{ data.updatedAt1 ? '更新于 ' + data.updatedAt1 : '' }}</div>
 				</template>
-				<Icon @click="requestAllStockDetail" type="md-refresh" style="cursor: pointer;" />
 			</div>
 			<Table border :columns="data.columns" :data="data.shiZhiList">
 				<template #shiZhi0="{ row }">
@@ -31,11 +32,21 @@
 				</template>
 			</Table>
 		</Card>
+		<Card style="margin: 20px 0;">
+			<div class="total-shizhi-txt">
+				<div>大盘市值</div>
+				<Icon class="refresh" @click="requestAllDailyBasic" type="md-refresh" style="cursor: pointer;" />
+				<div class="updated-at">{{ data.updatedAt2 ? '更新于 ' + data.updatedAt2 : '' }}</div>
+			</div>
+			<ECharts v-if="chartOptions.series.length" :options="chartOptions" />
+		</Card>
 		<Card>
 			<div class="total-shizhi-txt">
-				大盘指数
-				<Icon @click="requestAllDailyBasic" type="md-refresh" style="cursor: pointer;" />
+				<div>大盘指数</div>
+				<Icon class="refresh" @click="requestAllDailyBasic" type="md-refresh" style="cursor: pointer;" />
+				<div class="updated-at">{{ data.updatedAt2 ? '更新于 ' + data.updatedAt2 : '' }}</div>
 			</div>
+			<ECharts v-if="zhiShuChartOptions.series.length" :options="zhiShuChartOptions" />
 		</Card>
     </div>
 </template>
@@ -43,6 +54,7 @@
 <script setup>
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
+import ECharts from './components/common/echarts.vue'
 import store from '../model/store';
 import { formatLocalYMD } from '../util/date';
 
@@ -110,15 +122,118 @@ let data = ref({
 		amount: 0, // 所有公司的总市值
 		count: 0, // 一共有多少个公司
 	},
-	compositeIndex: null // 综合指数
-})
+	updatedAt1: '',
+	compositeIndex: null, // 综合指数
+	updatedAt2: ''
+});
+
+let legendData = [
+	'100亿以下', '[100, 500)', '[500, 1000)', '[1000, 2000)', '[2000, 5000)', '[5000, 1万亿)', '1万亿以上'
+];
+
+const chartOptions = ref({
+	title: {
+		text: ' '
+	},
+	tooltip: {
+		trigger: 'axis'
+	},
+	legend: {
+		data: legendData
+	},
+	xAxis: {
+		type: 'category',
+		data: []
+	},
+	yAxis: {
+		type: 'value'
+	},
+	series: []
+});
+
+const zhiShuChartOptions = ref({
+	title: {
+		text: ' '
+	},
+	tooltip: {
+		trigger: 'axis'
+	},
+	legend: {
+		data: legendData
+	},
+	xAxis: {
+		type: 'category',
+		data: []
+	},
+	yAxis: {
+		type: 'value'
+	},
+	series: []
+});
 
 onMounted(async () => {
 	if (store.stockMarketStats) {
 		data.value.shiZhi = store.stockMarketStats.shiZhi;
 		data.value.shiZhiList = store.stockMarketStats.shiZhiList;
+		data.value.updatedAt1 = store.stockMarketStats.updatedAt;
 	}
+	updateChart();
 });
+
+function updateChart() {
+	if (!store.compositeIndex) {
+		return;
+	}
+	data.value.updatedAt2 = store.compositeIndex.updatedAt;
+	let indexArr = [
+		'index0',
+		'index100',
+		'index500',
+		'index1000',		
+		'index2000',
+		'index5000',
+		'index10000'
+	];
+	let series = [];
+	let zhiShuSeries = [];
+	let allDates;
+	for (let i = 0; i < indexArr.length; i++) {
+		// indexData 为 { '20050620' { amount: 0, count: 0 } }
+		let indexData = store.compositeIndex[indexArr[i]];
+		let arr = [];
+		for (let date in indexData) {
+			arr.push({
+				date,
+				amount: indexData[date].amount,
+				count: indexData[date].count
+			});
+		}
+		arr.sort((a, b) => a.date > b.date ? 1 : -1);
+		series.push({
+			name: legendData[i],
+			type: 'line',
+			data: arr.map(item => item.amount),
+		});
+		zhiShuSeries.push({
+			name: legendData[i],
+			type: 'line',
+			data: arr.map(item => item.amount / item.count),
+		});
+
+		if (!allDates) {
+			allDates = [];
+			for (let i = 0; i < arr.length; i++) {
+				allDates.push(arr[i].date);
+			}
+		}
+	}
+	console.log('allDates', allDates);
+	chartOptions.value.xAxis.data = allDates;
+	chartOptions.value.series = series;
+
+	zhiShuChartOptions.value.xAxis.data = allDates;
+	zhiShuChartOptions.value.series = zhiShuSeries;
+}
 
 function resetData() {
 	const defaultData = { count: 0, percent: 0 };
@@ -215,7 +330,15 @@ function sleep(timeout) {
 async function requestAllDailyBasic() {
 	let allStocks = store.allStocks || [];
 	let concurrence = 200;
-	let compositeIndex = {};
+	let compositeIndex = {
+		index0: {},
+		index100: {},
+		index500: {},
+		index1000: {},
+		index2000: {},
+		index5000: {},
+		index10000: {},
+	};
 	for (let i = 0; i < allStocks.length; i += concurrence) {
 		console.log('requestAllDailyBasic', i, new Date().toISOString());
 		let startTime = new Date().getTime();
@@ -228,38 +351,34 @@ async function requestAllDailyBasic() {
 			if (!stock) {
 				continue;
 			}
+			if (!(stock.items && stock.items.length)) {
+				continue;
+			}
+			// 用最新的市值来对公司进行分类，分到同一类的公司, 计算它们每天的市值合计、平均指数
+			const newTotalMV = stock.items[stock.items.length - 1].total_mv;
+			let indexNum = '';
+			if (newTotalMV < 100) {
+				indexNum = 'index0';
+			} else if (newTotalMV < 500) {
+				indexNum = 'index100';
+			} else if (newTotalMV < 1000) {
+				indexNum = 'index500';
+			} else if (newTotalMV < 2000) {
+				indexNum = 'index1000';
+			} else if (newTotalMV < 5000) {
+				indexNum = 'index2000';
+			} else if (newTotalMV < 10000) {
+				indexNum = 'index5000';
+			} else {
+				indexNum = 'index10000';
+			}
 			stock.items.forEach(item => {
-				compositeIndex[item.trade_date] = compositeIndex[item.trade_date] || {
-					index0: { amount: 0, count: 0 },
-					index100: { amount: 0, count: 0 },
-					index500: { amount: 0, count: 0 },
-					index1000: { amount: 0, count: 0 },
-					index2000: { amount: 0, count: 0 },
-					index5000: { amount: 0, count: 0 },
-					index10000: { amount: 0, count: 0 }
+				compositeIndex[indexNum][item.trade_date] = compositeIndex[indexNum][item.trade_date] || {
+					amount: 0,
+					count: 0
 				};
-				if (item.total_mv < 100) {
-					compositeIndex[item.trade_date]['index0'].count += 1;
-					compositeIndex[item.trade_date]['index0'].amount += item.total_mv;
-				} else if (item.total_mv < 500) {
-					compositeIndex[item.trade_date]['index100'].count += 1;
-					compositeIndex[item.trade_date]['index100'].amount += item.total_mv;
-				} else if (item.total_mv < 1000) {
-					compositeIndex[item.trade_date]['index500'].count += 1;
-					compositeIndex[item.trade_date]['index500'].amount += item.total_mv;
-				} else if (item.total_mv < 2000) {
-					compositeIndex[item.trade_date]['index1000'].count += 1;
-					compositeIndex[item.trade_date]['index1000'].amount += item.total_mv;
-				} else if (item.total_mv < 5000) {
-					compositeIndex[item.trade_date]['index2000'].count += 1;
-					compositeIndex[item.trade_date]['index2000'].amount += item.total_mv;
-				} else if (item.total_mv < 10000) {
-					compositeIndex[item.trade_date]['index5000'].count += 1;
-					compositeIndex[item.trade_date]['index5000'].amount += item.total_mv;
-				} else {
-					compositeIndex[item.trade_date]['index10000'].count += 1;
-					compositeIndex[item.trade_date]['index10000'].amount += item.total_mv;
-				}
+				compositeIndex[indexNum][item.trade_date].count += 1;
+				compositeIndex[indexNum][item.trade_date].amount += item.total_mv;
 			});
 		}
 		let endTime = new Date().getTime();
@@ -270,11 +389,9 @@ async function requestAllDailyBasic() {
 		timeout += 1000;
 		await sleep(timeout);
 	}
-	console.log('compositeIndex', compositeIndex);
-	console.log('compositeIndex', JSON.stringify(compositeIndex));
 
 	store.updateCompositeIndex({
-		compositeIndex,
+		...compositeIndex,
 		updatedAt: new Date().toISOString()
 	});
 }
@@ -307,7 +424,7 @@ async function requestDailyBasic(stock) {
 	let items = res.data.data.items.map((item) => {
 		return {
 			trade_date: item[1], // 交易日期
-			total_mv: item[16] / 10000, // 总市值原始数据是万元，转换为亿
+			total_mv: item[16], // / 10000, // 总市值原始数据是万元，转换为亿
 		}
 	});
 	return {
@@ -324,6 +441,19 @@ async function requestDailyBasic(stock) {
 	font-size: 20px;
 	font-weight: bold;
 	margin-bottom: 20px;
-	text-align: center;
+	height: 36px;
+	display: flex;
+	justify-content: center;  /* 水平居中 */
+  	align-items: center;     /* 垂直居中（如果需要） */
+}
+
+.updated-at {
+	font-size: 14px;
+	font-weight: 400;
+}
+
+.refresh {
+	margin-left: 10px;
+	margin-right: 5px;
 }
 </style>
