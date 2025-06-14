@@ -263,12 +263,12 @@ async function requestAllDailyBasic() {
 			});
 		}
 		let endTime = new Date().getTime();
-		let timeout = 60 - (endTime - startTime);
+		let timeout = 60 * 1000 - (endTime - startTime);
 		if (timeout <= 0) {
 			timeout = 0;
 		}
-		timeout += 1;
-		await sleep(timeout * 1000);
+		timeout += 1000;
+		await sleep(timeout);
 	}
 	console.log('compositeIndex', compositeIndex);
 	console.log('compositeIndex', JSON.stringify(compositeIndex));
