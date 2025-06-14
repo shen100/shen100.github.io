@@ -19,12 +19,19 @@ let settings = {
         end: formatLocalYMD(new Date()), // 2025-06-12
         page: 1
     },
+    selectedStockKChart: {
+        type: 'year',
+        start: '2000-01-01',
+        end: formatLocalYMD(new Date()), // 2025-06-12
+        page: 1
+    },
 };
 
 let tuShareToken = '';
 let investedStocks = [];
 let trackedStocks = [];
 let allStocks = [];
+let allStocksWithZongShiZhi = [];
 let stockMarketStats = null;
 let compositeIndex = null;
 
@@ -89,6 +96,8 @@ function init() {
         return stockData;
     });
 
+    allStocksWithZongShiZhi = JSON.parse(localStorage.getItem('tradeAllStocksWithZongShiZhi') || '[]');
+
     initCompositeIndex();
 }
 
@@ -97,14 +106,34 @@ init();
 export default {
     tuShareToken,
     settings,
-    trackedStocks,
-    investedStocks,
     allStocks,
     stockMarketStats,
     compositeIndex,
+    getInvestedStocks: function() {
+        return investedStocks;
+    },
+    getTrackedStocks: function() {
+        return trackedStocks;
+    },
+    getSelectedStocks: function() {
+        let selectedStocks = JSON.parse(localStorage.getItem('tradeSelectedStocks') || '[]');
+        if (!selectedStocks) {
+            return [];
+        }
+        return selectedStocks;
+    },
+    setSelectedStocks: function(selectedStocks) {
+        localStorage.setItem('tradeSelectedStocks', JSON.stringify(selectedStocks));
+    },
     setSettings: function(newSettings) {
         settings = newSettings;
         localStorage.setItem('tradeSettings', JSON.stringify(settings));
+    },
+    setAllStocksWithZongShiZhi: function(stocks) {
+        localStorage.setItem('tradeAllStocksWithZongShiZhi', JSON.stringify(stocks));
+    },
+    getAllStocksWithZongShiZhi: function() {
+        return allStocksWithZongShiZhi;
     },
     addTrackedStock: function(stock) {
         if (!trackedStocks.some(s => s.stockId === stock.stockId)) {

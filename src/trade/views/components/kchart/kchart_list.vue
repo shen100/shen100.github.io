@@ -122,8 +122,6 @@ async function onRequest(type) {
     if (!(props.stocks && props.stocks.length > 0)) {
         return;
     }
-    console.log("onRequest", type, data.value.start, data.value.end);
-    console.log("onRequest", typeof type, typeof data.value.start, typeof data.value.end);
 
     data.value.type = type;
     let startStr = data.value.start; // 2025-06-12

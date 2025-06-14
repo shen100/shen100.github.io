@@ -36,7 +36,7 @@ watch(() => route.path, (newPath) => {
         <div v-else class="main-content">
             <div class="main-content-layout-header"></div>
             <div class="main-content-layout-content">
-                <RouterView />
+                <RouterView :key="route.name"/>
             </div>
         </div>
     </div>

@@ -2,7 +2,7 @@
     <div class="kchart-container">
 		<div class="stock-name" @mouseleave="onStockNameMouseLeave">
 			<div class="stock-name-txt" @mouseenter="onStockNameMouseEnter">
-				{{ data.stockData ? `${data.stockName}&nbsp;(总市值&nbsp;${data.stockData.zongShiZhi})` : data.stockName }}
+				{{ data.stockData ? `${data.stockName}&nbsp;(总市值&nbsp;${zongShiZhi})` : data.stockName }}
 			</div>
 			<div v-if="props.addToTrackingEnabled" class="add-to-tracking">
 				<Button v-if="data.addToTrackingBtnVisible" @click="onShowAddToTrackingModal" type="primary" size="small">加入跟踪K线</Button>
@@ -45,7 +45,7 @@
 
 <script setup>
 import axios from 'axios';
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { findFromRight } from '../../../util/str';
 import Candle from './candle.vue';
 import StockInfoPopup from './stock_info_popup.vue';
@@ -88,6 +88,13 @@ onMounted(async () => {
 
 });
 
+const zongShiZhi = computed(() => {
+	if (data.value.stockData && data.value.stockData.zongShiZhi > 10000) {
+		return (data.value.stockData.zongShiZhi / 10000).toFixed(2) + '万亿';
+	}
+	return data.value.stockData ? data.value.stockData.zongShiZhi + '亿' : '';
+})
+
 function resetData(stock, start, end, count) {
 	data.value.dataLoaded = false;
 	data.value.stock = stock;
@@ -110,7 +117,7 @@ async function requestStockDetail(stock) {
 	let arr = res.data[stock.stockFullId] || [];
 	data.value.stockData = {
 		stockId: stock.stockId,
-		zongShiZhi: Number(arr[45] || '0').toFixed(2) + '亿', // 总市值
+		zongShiZhi: Number(arr[45] || '0').toFixed(2), // 总市值
 	}
 }
 

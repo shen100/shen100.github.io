@@ -21,6 +21,9 @@ import { onMounted, ref } from 'vue';
 import KChartList from './components/kchart/kchart_list.vue';
 import store from '../model/store';
 import { formatLocalYMD } from '../util/date';
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 let data = ref({
     type: 'day',
@@ -33,6 +36,7 @@ let data = ref({
 })
 
 onMounted(async () => {
+    console.log('route.name', route.name)
     data.value.type = store.settings.investedStockKChart.type;
     data.value.start = store.settings.investedStockKChart.start;
     data.value.end = store.settings.investedStockKChart.end;

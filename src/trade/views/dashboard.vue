@@ -26,7 +26,7 @@
 					<div>{{ row.shiZhi5.count }}家 ({{ row.shiZhi5.percent }}%)</div>
 				</template>
 				<template #shiZhi6="{ row }">
-					<div>{{ row.shiZhi6.count }}家 ({{ row.shiZhi6.percent }}%)</div>
+					<div @click="gotoKCharts('shiZhi6')">{{ row.shiZhi6.count }}家 ({{ row.shiZhi6.percent }}%)</div>
 				</template>
 			</Table>
 		</Card>
@@ -55,6 +55,9 @@ import { onMounted, ref } from 'vue';
 import ECharts from './components/common/echarts.vue'
 import store from '../model/store';
 import { formatLocalYMD, utcStringToLocalString } from '../util/date';
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 let data = ref({
 	columns: [
@@ -254,6 +257,7 @@ async function requestAllStockDetail() {
 	resetData();
 	let allStocks = store.allStocks || [];
 	let concurrence = 100;
+	let allStocksWithZongShiZhi = [];
 	for (let i = 0; i < allStocks.length; i += concurrence) {
 		let tasks = [];
 		console.log('requestAllStockDetail', i, new Date().toISOString());
@@ -263,6 +267,7 @@ async function requestAllStockDetail() {
 		let list = await Promise.all(tasks);
 		for (let stock of list) {
 			if (stock) {
+				allStocksWithZongShiZhi.push(stock);
 				data.value.shiZhi.count += 1;
 				data.value.shiZhi.amount += stock.zongShiZhi || 0;
 				if (stock.zongShiZhi < 100) {
@@ -307,6 +312,7 @@ async function requestAllStockDetail() {
 		shiZhiList: data.value.shiZhiList,
 		updatedAt: new Date().toISOString()
 	});
+	store.setAllStocksWithZongShiZhi(allStocksWithZongShiZhi);
 	console.log('requestAllStockDetail done');
 }
 
@@ -319,6 +325,8 @@ async function requestStockDetail(stock) {
 	let arr = res.data[stock.stockFullId] || [];
 	return {
 		stockId: stock.stockId,
+		stockFullId: stock.stockFullId,
+		stockName: stock.stockName,
 		zongShiZhi: Number(arr[45] || '0'), // 总市值
 	}
 }
@@ -442,6 +450,27 @@ async function requestDailyBasic(stock) {
 	}
 }
 
+function gotoKCharts(shiZhiType) {
+	let allStocks = store.getAllStocksWithZongShiZhi() || [];
+	let list = [];
+	if (shiZhiType === 'shiZhi0') {
+		list = allStocks.filter(stock => stock.zongShiZhi < 100);
+	} else if (shiZhiType === 'shiZhi1') {
+		list = allStocks.filter(stock => stock.zongShiZhi >= 100 && stock.zongShiZhi < 500);
+	} else if (shiZhiType === 'shiZhi2') {
+		list = allStocks.filter(stock => stock.zongShiZhi >= 500 && stock.zongShiZhi < 1000);
+	} else if (shiZhiType === 'shiZhi3') {
+		list = allStocks.filter(stock => stock.zongShiZhi >= 1000 && stock.zongShiZhi < 2000);
+	} else if (shiZhiType === 'shiZhi4') {
+		list = allStocks.filter(stock => stock.zongShiZhi >= 2000 && stock.zongShiZhi < 5000);
+	} else if (shiZhiType === 'shiZhi5') {
+		list = allStocks.filter(stock => stock.zongShiZhi >= 5000 && stock.zongShiZhi < 10000);
+	} else if (shiZhiType === 'shiZhi6') {
+		list = allStocks.filter(stock => stock.zongShiZhi >= 10000);
+	}
+	store.setSelectedStocks(list);
+	router.push({ path: '/trade/selected_kcharts' });
+}
 </script>
 
 <style scoped>
