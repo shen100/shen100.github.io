@@ -54,7 +54,7 @@ import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import ECharts from './components/common/echarts.vue'
 import store from '../model/store';
-import { formatLocalYMD } from '../util/date';
+import { formatLocalYMD, utcStringToLocalString } from '../util/date';
 
 let data = ref({
 	columns: [
@@ -126,7 +126,7 @@ let data = ref({
 });
 
 let legendData = [
-	'小于100亿', '[100亿, 500亿)', '[500亿, 1000亿)', '[1000亿, 2000亿)', '[2000亿, 5000亿)', '[5000亿, 1万亿)', '1万亿以上', '全部'
+	'全部', '小于100亿', '[100亿, 500亿)', '[500亿, 1000亿)', '[1000亿, 2000亿)', '[2000亿, 5000亿)', '[5000亿, 1万亿)', '1万亿以上'
 ];
 
 const chartOptions = ref({
@@ -173,7 +173,7 @@ onMounted(async () => {
 	if (store.stockMarketStats) {
 		data.value.shiZhi = store.stockMarketStats.shiZhi;
 		data.value.shiZhiList = store.stockMarketStats.shiZhiList;
-		data.value.updatedAt1 = store.stockMarketStats.updatedAt;
+		data.value.updatedAt1 = utcStringToLocalString(store.stockMarketStats.updatedAt);
 	}
 	updateChart();
 });
@@ -182,8 +182,9 @@ function updateChart() {
 	if (!store.compositeIndex) {
 		return;
 	}
-	data.value.updatedAt2 = store.compositeIndex.updatedAt;
+	data.value.updatedAt2 = utcStringToLocalString(store.compositeIndex.updatedAt);
 	let indexArr = [
+		'index',
 		'index0',
 		'index1',
 		'index2',
@@ -191,7 +192,6 @@ function updateChart() {
 		'index4',
 		'index5',
 		'index6',
-		'index'
 	];
 	let series = [];
 	let zhiShuSeries = [];
