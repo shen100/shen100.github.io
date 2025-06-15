@@ -66,6 +66,7 @@ function init() {
         data.value.page = store.settings.trackedStockKChart.page;
         stocks = store.getTrackedStocks();
     } else if (route.name === 'selectedKCharts') {
+        data.value.addToTrackingEnabled = true;
         data.value.type = store.settings.selectedStockKChart.type;
         data.value.start = store.settings.selectedStockKChart.start;
         data.value.end = store.settings.selectedStockKChart.end;
