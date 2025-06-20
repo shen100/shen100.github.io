@@ -6,9 +6,10 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { loadResource } from '../util/loader';
 
+const route = useRoute();
 const router = useRouter()
 
 let data = ref({
@@ -16,19 +17,29 @@ let data = ref({
 
 onMounted(async () => {
     try {
+        const hideSidebar = !!route.query.hidesidebar;
+        console.log('hideSidebar:', hideSidebar);
         await Promise.all([
-            loadResource('https://cdnjs.cloudflare.com/ajax/libs/mergely/5.0.0/mergely.min.js'),
-            loadResource('https://cdnjs.cloudflare.com/ajax/libs/mergely/5.0.0/mergely.css'),
+            loadResource('/js/mergely.min.js'),
+            loadResource('/css/mergely.css'),
         ]);
-        const header = document.querySelector('.main-content-layout-header');
-        const headerHeight = header.offsetHeight;
+        const mainContentLayoutHeader = document.querySelector('.main-content-layout-header');
+        const headerHeight = mainContentLayoutHeader.offsetHeight;
         const compareDiv = document.getElementById('compare');
-        compareDiv.style.width = (window.innerWidth - 240 - 40) + 'px';
-        compareDiv.style.height = (window.innerHeight - headerHeight - 80) + 'px';
-        console.log('Header height:', headerHeight);
-        console.log('Window height:', window.innerHeight);
-        console.log('Compare div height:', compareDiv.style.height);
-
+        if (!hideSidebar) {
+            compareDiv.style.width = (window.innerWidth - 240 - 40) + 'px';
+            compareDiv.style.height = (window.innerHeight - headerHeight - 80) + 'px';
+        } else {
+            compareDiv.style.width = (window.innerWidth - 40) + 'px';
+            compareDiv.style.height = (window.innerHeight - headerHeight - 20) + 'px';
+            const sidebar = document.querySelector('.side-menu');
+            sidebar.style.display = 'none';
+            const mainContent = document.querySelector('.main-content');
+            mainContent.style.paddingLeft = '0px';
+            mainContentLayoutHeader.style.display = 'none';
+            const mainContentLayoutContent = document.querySelector('.main-content-layout-content');
+            mainContentLayoutContent.style.marginTop = '0';
+        }
         const doc = new Mergely('#compare', {
         });
     } catch (error) {
