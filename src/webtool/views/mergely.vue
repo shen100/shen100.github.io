@@ -5,6 +5,10 @@
 </template>
 
 <script setup>
+/*
+ * Mergely Diff Tool
+ * https://github.com/wickedest/Mergely
+ */
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { loadResource } from '../util/loader';
@@ -18,7 +22,6 @@ let data = ref({
 onMounted(async () => {
     try {
         const hideSidebar = !!route.query.hidesidebar;
-        console.log('hideSidebar:', hideSidebar);
         await Promise.all([
             loadResource('/js/mergely.min.js'),
             loadResource('/css/mergely.css'),
