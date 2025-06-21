@@ -1,0 +1,32 @@
+{
+    "code": 0,
+    "data": {
+        "title": "开发辅助工具",
+        "list": [
+            {
+                "bookId": 2,
+                "_id": 1,
+                "parentId": 0,
+                "title": "Git设置代理"
+            },
+            {
+                "bookId": 2,
+                "_id": 2,
+                "parentId": 0,
+                "title": "SSH/FTP 客户端"
+            },
+            {
+                "bookId": 2,
+                "_id": 3,
+                "parentId": 0,
+                "title": "MitmProxy iOS抓包"
+            },
+            {
+                "bookId": 2,
+                "_id": 4,
+                "parentId": 0,
+                "title": "MitmProxy Mac抓包"
+            }
+        ]
+    }
+}
