@@ -49,7 +49,7 @@
                         <button @click="onPrevChapter" type="button" class="prev-btn byte-btn" :class="{'prev-next-disabled': !hasPrevChapter}">
                             <span>
                                 <div class="content">
-                                    <img src="../../assets/img/docs/prev.svg">
+                                    <img src="../../../assets/img/docs/prev.svg">
                                     <span class="text">上一篇</span>
                                 </div>
                             </span>
@@ -58,7 +58,7 @@
                             <span>
                                 <div class="content">
                                     <span class="text">下一篇</span> 
-                                    <img src="../../assets/img/docs/next.svg">
+                                    <img src="../../../assets/img/docs/next.svg">
                                 </div>
                             </span>
                         </button>
