@@ -4,6 +4,7 @@ import word from './word.js'
 import fiction from './fiction.js'
 import tradeRouter from '../trade/router/router'
 import webToolRouter from '../webtool/router/router'
+import docsRouter from '../modules/docs/router/router'
 
 const routeList = [
     {
@@ -14,6 +15,7 @@ const routeList = [
     dashboard,
     word,
     fiction,
+    docsRouter,
     tradeRouter,
     webToolRouter
 ];

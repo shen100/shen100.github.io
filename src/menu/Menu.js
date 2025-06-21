@@ -1,5 +1,6 @@
 import tradeMenu from '../trade/menu/menu.js'
 import webToolMenu from '../webtool/menu/menu.js'
+import docsMenu from '../modules/docs/menu/menu.js'
 
 export default [
     {
@@ -39,6 +40,7 @@ export default [
             { title: '活跃用户' }
         ]
     },
+    docsMenu,
     tradeMenu,
     webToolMenu
 ]
