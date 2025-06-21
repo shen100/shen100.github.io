@@ -260,7 +260,7 @@ async function requestChapter() {
 function onCurChapterChange(id) {
     chapterId.value = id
     requestChapter()
-    router.push({ path: `/docs/${bookId.value}/${id}` })
+    router.push({ path: `/docs/${bookId.value}/chapter/${id}` })
 }
 
 function onPrevChapter() {
