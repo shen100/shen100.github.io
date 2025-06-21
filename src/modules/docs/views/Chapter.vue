@@ -219,7 +219,8 @@ async function requestBook() {
 
 async function setChapters(res) {
     chapterTreeMap = {}
-    let children = []
+    let children = [];
+    res.data.list.reverse();
     res.data.list.forEach(item => {
         item.id = item._id
         item.expand = true
