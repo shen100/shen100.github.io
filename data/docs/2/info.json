@@ -7,7 +7,7 @@
                 "bookId": 2,
                 "_id": 1,
                 "parentId": 0,
-                "title": "Git设置代理"
+                "title": "Git 设置代理"
             },
             {
                 "bookId": 2,
@@ -19,13 +19,13 @@
                 "bookId": 2,
                 "_id": 3,
                 "parentId": 0,
-                "title": "MitmProxy iOS抓包"
+                "title": "MitmProxy iOS 抓包"
             },
             {
                 "bookId": 2,
                 "_id": 4,
                 "parentId": 0,
-                "title": "MitmProxy Mac抓包"
+                "title": "MitmProxy Mac 抓包"
             }
         ]
     }
