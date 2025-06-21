@@ -7,7 +7,7 @@
                     <ToggleBtn @click="onToggleBtnClick" style="cursor: pointer;"/>
                 </div>
                 <div class="book-summary__header">
-                    <a href="" class="logo">
+                    <a href="/docs" class="logo">
                         <img class="logo-dark" src="../../../assets/img/logo-small.png">
                         <span>Docs</span>
                     </a>
