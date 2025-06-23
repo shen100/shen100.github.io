@@ -25,12 +25,6 @@
                 "bookId": 2,
                 "_id": 4,
                 "parentId": 0,
-                "title": "MitmProxy Android 抓包"
-            },
-            {
-                "bookId": 2,
-                "_id": 5,
-                "parentId": 0,
                 "title": "MitmProxy Mac 抓包"
             }
         ]
