@@ -5,25 +5,31 @@
         "list": [
             {
                 "bookId": 2,
-                "_id": 1,
+                "_id": 1750703380377,
                 "parentId": 0,
                 "title": "Git 设置代理"
             },
             {
                 "bookId": 2,
-                "_id": 2,
+                "_id": 1750703402891,
                 "parentId": 0,
                 "title": "SSH/FTP 客户端"
             },
             {
                 "bookId": 2,
-                "_id": 3,
+                "_id": 1750703415692,
                 "parentId": 0,
                 "title": "MitmProxy iOS 抓包"
             },
             {
                 "bookId": 2,
-                "_id": 4,
+                "_id": 1750703434233,
+                "parentId": 0,
+                "title": "MitmProxy iOS 抓包(透明代理)"
+            },
+            {
+                "bookId": 2,
+                "_id": 1750703453065,
                 "parentId": 0,
                 "title": "MitmProxy Mac 抓包"
             }
