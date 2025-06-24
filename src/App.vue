@@ -8,16 +8,19 @@ import config from './config/config.js'
 const route = useRoute()
 
 const shoudReviewFullPageArr = [
-    '/login',
-    '/docs',
-    '/webtool'
+    'login',
+    'docs',
+    'webtool'
 ];
 let shoudReviewFullPage = ref(false)
 let menuVisible = ref(true)
 let appName = ref(config.appName)
 
 watch(() => route.path, (newPath) => {
-    shoudReviewFullPage.value = shoudReviewFullPageArr.indexOf(newPath) === 0;
+    if (newPath) {
+        newPath = newPath.split('/')[1];
+    }
+    shoudReviewFullPage.value = shoudReviewFullPageArr.indexOf(newPath) >= 0;
 }, { immediate: true });
 </script>
 
