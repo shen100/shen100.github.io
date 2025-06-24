@@ -8,7 +8,9 @@ import config from './config/config.js'
 const route = useRoute()
 
 const shoudReviewFullPageArr = [
-    '/login'
+    '/login',
+    '/docs',
+    '/webtool'
 ];
 let shoudReviewFullPage = ref(false)
 let menuVisible = ref(true)
