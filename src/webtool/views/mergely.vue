@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="compare-box">
         <div id="compare"></div>
     </div>
 </template>
@@ -21,28 +21,13 @@ let data = ref({
 
 onMounted(async () => {
     try {
-        const hideSidebar = !!route.query.hidesidebar;
         await Promise.all([
             loadResource('/js/mergely.min.js'),
             loadResource('/css/mergely.css'),
         ]);
-        const mainContentLayoutHeader = document.querySelector('.main-content-layout-header');
-        const headerHeight = mainContentLayoutHeader.offsetHeight;
         const compareDiv = document.getElementById('compare');
-        if (!hideSidebar) {
-            compareDiv.style.width = (window.innerWidth - 240 - 40) + 'px';
-            compareDiv.style.height = (window.innerHeight - headerHeight - 80) + 'px';
-        } else {
-            compareDiv.style.width = (window.innerWidth - 40) + 'px';
-            compareDiv.style.height = (window.innerHeight - headerHeight - 20) + 'px';
-            const sidebar = document.querySelector('.side-menu');
-            sidebar.style.display = 'none';
-            const mainContent = document.querySelector('.main-content');
-            mainContent.style.paddingLeft = '0px';
-            mainContentLayoutHeader.style.display = 'none';
-            const mainContentLayoutContent = document.querySelector('.main-content-layout-content');
-            mainContentLayoutContent.style.marginTop = '0';
-        }
+        compareDiv.style.width = (window.innerWidth - 40) + 'px';
+        compareDiv.style.height = (window.innerHeight - 40) + 'px';
         const doc = new Mergely('#compare', {
         });
     } catch (error) {
@@ -52,6 +37,10 @@ onMounted(async () => {
 </script>
 
 <style>
+.compare-box {
+    padding: 20px;
+}
+
 .mergely-splash {
     display: none;
 }
