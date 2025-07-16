@@ -90,16 +90,16 @@ function ifShowCount(tranData) {
 }
 
 function displayPriceUp(tranData) {
-    if (!tranData.firstPrice) {
+    if (!tranData.firstBuyPrice) {
         return '';
     }
-	// if (tranData.price > tranData.firstPrice) {
+	// if (tranData.price > tranData.firstBuyPrice) {
 	// 	priceUp.label_settings = PROFIT_ITEM_RED
     // } else {
 	// 	priceUp.label_settings = PROFIT_ITEM_GREEN
     // }
 	
-	var p = (tranData.price - tranData.firstPrice) / tranData.firstPrice * 100;
+	var p = (tranData.price - tranData.firstBuyPrice) / tranData.firstBuyPrice * 100;
 	return formatMoney(p, 2) + "%";
 }
 

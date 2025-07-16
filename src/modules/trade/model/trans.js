@@ -1,20 +1,20 @@
 class Transaction {
     constructor() {
-        this.action = ""
+        this.action = ""; // zhuanRu, zhuanChu, maiRu, maiChu, guXiRu, pllxgbRu, hlcysKouShui
 		this.actionLabel = ""
-		this.stockId = ""
+		this.stockId = ""; // 603214, 603377
 		this.stockName = ""
-		this.price = 0
-		this.firstPrice = 0
+		this.price = 0.0
+		this.firstBuyPrice = 0.0 // 首次买入这支股票的价格
 		this.count = 0
-		this.yongJin = 0
-		this.yinHuaShui = 0
-		this.guoHuFei = 0
-		this.jingShouFei = 0
-		this.zhengGuanFei = 0
-		this.amount = 0
+		this.yongJin = 0.0
+		this.yinHuaShui = 0.0
+		this.guoHuFei = 0.0
+		this.jingShouFei = 0.0
+		this.zhengGuanFei = 0.0
+		this.amount = 0.0 // 转入/转出金额
 		this.createdAt = ""
-		this.orderNO = 0
+		this.orderNO = 0 // 0, 1, 2, ...
     }
 }
 
@@ -43,7 +43,7 @@ function doZhuanRu(data) {
 
 function doZhuanChu(data) {
 	for (let i = 0; i < data.length; i++) {
-		let t = data[i]
+		let t = data[i];
 		if (t.bussFlagName != "银行转取") {
 			continue;
         }
@@ -65,6 +65,7 @@ function doMaiRu(data) {
 			continue;
         }
 		let stockId = '' + t.stockCode;
+		console.log('doMaiRu stockId', t.stockCode);
 		let tranData = new Transaction();
 		tranData.action = "maiRu"
 		tranData.actionLabel = t.bussFlagName
@@ -207,10 +208,7 @@ function comparePrice(firstTran, trans) {
 			continue
         }
 		if (trans[i].stockId == firstTran.stockId) {
-			if (trans[i].action == "maiRu" || trans[i].action == "maiChu") {
-				// 首次买入这支股票的价格
-				trans[i].firstPrice = firstTran.price
-            }
+			trans[i].firstBuyPrice = firstTran.price;
         }
     }
 }
@@ -236,7 +234,8 @@ function init() {
     for (let i = trans.length - 1; i >= 0; i--) {
         if (trans[i].action == "maiRu" && !tMap[trans[i].stockId]) {
 			tMap[trans[i].stockId] = true
-			comparePrice(trans[i], trans)
+			let firstBuyTran = trans[i]; // 首次买入这支股票的价格
+			comparePrice(firstBuyTran, trans)
         }
     }
 }
