@@ -65,7 +65,6 @@ function doMaiRu(data) {
 			continue;
         }
 		let stockId = '' + t.stockCode;
-		console.log('doMaiRu stockId', t.stockCode);
 		let tranData = new Transaction();
 		tranData.action = "maiRu"
 		tranData.actionLabel = t.bussFlagName
