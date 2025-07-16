@@ -1,11 +1,12 @@
 class Transaction {
     constructor() {
-        this.action = ""; // zhuanRu, zhuanChu, maiRu, maiChu, guXiRu, pllxgbRu, hlcysKouShui
+        this.action = ""; // zhuanRu, zhuanChu, maiRu, maiChu, guXiRu, hongGuRu, pllxgbRu, hlcysKouShui
 		this.actionLabel = ""
 		this.stockId = ""; // 603214, 603377
 		this.stockName = ""
 		this.price = 0.0
 		this.firstBuyPrice = 0.0 // 首次买入这支股票的价格
+		this.referencePrice = 0.0
 		this.count = 0
 		this.yongJin = 0.0
 		this.yinHuaShui = 0.0
@@ -131,9 +132,10 @@ function doGuXiRuZhang(data) {
 			continue;
         }
 		let tranData = new Transaction();
+		let stockId = '' + t.stockCode;
 		tranData.action = "guXiRu"
 		tranData.actionLabel = t.bussFlagName
-		tranData.stockId = t.stockCode
+		tranData.stockId = stockId
 		tranData.stockName = t.stockName
 		tranData.amount = Number(t.dealBalance)
 		tranData.createdAt = ymd(t.dealDate)
@@ -151,7 +153,7 @@ function doPiLiangLiXiGuiBen(data) {
         }
 		let tranData = new Transaction();
 		tranData.action = "pllxgbRu"
-		tranData.actionLabel = t.bussFlagName
+		tranData.actionLabel = t.bussFlagName // 账户利息，或叫 批量利息归本
 		tranData.amount = Number(t.dealBalance)
 		tranData.createdAt = ymd(t.dealDate)
 		tranData.amount = Math.abs(tranData.amount)
@@ -168,9 +170,10 @@ function doHongLiChaYiShuiKouShui(data) {
 			continue;
         }
 		let tranData = new Transaction();
+		let stockId = '' + t.stockCode;
 		tranData.action = "hlcysKouShui"
 		tranData.actionLabel = t.bussFlagName
-		tranData.stockId = t.stockCode
+		tranData.stockId = stockId
 		tranData.stockName = t.stockName
 		tranData.amount = Number(t.dealBalance)
 		tranData.createdAt = ymd(t.dealDate)
@@ -187,7 +190,7 @@ function doHongGuRuZhang(data) {
 		if (t.bussFlagName != "红股入账") {
 			continue;
         }
-		var stockId = '' + t.stockCode;
+		let stockId = '' + t.stockCode;
 		let tranData = new Transaction();
 		tranData.action = "hongGuRu"
 		tranData.actionLabel = t.bussFlagName
@@ -208,6 +211,7 @@ function comparePrice(firstTran, trans) {
         }
 		if (trans[i].stockId == firstTran.stockId) {
 			trans[i].firstBuyPrice = firstTran.price;
+			trans[i].referencePrice = firstTran.price;
         }
     }
 }
@@ -225,6 +229,11 @@ function init() {
 	doHongGuRuZhang(localTrans);
 
     trans.sort((a, b) => {
+		if (a.createdAt > b.createdAt) {
+			return -1;
+		} else if (a.createdAt < b.createdAt) {
+			return 1;
+		}
 		return a.orderNO < b.orderNO
     });
 	

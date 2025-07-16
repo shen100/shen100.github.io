@@ -1,10 +1,21 @@
 export function formatMoney(number /* float */, precision /* float */) {
-	if (number === 0) {
-		let str = "0.";
+	let str = Number(number.toFixed(precision)).toLocaleString();
+    if (number === 0) {
+		str = "0";
+    }
+    if (str.indexOf('.') < 0) {
+        str += '.';
         for (let i = 0; i < precision; i++) {
             str += "0";
         }
-        return str;
+    } else {
+        let parts = str.split('.');
+        if (parts[1].length < precision) {
+            for (let i = parts[1].length; i < precision; i++) {
+                parts[1] += "0";
+            }
+        }
+        str = parts.join('.');
     }
-	return Math.abs(number).toFixed(precision).toLocaleString();
+    return str;
 }
