@@ -237,7 +237,7 @@ function init() {
 		return a.orderNO < b.orderNO
     });
 	
-	var tMap = {}
+	let tMap = {}
 
     for (let i = trans.length - 1; i >= 0; i--) {
         if (trans[i].action == "maiRu" && !tMap[trans[i].stockId]) {

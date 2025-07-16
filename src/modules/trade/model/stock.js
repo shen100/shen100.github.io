@@ -11,3 +11,7 @@ class Stock {
 		avgCost = 0
     }
 }
+
+export default {
+	Stock
+}
