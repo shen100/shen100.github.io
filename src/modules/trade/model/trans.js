@@ -1,6 +1,6 @@
 class Transaction {
     constructor() {
-        this.action = ""; // zhuanRu, zhuanChu, maiRu, maiChu, guXiRu, hongGuRu, pllxgbRu, hlcysKouShui
+        this.action = ""; // zhuanRu, zhuanChu, maiRu, maiChu, guXiRu, hongGuRu, pllxgbRu, gxhlsBuJiao
 		this.actionLabel = ""
 		this.stockId = ""; // 603214, 603377
 		this.stockName = ""
@@ -39,6 +39,23 @@ function doZhuanRu(data) {
 		tranData.amount = Math.abs(tranData.amount);
 		tranData.orderNO = i;
 		trans.push(tranData);
+    }
+}
+
+function doNeiBuZhuanRu(data) {
+	for (let i = 0; i < data.length; i++) {
+		let t = data[i];
+		if (t.bussFlagName != "内部转账存") {
+			continue;
+        }
+		let tranData = new Transaction();
+		tranData.action = "zhuanRu"
+		tranData.actionLabel = t.bussFlagName
+		tranData.amount = Number(t.dealBalance)
+		tranData.createdAt = ymd(t.dealDate)
+		tranData.amount = Math.abs(tranData.amount)
+		tranData.orderNO = i
+		trans.push(tranData)
     }
 }
 
@@ -148,12 +165,12 @@ function doGuXiRuZhang(data) {
 function doPiLiangLiXiGuiBen(data) {
 	for (let i = 0; i < data.length; i++) {
 		let t = data[i]
-		if (t.bussFlagName != "账户利息") {
+		if (t.bussFlagName != "利息归本") {
 			continue;
         }
 		let tranData = new Transaction();
 		tranData.action = "pllxgbRu"
-		tranData.actionLabel = t.bussFlagName // 账户利息，或叫 批量利息归本
+		tranData.actionLabel = t.bussFlagName
 		tranData.amount = Number(t.dealBalance)
 		tranData.createdAt = ymd(t.dealDate)
 		tranData.amount = Math.abs(tranData.amount)
@@ -162,16 +179,15 @@ function doPiLiangLiXiGuiBen(data) {
     }
 }
 
-
-function doHongLiChaYiShuiKouShui(data) {
+function doGuXiHongLiShuiBuJiao(data) {
 	for (let i = 0; i < data.length; i++) {
 		let t = data[i]
-		if (t.bussFlagName != "红利差异税扣税") {
+		if (t.bussFlagName != "股息红利税补缴") {
 			continue;
         }
 		let tranData = new Transaction();
 		let stockId = '' + t.stockCode;
-		tranData.action = "hlcysKouShui"
+		tranData.action = "gxhlsBuJiao"
 		tranData.actionLabel = t.bussFlagName
 		tranData.stockId = stockId
 		tranData.stockName = t.stockName
@@ -182,7 +198,6 @@ function doHongLiChaYiShuiKouShui(data) {
 		trans.push(tranData)
     }
 }
-
 
 function doHongGuRuZhang(data) {
 	for (let i = 0; i < data.length; i++) {
@@ -220,12 +235,13 @@ function init() {
     let localTrans = JSON.parse(localStorage.getItem('trans') || '[]');
 
     doZhuanRu(localTrans)
+	doNeiBuZhuanRu(localTrans)
 	doZhuanChu(localTrans)
 	doMaiRu(localTrans)
 	doMaiChu(localTrans)
 	doGuXiRuZhang(localTrans)
 	doPiLiangLiXiGuiBen(localTrans)
-	doHongLiChaYiShuiKouShui(localTrans)
+	doGuXiHongLiShuiBuJiao(localTrans)
 	doHongGuRuZhang(localTrans);
 
     trans.sort((a, b) => {

@@ -109,8 +109,8 @@ let data = ref({
         { label: '证券卖出', value: 'maiChu' },
         { label: '股息入账', value: 'guXiRu' },
         { label: '红股入账', value: 'hongGuRu' },
-        { label: '账户利息', value: 'pllxgbRu' },
-        { label: '红利差异税扣税', value: 'hlcysKouShui' }
+        { label: '利息归本', value: 'pllxgbRu' },
+        { label: '股息红利税补缴', value: 'gxhlsBuJiao' }
     ]
 })
 
@@ -133,9 +133,10 @@ function onSearch() {
                 continue;
             }
         }
-        if (!tranData.stockName || !tranData.stockId) {
-            continue;
-        }
+        // if (!tranData.stockName || !tranData.stockId) {
+        //     continue;
+        // }
+
         if (data.value.stockInput) {
             if (tranData.stockName.indexOf(data.value.stockInput) < 0 && tranData.stockId.indexOf(data.value.stockInput) < 0) {
                 continue;
@@ -151,7 +152,7 @@ function onSearch() {
 }
 
 function displayActionLabel(tranData) {
-    let arr = [ "maiRu", "maiChu", "guXiRu", "hlcysKouShui", "hongGuRu" ];
+    let arr = [ "maiRu", "maiChu", "guXiRu", "hongGuRu", "gxhlsBuJiao" ];
     if (arr.indexOf(tranData.action) >= 0) {
         return tranData.actionLabel + " (" + tranData.stockName + ")"
     } else {
@@ -160,7 +161,7 @@ function displayActionLabel(tranData) {
 }
 
 function ifShowJingE(tranData) {
-    let arr = [ "zhuanRu", "zhuanChu", "maiRu", "maiChu", "guXiRu", "pllxgbRu", "hlcysKouShui" ];
+    let arr = [ "zhuanRu", "zhuanChu", "maiRu", "maiChu", "guXiRu", "pllxgbRu", "gxhlsBuJiao" ];
     if (arr.indexOf(tranData.action) >= 0) {
         return true;
     } else {
@@ -169,7 +170,7 @@ function ifShowJingE(tranData) {
 }
 
 function ifShowStock(tranData) {
-    let arr = [ "maiRu", "maiChu", "guXiRu", "hlcysKouShui", "hongGuRu" ];
+    let arr = [ "maiRu", "maiChu", "guXiRu", "hongGuRu", "gxhlsBuJiao" ];
     if (arr.indexOf(tranData.action) >= 0) {
         return true;
     } else {
@@ -196,7 +197,7 @@ function ifShowCount(tranData) {
 }
 
 function ifShowOtherFeiYong(tranData) {
-    let arr = [ "zhuanRu" ];
+    let arr = [ "zhuanRu", "gxhlsBuJiao" ];
     if (arr.indexOf(tranData.action) >= 0) {
         return false;
     } else {
@@ -205,7 +206,7 @@ function ifShowOtherFeiYong(tranData) {
 }
 
 function ifShowJieSuanFei(tranData) {
-    let arr = [ "zhuanRu" ];
+    let arr = [ "zhuanRu", "gxhlsBuJiao" ];
     if (arr.indexOf(tranData.action) >= 0) {
         return false;
     } else {

@@ -19,8 +19,16 @@ export default {
             path: '/trade/all_kcharts'
         },
         {
-            title: '交易记录',
+            title: '交易流水',
             path: '/trade/trans'
+        },
+        {
+            title: '盈亏排行',
+            path: '/trade/profit'
+        },
+        {
+            title: '账户统计',
+            path: '/trade/my'
         },
     ]
 }
