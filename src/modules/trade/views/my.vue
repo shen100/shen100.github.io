@@ -29,7 +29,6 @@
                 <div class="tran-item-row">
                     <div class="tran-label">股息红利税补缴</div>
                     <div class="tran-label2">{{ formatMoney(data.gxhlsBuJiao, 2) }}</div>
-                    <div class="tran-label-rate">{{ formatMoney(data.gxhlsBuJiaoRate * 10000, 2) }}‱</div>
                 </div>
                 <div class="tran-item-row">
                     <div class="tran-label">印花税</div>
@@ -105,7 +104,6 @@ let data = ref({
     zhengGuanFei: 0.0,
     zhengGuanFeiRate: 0.0,
     gxhlsBuJiao: 0.0,
-    gxhlsBuJiaoRate: 0.0,
     guXi: 0.0,
     pllxgbRu: 0.0,
 })
@@ -130,7 +128,6 @@ onMounted(async () => {
         data.value.zhengGuanFei = statisticsData.zhengGuanFei;
         data.value.zhengGuanFeiRate = statisticsData.zhengGuanFeiRate;
         data.value.gxhlsBuJiao = statisticsData.gxhlsBuJiao;
-        data.value.gxhlsBuJiaoRate = statisticsData.gxhlsBuJiaoRate;
         data.value.guXi = statisticsData.guXi;
         data.value.pllxgbRu = statisticsData.pllxgbRu;
     });

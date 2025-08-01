@@ -1,5 +1,4 @@
 class Stock {
-	
 	constructor() {
 		this.stockId = ""
 		this.stockName = ""

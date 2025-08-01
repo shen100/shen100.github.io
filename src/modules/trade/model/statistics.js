@@ -30,7 +30,6 @@ class Statistics {
 
 		// 股息红利税补缴
 		this.gxhlsBuJiao = 0.0
-        this.gxhlsBuJiaoRate = 0.0
 
         this.shiZhi = 0.0
 
@@ -46,7 +45,6 @@ let statistics = new Statistics();
 let stockMap = {};
 let stockProfitList = [];
 let priceMap = {} // 每支股票最新价
-let priceLoaded = false // 每支股票最新价都加载完成
 let stockCount = 0; // 手中还保留了多少支股票
 let isInited = false;
 
@@ -130,20 +128,12 @@ async function requestStock(stockId, callback) {
 	priceMap[stockId] = price
 	
 	if (Object.keys(priceMap).length == stockCount) {
-		priceMap["600887"] = 27.88
-		priceMap["603345"] = 75.10
-		priceMap['000858'] = 124.52
-		priceMap['002223'] = 35.51
+		priceMap["600887"] = 27.41
+		priceMap["603345"] = 73.8
+		priceMap['000858'] = 121.15
+		priceMap['002223'] = 34.88
 		priceMap['601012'] = 16.38
-		// priceMap["000089"] = 7.06
-		//priceMap["000089"] = 6.39
-		//priceMap["002507"] = 12.09
-		//priceMap["603288"] = 34.22
-		//priceMap["600305"] = 6.97
-		//priceMap["601012"] = 13.46
-		//priceMap["601633"] = 24.01
 		
-		priceLoaded = true
 		isInited = true
 		initStatistics()
         callback && callback();
@@ -159,9 +149,6 @@ function getAllShouXuFei(tranData) {
 	amount += absAndMinZero(tranData.zhengGuanFei)
 	return amount;
 }
-
-let stockBuyTotal = 0;
-let amount2 = 0;
 
 function initStatistics() {
     for (let i = 0; i < trans.length; i++) {
@@ -184,7 +171,6 @@ function initStatistics() {
 
 			statistics.shengYu -= getAllShouXuFei(tranData)
 			statistics.shengYu -= absAndMinZero(tranData.price * tranData.count)
-			stockBuyTotal += absAndMinZero(tranData.price * tranData.count)
 
 			let stock = createOrGetStock(tranData.stockId);
 			stock.stockName = tranData.stockName
@@ -203,11 +189,9 @@ function initStatistics() {
 			statistics.shengYu -= getAllShouXuFei(tranData)
 			statistics.shengYu += absAndMinZero(tranData.price * tranData.count)
 
-			amount2 += absAndMinZero(tranData.price * tranData.count)
-
 			let stock = createOrGetStock(tranData.stockId)
 			stock.count -= absAndMinZero(tranData.count)
-			stock.got -= getAllShouXuFei(tranData)
+			stock.spent += getAllShouXuFei(tranData)
 			stock.got += absAndMinZero(tranData.price * tranData.count)
 		}
 		if (tranData.action == "guXiRu") {
@@ -223,7 +207,7 @@ function initStatistics() {
 		}
 		if (tranData.action == "gxhlsBuJiao") { // 股息红利税补缴
 			let stock = createOrGetStock(tranData.stockId);
-			stock.got -= absAndMinZero(tranData.amount)
+			stock.spent += absAndMinZero(tranData.amount)
 			statistics.gxhlsBuJiao += absAndMinZero(tranData.amount)
 			statistics.shengYu -= absAndMinZero(tranData.amount)
 		}
@@ -232,8 +216,6 @@ function initStatistics() {
 			stock.count += tranData.count
         }
     }
-
-	console.log('stockBuyTotal', stockBuyTotal, 'amount2', amount2)
 
 	for (let key in stockMap) {
 		let stock = stockMap[key]
@@ -259,7 +241,6 @@ function initStatistics() {
 	statistics.guoHuFeiRate = statistics.guoHuFei / maiMai
 	statistics.jingShouFeiRate = statistics.jingShouFei / maiMai
 	statistics.zhengGuanFeiRate = statistics.zhengGuanFei / maiMai
-	statistics.gxhlsBuJiaoRate = statistics.gxhlsBuJiao / maiMai
 
 	let addAmount = statistics.shiZhi + statistics.maiChu 
 	addAmount += statistics.guXi
@@ -281,8 +262,6 @@ function initStatistics() {
         }
 		return 1
 	})
-	
-	// SignalManager.emitter.statistics_inited.emit()
 }
 
 function init(callback) {
@@ -303,6 +282,8 @@ function init(callback) {
             stockCountMap[stockId].count -= absAndMinZero(trans[i].count);
         }
     }
+
+	console.log('stockCountMap', JSON.stringify(stockCountMap))
 
     for (let key in stockCountMap) {
         if (stockCountMap[key].count <= 0) {
