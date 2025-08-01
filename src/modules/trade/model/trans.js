@@ -34,9 +34,8 @@ function doZhuanRu(data) {
 		let tranData = new Transaction();
 		tranData.action = "zhuanRu";
 		tranData.actionLabel = t.bussFlagName;
-		tranData.amount = Number(t.dealBalance);
+		tranData.amount = Math.abs(Number(t.dealBalance));
 		tranData.createdAt = ymd(t.dealDate);
-		tranData.amount = Math.abs(tranData.amount);
 		tranData.orderNO = i;
 		trans.push(tranData);
     }
@@ -51,9 +50,8 @@ function doNeiBuZhuanRu(data) {
 		let tranData = new Transaction();
 		tranData.action = "zhuanRu"
 		tranData.actionLabel = t.bussFlagName
-		tranData.amount = Number(t.dealBalance)
+		tranData.amount = Math.abs(Number(t.dealBalance))
 		tranData.createdAt = ymd(t.dealDate)
-		tranData.amount = Math.abs(tranData.amount)
 		tranData.orderNO = i
 		trans.push(tranData)
     }
@@ -68,9 +66,8 @@ function doZhuanChu(data) {
 		let tranData = new Transaction();
 		tranData.action = "zhuanChu"
 		tranData.actionLabel = t.bussFlagName
-		tranData.amount = Number(t.dealBalance)
+		tranData.amount = Math.abs(Number(t.dealBalance))
 		tranData.createdAt = ymd(t.dealDate)
-		tranData.amount = Math.abs(tranData.amount)
 		tranData.orderNO = i
 		trans.push(tranData)
     }
@@ -82,7 +79,7 @@ function doMaiRu(data) {
 		if (t.bussFlagName != "证券买入") {
 			continue;
         }
-		let stockId = '' + t.stockCode;
+		let stockId = '' + t.stockCode; // 600887, 601012
 		let tranData = new Transaction();
 		tranData.action = "maiRu"
 		tranData.actionLabel = t.bussFlagName
@@ -90,7 +87,6 @@ function doMaiRu(data) {
 		tranData.stockName = t.stockName
 		tranData.price = Math.abs(Number(t.dealPrice))
 		tranData.count = Math.abs(Number(t.dealNum))
-		tranData.amount = Number(t.dealBalance)
 		tranData.yongJin = Math.abs(Number(t.handingFee2))
 		tranData.yinHuaShui = Math.abs(Number(t.stampTax))
 		tranData.guoHuFei = Math.abs(Number(t.transferFee2))
@@ -115,7 +111,7 @@ function doMaiChu(data) {
 		if (t.bussFlagName != "证券卖出") {
 			continue;
         }
-		let stockId = '' + t.stockCode;
+		let stockId = '' + t.stockCode; // 600887, 601012
 		let tranData = new Transaction();
 		tranData.action = "maiChu"
 		tranData.actionLabel = t.bussFlagName
@@ -123,7 +119,6 @@ function doMaiChu(data) {
 		tranData.stockName = t.stockName
 		tranData.price = Math.abs(Number(t.dealPrice))
 		tranData.count = Math.abs(Number(t.dealNum))
-		tranData.amount = Number(t.dealBalance)
 		tranData.yongJin = Math.abs(Number(t.handingFee2))
 		tranData.yinHuaShui = Math.abs(Number(t.stampTax))
 		tranData.guoHuFei = Math.abs(Number(t.transferFee2))
@@ -149,14 +144,13 @@ function doGuXiRuZhang(data) {
 			continue;
         }
 		let tranData = new Transaction();
-		let stockId = '' + t.stockCode;
+		let stockId = '' + t.stockCode; // 600887, 601012
 		tranData.action = "guXiRu"
 		tranData.actionLabel = t.bussFlagName
 		tranData.stockId = stockId
 		tranData.stockName = t.stockName
-		tranData.amount = Number(t.dealBalance)
+		tranData.amount = Math.abs(Number(t.dealBalance))
 		tranData.createdAt = ymd(t.dealDate)
-		tranData.amount = Math.abs(tranData.amount)
 		tranData.orderNO = i
 		trans.push(tranData)
     }
@@ -171,9 +165,8 @@ function doPiLiangLiXiGuiBen(data) {
 		let tranData = new Transaction();
 		tranData.action = "pllxgbRu"
 		tranData.actionLabel = t.bussFlagName
-		tranData.amount = Number(t.dealBalance)
+		tranData.amount = Math.abs(Number(t.dealBalance))
 		tranData.createdAt = ymd(t.dealDate)
-		tranData.amount = Math.abs(tranData.amount)
 		tranData.orderNO = i
 		trans.push(tranData)
     }
@@ -186,14 +179,13 @@ function doGuXiHongLiShuiBuJiao(data) {
 			continue;
         }
 		let tranData = new Transaction();
-		let stockId = '' + t.stockCode;
+		let stockId = '' + t.stockCode; // 600887, 601012
 		tranData.action = "gxhlsBuJiao"
 		tranData.actionLabel = t.bussFlagName
 		tranData.stockId = stockId
 		tranData.stockName = t.stockName
-		tranData.amount = Number(t.dealBalance)
+		tranData.amount = Math.abs(Number(t.dealBalance))
 		tranData.createdAt = ymd(t.dealDate)
-		tranData.amount = Math.abs(tranData.amount)
 		tranData.orderNO = i
 		trans.push(tranData)
     }
@@ -205,15 +197,14 @@ function doHongGuRuZhang(data) {
 		if (t.bussFlagName != "红股入账") {
 			continue;
         }
-		let stockId = '' + t.stockCode;
+		let stockId = '' + t.stockCode; // 600887, 601012
 		let tranData = new Transaction();
 		tranData.action = "hongGuRu"
 		tranData.actionLabel = t.bussFlagName
 		tranData.stockId = stockId
 		tranData.stockName = t.stockName
-		tranData.count = Number(t.dealNum)
+		tranData.count = Math.abs(Number(t.dealNum))
 		tranData.createdAt = ymd(t.dealDate)
-		tranData.count = Math.abs(tranData.count)
 		tranData.orderNO = i
 		trans.push(tranData)
     }
