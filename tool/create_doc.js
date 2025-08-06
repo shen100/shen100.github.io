@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 // 创建文档，改这 3 个变量即可，然后 node create_doc.js             
 const bookId = 4;               // 文档集ID                                   
 const bookName = '备忘';         // 文档集名称                           
-const chapterName = '键盘设置'; // 章节名称                     
+const chapterName = '收礼'; // 章节名称                   
 // ************************************************************
 
 const chapterId = Date.now();

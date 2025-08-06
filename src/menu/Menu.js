@@ -1,5 +1,5 @@
 import tradeMenu from '../modules/trade/menu/menu.js'
-import webToolMenu from '../webtool/menu/menu.js'
+import webToolMenu from '../modules/webtool/menu/menu.js'
 import docsMenu from '../modules/docs/menu/menu.js'
 
 export default [

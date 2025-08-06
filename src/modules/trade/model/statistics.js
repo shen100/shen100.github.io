@@ -132,7 +132,7 @@ async function requestStock(stockId, callback) {
 		priceMap["603345"] = 73.8
 		priceMap['000858'] = 121.15
 		priceMap['002223'] = 34.88
-		priceMap['601012'] = 16.38
+		priceMap['601012'] = 15.76
 		
 		isInited = true
 		initStatistics()

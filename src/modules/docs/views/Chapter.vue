@@ -90,7 +90,7 @@ import { parseTree } from '../util/TreeUtil.js'
 import { resolveComponent } from 'vue'
 import zh from 'bytemd/locales/zh_Hans.json'
 import { Editor, Viewer } from '@bytemd/vue-next'
-
+import { encryptData, decryptData } from '../util/SecurityUtil'
 import breaks from '@bytemd/plugin-breaks'
 import gemoji from '@bytemd/plugin-gemoji'
 import gfm from '@bytemd/plugin-gfm'
@@ -249,8 +249,18 @@ async function requestChapter() {
     let url = `/data/docs/${bookId.value}/chapter/${chapterId.value}.md`;
     try {
         let res = await axios.get(url);
-        let mdContent = res.data;
-        content.value = mdContent || ' '
+        let mdContent = res.data || ' ';
+
+        const lineCount = mdContent.split(/\n/).length;
+        if (lineCount <= 2) {
+            const webToolPassword = localStorage.getItem('webToolPassword');
+            if (webToolPassword) {
+                mdContent = await decryptData(mdContent, webToolPassword);
+                console.log('decrypted content', mdContent);
+            }
+        }
+
+        content.value = mdContent;
         isLoading.value = false
         contentUpdatedAt.value = new Date().getTime();
     } catch (err) {
