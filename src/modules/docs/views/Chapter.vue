@@ -256,6 +256,7 @@ async function requestChapter() {
             const webToolPassword = localStorage.getItem('webToolPassword');
             if (webToolPassword) {
                 mdContent = await decryptData(mdContent, webToolPassword);
+                mdContent = mdContent + '\n\n> 此文档已加密';
                 console.log('decrypted content', mdContent);
             }
         }
