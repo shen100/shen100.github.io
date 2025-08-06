@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import { Message } from 'view-ui-plus'
 import { encryptData, decryptData } from '../util/SecurityUtil';
 
