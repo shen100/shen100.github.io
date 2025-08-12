@@ -128,11 +128,11 @@ async function requestStock(stockId, callback) {
 	priceMap[stockId] = price
 	
 	if (Object.keys(priceMap).length == stockCount) {
-		priceMap["600887"] = 27.41
-		priceMap["603345"] = 73.8
-		priceMap['000858'] = 121.15
-		priceMap['002223'] = 34.88
-		priceMap['601012'] = 15.76
+		// priceMap["600887"] = 27.57
+		// priceMap["603345"] = 73.68
+		// priceMap['000858'] = 123.94
+		// priceMap['002223'] = 35.59
+		// priceMap['601012'] = 16.01
 		
 		isInited = true
 		initStatistics()
@@ -244,7 +244,8 @@ function initStatistics() {
 
 	let addAmount = statistics.shiZhi + statistics.maiChu 
 	addAmount += statistics.guXi
-	addAmount += statistics.pllxgbRu
+	addAmount += statistics.pllxgbRu // 利息归本 不属于某一支股票, 招商证券统计的累计收益没算 利息归本
+
 	let subtractAmount = statistics.maiRu + statistics.yongJin 
 	subtractAmount += statistics.yinHuaShui 
 	subtractAmount += statistics.guoHuFei 
@@ -305,3 +306,4 @@ export default {
         return stockProfitList;
     }
 }
+

@@ -26,44 +26,36 @@
                     <div class="tran-label">历史持股(支)</div>
                     <div class="tran-label2">{{ data.chiGu }}</div>
                 </div>
-                <div class="tran-item-row">
-                    <div class="tran-label">股息红利税补缴</div>
-                    <div class="tran-label2">{{ formatMoney(data.gxhlsBuJiao, 2) }}</div>
-                </div>
-                <div class="tran-item-row">
-                    <div class="tran-label">印花税</div>
-                    <div class="tran-label2">{{ formatMoney(data.yinHuaShui, 2) }}</div>
-                    <div class="tran-label-rate">{{ formatMoney(data.yinHuaShuiRate * 10000, 2) }}‱</div>
-                </div>
-                <div class="tran-item-row">
-                    <div class="tran-label">佣金</div>
-                    <div class="tran-label2">{{ formatMoney(data.yongJin, 2) }}</div>
-                    <div class="tran-label-rate">{{ formatMoney(data.yongJinRate * 10000, 2) }}‱</div>
-                </div>
-                <div class="tran-item-row">
-                    <div class="tran-label">经手费</div>
-                    <div class="tran-label2">{{ formatMoney(data.jingShouFei, 2) }}</div>
-                    <div class="tran-label-rate">{{ formatMoney(data.jingShouFeiRate * 10000, 2) }}‱</div>
-                </div>
-                <div class="tran-item-row">
-                    <div class="tran-label">证管费</div>
-                    <div class="tran-label2">{{ formatMoney(data.zhengGuanFei, 2) }}</div>
-                    <div class="tran-label-rate">{{ formatMoney(data.zhengGuanFeiRate * 10000, 2) }}‱</div>
-                </div>
-                <div class="tran-item-row">
-                    <div class="tran-label">结算费</div>
-                    <div class="tran-label2"></div>
-                    <div class="tran-label-rate"></div>
-                </div>
-                <div class="tran-item-row">
-                    <div class="tran-label">过户费</div>
-                    <div class="tran-label2">{{ formatMoney(data.guoHuFei, 2) }}</div>
-                    <div class="tran-label-rate">{{ formatMoney(data.yinHuaShuiRate * 10000, 2) }}‱</div>
-                </div>
-                <div class="tran-item-row">
-                    <div class="tran-label">其他费用</div>
-                    <div class="tran-label2"></div>
-                    <div class="tran-label-rate"></div>
+                <div class="fee-box">    
+                    <div class="tran-item-row">
+                        <div class="tran-label">股息红利税补缴</div>
+                        <div class="tran-label2">{{ formatMoney(data.gxhlsBuJiao, 2) }}</div>
+                    </div>
+                    <div class="tran-item-row">
+                        <div class="tran-label">印花税</div>
+                        <div class="tran-label2">{{ formatMoney(data.yinHuaShui, 2) }}</div>
+                        <div class="tran-label-rate">{{ formatMoney(data.yinHuaShuiRate * 10000, 2) }}‱</div>
+                    </div>
+                    <div class="tran-item-row">
+                        <div class="tran-label">佣金</div>
+                        <div class="tran-label2">{{ formatMoney(data.yongJin, 2) }}</div>
+                        <div class="tran-label-rate">{{ formatMoney(data.yongJinRate * 10000, 2) }}‱</div>
+                    </div>
+                    <div class="tran-item-row">
+                        <div class="tran-label">经手费</div>
+                        <div class="tran-label2">{{ formatMoney(data.jingShouFei, 2) }}</div>
+                        <div class="tran-label-rate">{{ formatMoney(data.jingShouFeiRate * 10000, 2) }}‱</div>
+                    </div>
+                    <div class="tran-item-row">
+                        <div class="tran-label">证管费</div>
+                        <div class="tran-label2">{{ formatMoney(data.zhengGuanFei, 2) }}</div>
+                        <div class="tran-label-rate">{{ formatMoney(data.zhengGuanFeiRate * 10000, 2) }}‱</div>
+                    </div>
+                    <div class="tran-item-row">
+                        <div class="tran-label">过户费</div>
+                        <div class="tran-label2">{{ formatMoney(data.guoHuFei, 2) }}</div>
+                        <div class="tran-label-rate">{{ formatMoney(data.guoHuFeiRate * 10000, 2) }}‱</div>
+                    </div>
                 </div>
                 <div class="tran-item-row">
                     <div class="tran-label">利息归本</div>
@@ -79,13 +71,9 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onMounted, ref } from 'vue'
 import { formatMoney } from '../util/money';
 import statistics from '../model/statistics'
-
-const route = useRoute()
-const router = useRouter()
 
 let data = ref({
     shouYi: 0.0,
@@ -93,6 +81,7 @@ let data = ref({
     zhuanChu: 0.0,
     shengYu: 0.0,
     shiZhi: 0.0,
+    chiGu: 0.0,
     yongJin: 0.0,
     yongJinRate: 0.0,
     yinHuaShui: 0.0,
@@ -133,9 +122,6 @@ onMounted(async () => {
     });
 })
 
-function displayRate(value1, value2) {
-	return formatMoney((value1 / value2 * 10000), 2) + "‱"
-}
 </script>
 
 <style scoped>
@@ -177,5 +163,14 @@ function displayRate(value1, value2) {
     padding-right: 10px;
     display: inline-block;
     color: #a37f15;
+}
+
+.fee-box {
+    border: 1px #bcbcbc dashed;
+    width: 500px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 </style>
