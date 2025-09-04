@@ -41,7 +41,7 @@
 		<Card>
 			<div class="total-shizhi-txt">
 				<div>大盘指数</div>
-				<Icon class="refresh" @click="requestAllDailyBasic" type="md-refresh" style="cursor: pointer;" />
+				<!-- <Icon class="refresh" @click="requestAllDailyBasic" type="md-refresh" style="cursor: pointer;" /> -->
 				<div class="updated-at">{{ data.updatedAt2 ? '更新于 ' + data.updatedAt2 : '' }}</div>
 			</div>
 			<ECharts v-if="zhiShuChartOptions.series.length" :options="zhiShuChartOptions" />
@@ -413,7 +413,7 @@ async function requestAllDailyBasic() {
 }
 
 async function requestDailyBasic(stock) {
-	let url = 'https://api.tushare.pro';
+	let url = 'http://api.tushare.pro';
 	let before = 20; // 查询多少年前的数据
 	let startDate = formatLocalYMD(new Date(new Date().getTime() - before * 365 * 24 * 3600 * 1000)).replace(/-/g, '');
 	let endDate = formatLocalYMD(new Date()).replace(/-/g, '');

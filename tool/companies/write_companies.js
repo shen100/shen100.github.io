@@ -27,10 +27,12 @@ function writeAllCompanies() {
                 fields = data.fields;
             }
             data.items.forEach(item => {
-                let ts_code = item[0];
+                let ts_code = item[1];
                 if (!tsCodeMap[ts_code]) {
                     items.push(item);
                     tsCodeMap[ts_code] = true;
+                } else {
+                    console.log();
                 }
             });
         } catch (error) {
