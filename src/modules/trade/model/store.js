@@ -25,6 +25,12 @@ let settings = {
         end: formatLocalYMD(new Date()), // 2025-06-12
         page: 1
     },
+    etfStockKChart: {
+        type: 'year',
+        start: '2000-01-01',
+        end: formatLocalYMD(new Date()), // 2025-06-12
+        page: 1
+    },
 };
 
 let tuShareToken = '';
@@ -34,6 +40,54 @@ let allStocks = [];
 let allStocksWithZongShiZhi = [];
 let stockMarketStats = null;
 let compositeIndex = null;
+
+let etfStocks = [
+    {
+        stockFullId: "sh588000",
+        stockId: "588000",
+        stockName: "科创50ETF"
+    },
+    {
+        stockFullId: "sz159915",
+        stockId: "159915",
+        stockName: "创业板ETF"
+    },
+    {
+        stockFullId: "sh513010",
+        stockId: "513010",
+        stockName: "恒生科技ETF易方达"
+    },
+    {
+        stockFullId: "sz159941",
+        stockId: "159941",
+        stockName: "纳指ETF"
+    },
+    {
+        stockFullId: "sh513520",
+        stockId: "513520",
+        stockName: "日经ETF"
+    },
+    {
+        stockFullId: "sh518880",
+        stockId: "518880",
+        stockName: "黄金ETF"
+    },
+    {
+        stockFullId: "sh512660",
+        stockId: "512660",
+        stockName: "军工ETF"
+    },
+    {
+        stockFullId: "sz159928",
+        stockId: "159928",
+        stockName: "消费ETF"
+    },
+    {
+        stockFullId: "sh512010",
+        stockId: "512010",
+        stockName: "医药ETF"
+    }
+];
 
 function initCompositeIndex() {
     compositeIndex = JSON.parse(localStorage.getItem('tradeCompositeIndex') || 'null');
@@ -109,6 +163,9 @@ export default {
     allStocks,
     stockMarketStats,
     compositeIndex,
+    getEtfStocks: function() {
+        return etfStocks;
+    },
     getInvestedStocks: function() {
         return investedStocks;
     },

@@ -7,16 +7,20 @@ export default {
             path: '/trade/dashboard'
         },
         {
+            title: '全部K线',
+            path: '/trade/all_kcharts'
+        },
+        {
+            title: 'ETF',
+            path: '/trade/etf_kcharts'
+        },
+        {
             title: '持仓K线',
             path: '/trade/invested_kcharts'
         },
         {
             title: '跟踪K线',
             path: '/trade/tracked_kcharts'
-        },
-        {
-            title: '全部K线',
-            path: '/trade/all_kcharts'
         },
         {
             title: '交易流水',

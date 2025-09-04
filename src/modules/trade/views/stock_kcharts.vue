@@ -72,6 +72,13 @@ function init() {
         data.value.end = store.settings.selectedStockKChart.end;
         data.value.page = store.settings.selectedStockKChart.page;
         stocks = store.getSelectedStocks();
+    } else if (route.name === 'etfKCharts') {
+        data.value.addToTrackingEnabled = true;
+        data.value.type = store.settings.etfStockKChart.type;
+        data.value.start = store.settings.etfStockKChart.start;
+        data.value.end = store.settings.etfStockKChart.end;
+        data.value.page = store.settings.etfStockKChart.page;
+        stocks = store.getEtfStocks();
     }
     data.value.total = stocks.length;
     let start = (data.value.page - 1) * data.value.pageSize;
@@ -87,6 +94,8 @@ function onStartChange(dateStr) {
         store.settings.trackedStockKChart.start = dateStr;
     } else if (route.name === 'selectedKCharts') {
         store.settings.selectedStockKChart.start = dateStr;
+    } else if (route.name === 'etfKCharts') {
+        store.settings.etfStockKChart.start = dateStr;
     }
     store.setSettings(store.settings);
 }
@@ -100,6 +109,8 @@ function onEndChange(dateStr) {
         store.settings.trackedStockKChart.end = dateStr;
     } else if (route.name === 'selectedKCharts') {
         store.settings.selectedStockKChart.end = dateStr;
+    } else if (route.name === 'etfKCharts') {
+        store.settings.etfStockKChart.end = dateStr;
     }
     store.setSettings(store.settings);
 }
@@ -118,6 +129,9 @@ function onPageChange(page) {
     } else if (route.name === 'selectedKCharts') {
         store.settings.selectedStockKChart.page = page;
         stocks = store.getSelectedStocks();
+    } else if (route.name === 'etfKCharts') {
+        store.settings.etfStockKChart.page = page;
+        stocks = store.getEtfStocks();
     }
     let start = (page - 1) * data.value.pageSize;
     data.value.curStocks = stocks.slice(start, start + data.value.pageSize);
@@ -134,6 +148,8 @@ function onTypeChange(type) {
         store.settings.trackedStockKChart.type = type;
     } else if (route.name === 'selectedKCharts') {
         store.settings.selectedStockKChart.type = type;
+    } else if (route.name === 'etfKCharts') {
+        store.settings.etfStockKChart.type = type;
     }
     store.setSettings(store.settings);
 }
