@@ -413,7 +413,7 @@ async function requestAllDailyBasic() {
 }
 
 async function requestDailyBasic(stock) {
-	let url = 'http://api.tushare.pro';
+	let url = 'https://api.tushare.pro';
 	let before = 20; // 查询多少年前的数据
 	let startDate = formatLocalYMD(new Date(new Date().getTime() - before * 365 * 24 * 3600 * 1000)).replace(/-/g, '');
 	let endDate = formatLocalYMD(new Date()).replace(/-/g, '');
