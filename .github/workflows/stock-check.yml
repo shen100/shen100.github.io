@@ -1,0 +1,38 @@
+name: Stock API Check
+
+on:
+  push:
+    branches: [cron]
+  workflow_dispatch: # 当workflow_dispatch:没有额外参数时，它只是简单地添加了一个"Run workflow"按钮，不需要任何输入参数就能手动触发工作流
+  schedule:
+    # 1,15,30,45 → 每小时的第 1、15、30、45 分钟
+    # 1-6 → 从 1 点到 6 点（UTC 时间)
+    # * → 每天
+    # * → 每月
+    # 1-5 → 周一到周五（1 是周一，5 是周五）
+    - cron: '1,15,30,45 1-6 * * 1-5'
+
+
+# 设置工作流的权限
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  check-stock-api:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run stock API check
+        run: node ./schedule/checkStock.js
