@@ -71,6 +71,7 @@ async function requetStockTodayData(stockData) {
 }
 
 (async function() {
+    console.log(new Date().toISOString());
     await bluebird.map(stocks, function (stockData) {
         return requetStockTodayData(stockData);
     }, { concurrency: 20 });
