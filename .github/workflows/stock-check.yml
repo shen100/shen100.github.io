@@ -18,7 +18,6 @@ permissions:
 
 jobs:
   check-stock-api:
-    # if: github.ref == 'refs/heads/cron'
     runs-on: ubuntu-latest
     
     steps:
