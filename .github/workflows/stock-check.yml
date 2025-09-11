@@ -8,8 +8,7 @@ on:
     # * → 每天
     # * → 每月
     # 1-5 → 周一到周五（1 是周一，5 是周五）
-    - cron: '* * * * *'
-
+    - cron: '1,15,30,45 1-6 * * 1-5'
 
 # 设置工作流的权限
 permissions:
@@ -36,3 +35,5 @@ jobs:
 
       - name: Run stock API check
         run: node ./schedule/checkStock.js
+
+
