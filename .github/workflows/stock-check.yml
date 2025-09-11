@@ -1,8 +1,6 @@
 name: Stock API Check
 
 on:
-  push:
-    branches: [cron]
   workflow_dispatch: # 当workflow_dispatch:没有额外参数时，它只是简单地添加了一个"Run workflow"按钮，不需要任何输入参数就能手动触发工作流
   schedule:
     # 1,15,30,45 → 每小时的第 1、15、30、45 分钟
@@ -20,6 +18,7 @@ permissions:
 
 jobs:
   check-stock-api:
+    if: github.ref == 'refs/heads/cron'
     runs-on: ubuntu-latest
     
     steps:
