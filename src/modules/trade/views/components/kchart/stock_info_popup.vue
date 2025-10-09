@@ -25,11 +25,27 @@
             <div class="space"></div>
             <div>{{ props.info.lowPrice.toFixed(2) }}</div>
         </div>
+        <div v-if="upDownRate" class="stock-info-popup-txt-box">
+            <div>涨跌幅</div>
+            <div class="space"></div>
+            <div>{{ upDownRate }}</div>
+        </div>
     </div>
 </template>
 
 <script setup>
+import { computed } from 'vue'
 const props = defineProps(['info']);
+
+const upDownRate = computed({
+    get() {
+        if (typeof props.info.prevClosePrice !== 'undefined') {
+            let rateValue = (props.info.closePrice - props.info.prevClosePrice) / props.info.prevClosePrice;
+            return (100 * rateValue).toFixed(2) + '%';
+        }
+        return '';
+    }
+})
 
 </script>
 

@@ -64,7 +64,7 @@ let data = ref({
 	stockName: '',
     lowPriceInAll: 0,
 	highPriceInAll: 0,
-    candleMaxHeight: 200,
+    candleMaxHeight: 280,
 	start: '',
     end: '',
     myKList: [],
@@ -391,7 +391,13 @@ function updateChart(type) {
 }
 
 function onCandleMouseOver(i, candleData) {
-	data.value.activeCandleData = candleData;
+	let theData = {
+		...candleData,
+	};
+	if (data.value.myKList && data.value.myKList[i - 1]) {
+		theData.prevClosePrice = data.value.myKList[i - 1][2]
+	}
+	data.value.activeCandleData = theData;
 }
 
 function onCandleMouseOut(i) {
@@ -421,7 +427,7 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 <style scoped>
 .kchart-container {
 	background-color: #fff;
-	height: 290px;
+	height: 370px; /* 比 data.candleMaxHeight 高出 90px */
 	padding: 15px 20px 20px 20px;
 	box-sizing: border-box;
 	margin-bottom: 20px;
@@ -484,7 +490,7 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
     flex-wrap: nowrap;
     overflow-x: auto;
     width: calc(100vw - 320px);
-	height: 201px; /* 比 data.candleMaxHeight 高出 1px */
+	height: 281px; /* 比 data.candleMaxHeight 高出 1px */
 }
 
 .add-to-tracking {
