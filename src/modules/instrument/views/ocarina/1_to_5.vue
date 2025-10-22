@@ -6,7 +6,7 @@
                 <Button type="primary" @click="onSubmit">确定</Button>
             </FormItem>
         </Form>
-        <h2 style="padding-left: 100px; font-size: 64px; font-weight: 700;">{{ num }}</h2>
+        <h2 class="instrument-num">{{ num }}</h2>
     </div>
 </template>
 
@@ -54,5 +54,10 @@ function onSubmit() {
 </script>
 
 <style scoped>
-
+.instrument-num {
+    padding-left: 100px;
+    font-size: 100px;
+    font-weight: 700;
+    color: #000;
+}
 </style>
