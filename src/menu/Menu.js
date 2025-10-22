@@ -1,3 +1,4 @@
+import instrumentMenu from '../modules/instrument/menu/menu.js'
 import tradeMenu from '../modules/trade/menu/menu.js'
 import webToolMenu from '../modules/webtool/menu/menu.js'
 import docsMenu from '../modules/docs/menu/menu.js'
@@ -40,6 +41,7 @@ export default [
             { title: '活跃用户' }
         ]
     },
+    instrumentMenu,
     docsMenu,
     tradeMenu,
     webToolMenu

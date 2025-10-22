@@ -10,6 +10,9 @@ export default defineConfig(({ mode }) => {
   
   return {
     base: '/',  // 为 GitHub Pages 添加基本路径
+    server: {
+      host: true,  // 允许外部通过 IP 访问
+    },
     plugins: [
       vue(),
       // 只在开发环境中使用 VueDevTools
