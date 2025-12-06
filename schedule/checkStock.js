@@ -7,25 +7,27 @@ const stocks = [
     {
         stockFullId: 'sh600905',
         stockName: '三峡能源',
-        minPrice:  14,
+        minPrice:  4,
         // maxPrice: 20
     },
     {
         stockFullId: 'sh600036',
         stockName: '招商银行',
-        minPrice: 140
+        minPrice: 40
     },
     {
         stockFullId: 'sh600887',
         stockName: '伊利股份',
-        minPrice: 126
+        minPrice: 26
     },
     {
         stockFullId: 'sz300760',
         stockName: '迈瑞医疗',
-        minPrice: 1165
+        minPrice: 165
     }
 ];
+
+console.log(JSON.stringify(stocks, null, 2));
 
 let toMail = 'liushen_shen@163.com';
 let mailStr = '---------------------------------------------\n';
