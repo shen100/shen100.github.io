@@ -18,7 +18,7 @@ const stocks = [
 ];
 
 let toMail = 'liushen_shen@163.com';
-let mailStr = '';
+let mailStr = '---------------------------------------------\n';
 
 function findFromRight(str, char) {
     const reversed = str.split('').reverse().join('');
