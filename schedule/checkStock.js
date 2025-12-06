@@ -22,7 +22,7 @@ const stocks = [
     },
     {
         stockFullId: 'sz300760',
-        stockName: '迈瑞医疗',
+        stockName: '迈瑞医疗', // 恒瑞医药最低跌到市值 1763亿
         minPrice: 165
     }
 ];
