@@ -28,7 +28,7 @@ export function sendMail(to, subject, text) {
                 console.log(result);
                 resolve({});
             } else {
-                console.log(`send to ${to} successfully!`);
+                console.log(`send to ${to} successfully~`);
                 resolve({});
             }
         })
