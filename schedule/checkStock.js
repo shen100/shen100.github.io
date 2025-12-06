@@ -7,13 +7,23 @@ const stocks = [
     {
         stockFullId: 'sh600905',
         stockName: '三峡能源',
-        minPrice:  5,
+        minPrice:  14,
         // maxPrice: 20
     },
     {
         stockFullId: 'sh600036',
         stockName: '招商银行',
-        minPrice: 444
+        minPrice: 140
+    },
+    {
+        stockFullId: 'sh600887',
+        stockName: '伊利股份',
+        minPrice: 126
+    },
+    {
+        stockFullId: 'sz300760',
+        stockName: '迈瑞医疗',
+        minPrice: 1165
     }
 ];
 
