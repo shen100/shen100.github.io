@@ -30,7 +30,7 @@ const stocks = [
 console.log(JSON.stringify(stocks, null, 2));
 
 let toMail = 'liushen_shen@163.com';
-let mailStr = '---------------------------------------------\n';
+let mailStr = '';
 
 function findFromRight(str, char) {
     const reversed = str.split('').reverse().join('');
@@ -96,6 +96,9 @@ async function requetStockTodayData(stockData) {
         return requetStockTodayData(stockData);
     }, { concurrency: 20 });
 
-    await sendMail(toMail, '股价提醒', mailStr);
+    if (mailStr) {
+        mailStr = '---------------------------------------------\n' + mailStr;
+        await sendMail(toMail, '股价提醒', mailStr);
+    }
     console.log('checkStock cron done.');
 }());
