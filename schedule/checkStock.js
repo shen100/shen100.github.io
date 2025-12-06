@@ -1,19 +1,24 @@
 import axios from 'axios';
 import bluebird from 'bluebird';
 import iconv from 'iconv-lite';
+import { sendMail } from './mail/mail.js';
 
 const stocks = [
     {
-        stockFullId: 'sh513010',
-        stockName: '恒生科技ETF易方达',
-        maxPrice: 0.818
+        stockFullId: 'sh600905',
+        stockName: '三峡能源',
+        minPrice:  5,
+        // maxPrice: 20
     },
     {
         stockFullId: 'sh600036',
         stockName: '招商银行',
-        minPrice: 44
+        minPrice: 444
     }
-]
+];
+
+let toMail = 'liushen_shen@163.com';
+let mailStr = '';
 
 function findFromRight(str, char) {
     const reversed = str.split('').reverse().join('');
@@ -63,10 +68,13 @@ async function requetStockTodayData(stockData) {
         todayData[6],  // 总手
     ];
     let price = kData[2];
+    console.log(stockData.stockName + ' 的股价为: ' + price);
     if (stockData.minPrice && price <= stockData.minPrice) {
         console.log(stockData.stockName + ' 的股价小于 ' + stockData.minPrice);
+        mailStr += `${stockData.stockName} 的股价小于 ${stockData.minPrice}\n`;
     } else if (stockData.maxPrice && price >= stockData.maxPrice) {
         console.log(stockData.stockName + ' 的股价大于 ' + stockData.maxPrice);
+        mailStr += `${stockData.stockName} 的股价大于 ${stockData.maxPrice}\n`;
     }
 }
 
@@ -76,5 +84,6 @@ async function requetStockTodayData(stockData) {
         return requetStockTodayData(stockData);
     }, { concurrency: 20 });
 
+    await sendMail(toMail, '股价提醒', mailStr);
     console.log('checkStock cron done.');
 }());
