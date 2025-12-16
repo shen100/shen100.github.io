@@ -16,7 +16,7 @@
             title="添加股票">
             <Form :label-width="80">
                 <FormItem label="股票代码">
-                    <Input v-model="data.stockId" placeholder=""></Input>
+                    <Input v-model="data.stockFullId" placeholder=""></Input>
                 </FormItem>
                 <FormItem label="股票名称">
                     <Input v-model="data.stockName" placeholder=""></Input>
@@ -54,7 +54,7 @@ let data = ref({
     columns: [
 		{
 			title: '股票代码',
-			key: 'stockId',
+			key: 'stockFullId',
 		},
 		{
 			title: '股票名称',
@@ -71,7 +71,7 @@ let data = ref({
     ],
     list: [],
     addStockVisible: false,
-    stockId: '',
+    stockFullId: '',
     stockName: '',
     clickedTime: 0,
     delStockVisible: false,
@@ -95,9 +95,9 @@ function addStockOk() {
         return;
     }
     data.value.clickedTime = now;
-    let stockId = trim(data.value.stockId);
+    let stockFullId = trim(data.value.stockFullId);
     let stockName = trim(data.value.stockName);
-    if (!stockId) {
+    if (!stockFullId) {
         Message.error({
             duration: 10,
             content: '请输入股票代码'
@@ -113,7 +113,7 @@ function addStockOk() {
     }
     data.value.list.push({
         id:  '' + now,
-        stockId,
+        stockFullId,
         stockName,
         buyPoints: [],
         totalExpense: 0

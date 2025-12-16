@@ -3,8 +3,8 @@
         <Card>
             <Form :label-width="80">
                 <FormItem label="股票代码">
-                    <Input v-if="data.isEdit" v-model="data.stockId" style="width: 300px;"></Input>
-                    <div v-else>{{ data.stockId }}</div>
+                    <Input v-if="data.isEdit" v-model="data.stockFullId" style="width: 300px;"></Input>
+                    <div v-else>{{ data.stockFullId }}</div>
                 </FormItem>
                 <FormItem label="股票名称">
                     <Input v-if="data.isEdit" v-model="data.stockName" style="width: 300px;"></Input>
@@ -12,6 +12,10 @@
                 </FormItem>
                 <FormItem label="最新价格">
                     <div>{{ data.curStockPrice }}</div>
+                </FormItem>
+                <FormItem label="最终价格">
+                    <Input v-if="data.isEdit" v-model="data.finalPrice" style="width: 300px;"></Input>
+                    <div v-else>{{ data.finalPrice }}</div>
                 </FormItem>
                 <FormItem label="总花费">
                     <div>{{ formatMoney(data.totalExpense, 2) }}</div>
@@ -39,8 +43,14 @@
                 <template #sumExpense="{ row }">
 					<div>{{ formatMoney(row.sumExpense, 2) }}</div>
 				</template>
-                <template #profit="{ row }">
-					<div>{{ formatMoney(row.profit, 2) }}</div>
+                <template #profit2="{ row }">
+					<div>{{ formatMoney(row.profit2, 2) }}</div>
+				</template>
+                <template #upDownRate3="{ row }">
+					<div>{{ formatMoney(row.upDownRate3 * 100, 2) + '%' }}</div>
+				</template>
+                <template #profit3="{ row }">
+					<div>{{ formatMoney(row.profit3, 2) }}</div>
 				</template>
                 <template #action="{ row, index }">
                     <Button size="small" type="error" @click="onDelBuyPoints(index)">删除</Button>
@@ -62,8 +72,14 @@
                 <template #sumExpense="{ row }">
 					<div>{{ formatMoney(row.sumExpense, 2) }}</div>
 				</template>
-                <template #profit="{ row }">
-					<div>{{ formatMoney(row.profit, 2) }}</div>
+                <template #profit2="{ row }">
+					<div>{{ formatMoney(row.profit2, 2) }}</div>
+				</template>
+                <template #upDownRate3="{ row }">
+					<div>{{ formatMoney(row.upDownRate3 * 100, 2) + '%' }}</div>
+				</template>
+                <template #profit3="{ row }">
+					<div>{{ formatMoney(row.profit3, 2) }}</div>
 				</template>
             </Table>
             <div v-if="data.isEdit" style="margin-top: 15px;">
@@ -110,24 +126,33 @@ let columns = [
         slot: 'avgCost'
     },
     {
-        title: '(买入价格 - 首次买入价格) / 首次买入价格',
-        width: 320,
+        title: 'ƒ(买入价格, 首次买入价格)',
+        width: 220,
         slot: 'upDownRate1'
     },
     {
-        title: '(最新价格 - 平均成本) / 平均成本',
-        width: 250,
+        title: 'ƒ(最新价格, 平均成本)',
+        width: 200,
         slot: 'upDownRate2'
     },
     {
         title: '利润',
-        slot: 'profit'
+        slot: 'profit2'
+    },
+    {
+        title: 'ƒ(最终价格, 平均成本)',
+        width: 200,
+        slot: 'upDownRate3'
+    },
+    {
+        title: '利润',
+        slot: 'profit3'
     }
 ];
 let data = ref({
     isEdit: false,
     id: '',
-    stockId: '',
+    stockFullId: '',
     stockName: '',
     columns1: [
 		{
@@ -158,6 +183,7 @@ let data = ref({
     list: [],
     buyPoints: ref([]),
     curStockPrice: 0, // 最新价格
+    finalPrice: 0,  // 最终价格 
     totalExpense: 0, // 总花费
     tempData: null
 })
@@ -170,7 +196,7 @@ onMounted(async () => {
     data.value.list = list;
     for (let i = 0; i < list.length; i++) {
         if (list[i].id === data.value.id) {
-            data.value.stockId = list[i].stockId;
+            data.value.stockFullId = list[i].stockFullId;
             data.value.stockName = list[i].stockName;
             data.value.buyPoints = ref(list[i].buyPoints || []);
             data.value.totalExpense = list[i].totalExpense || 0;
@@ -193,10 +219,9 @@ onMounted(async () => {
         ]
     });
 
-    if (data.value.stockId) {
+    if (data.value.stockFullId) {
         let stock = {
-            stockId: data.value.stockId,
-            stockFullId: addStockExchangePrefix(data.value.stockId),
+            stockFullId: data.value.stockFullId
         }
         let stockDetail = await requestStockDetail(stock);
         data.value.curStockPrice = stockDetail.price;
@@ -205,7 +230,7 @@ onMounted(async () => {
 
 function onBuyPointsEdit() {
     data.value.tempData = {
-        stockId: data.value.stockId,
+        stockFullId: data.value.stockFullId,
         stockName: data.value.stockName,
         buyPoints: JSON.parse(JSON.stringify(data.value.buyPoints))
     };
@@ -221,7 +246,9 @@ function onAddBuyPoints() {
         sumExpense: 0, // 累计花费
         upDownRate1: 0,
         upDownRate2: 0,
-        profit: 0 // 利润
+        upDownRate3: 0,
+        profit2: 0, // 利润
+        profit3: 0 // 利润
     });
 }
 
@@ -234,9 +261,9 @@ function onCountChange(index, count) {
 }
 
 function onBuyPointsEditOk() {
-    let stockId = trim(data.value.stockId);
+    let stockFullId = trim(data.value.stockFullId);
     let stockName = trim(data.value.stockName);
-    if (!stockId) {
+    if (!stockFullId) {
         Message.error({
             duration: 10,
             content: '请输入股票代码'
@@ -256,7 +283,7 @@ function onBuyPointsEditOk() {
     calculateAverageCostChangeRate();
     for (let i = 0; i < list.length; i++) {
         if (list[i].id === data.value.id) {
-            list[i].stockId = stockId;
+            list[i].stockFullId = stockFullId;
             list[i].stockName = stockName;
             list[i].totalExpense = data.value.totalExpense;
             break;
@@ -268,7 +295,7 @@ function onBuyPointsEditOk() {
 }
 
 function onBuyPointsEditCancel() {
-    data.value.stockId = data.value.tempData.stockId;
+    data.value.stockFullId = data.value.tempData.stockFullId;
     data.value.stockName = data.value.tempData.stockName;
     data.value.buyPoints = data.value.tempData.buyPoints;
     data.value.isEdit = false;
@@ -295,7 +322,9 @@ function calculateAverageCostChangeRate() {
         avgCost = sumExpense / sumCount;
         buyPoints[i].upDownRate1 = (buyPoints[i].price - firstBuyPrice) / firstBuyPrice;
         buyPoints[i].upDownRate2 = (data.value.curStockPrice - avgCost) / avgCost;
-        buyPoints[i].profit = data.value.curStockPrice * sumCount - sumExpense;
+        buyPoints[i].profit2 = data.value.curStockPrice * sumCount - sumExpense;
+        buyPoints[i].upDownRate3 = (data.value.finalPrice - avgCost) / avgCost;
+        buyPoints[i].profit3 = data.value.finalPrice * sumCount - sumExpense;
         buyPoints[i].sumExpense = sumExpense;
         buyPoints[i].avgCost = avgCost;
     }
