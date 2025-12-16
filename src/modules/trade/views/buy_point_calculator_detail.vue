@@ -258,6 +258,7 @@ function onBuyPointsEditOk() {
         if (list[i].id === data.value.id) {
             list[i].stockId = stockId;
             list[i].stockName = stockName;
+            list[i].totalExpense = data.value.totalExpense;
             break;
         }
     }
