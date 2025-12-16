@@ -1,9 +1,10 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { RouterView } from 'vue-router'
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import Menu from './menu/Menu.vue'
 import config from './config/config.js'
+import { globalEventEmitter } from './util/event'
 
 const route = useRoute()
 
@@ -14,7 +15,8 @@ const shoudReviewFullPageArr = [
 ];
 let shoudReviewFullPage = ref(false)
 let menuVisible = ref(true)
-let appName = ref(config.appName)
+let appName = ref(config.appName);
+let breadcrumbList = ref([]);
 
 watch(() => route.path, (newPath) => {
     if (newPath) {
@@ -22,6 +24,14 @@ watch(() => route.path, (newPath) => {
     }
     shoudReviewFullPage.value = shoudReviewFullPageArr.indexOf(newPath) >= 0;
 }, { immediate: true });
+
+onMounted(() => {
+    globalEventEmitter.on('breadcrumb', onBreadcrumbChange);
+});
+
+function onBreadcrumbChange(breadcrumbData) {
+    breadcrumbList.value = breadcrumbData.list || [];
+}
 </script>
 
 <template>
@@ -39,7 +49,16 @@ watch(() => route.path, (newPath) => {
             <RouterView />
         </div>
         <div v-else class="main-content">
-            <div class="main-content-layout-header"></div>
+            <div class="main-content-layout-header">
+                <div class="main-content-layout-header-box">
+                    <Breadcrumb v-if="breadcrumbList.length">
+                        <template v-for="breadcrumb in breadcrumbList">
+                            <BreadcrumbItem v-if="breadcrumb.to" :to="breadcrumb.to">{{ breadcrumb.label }}</BreadcrumbItem>
+                            <BreadcrumbItem v-else>{{ breadcrumb.label }}</BreadcrumbItem>
+                        </template>
+                    </Breadcrumb>
+                </div>
+            </div>
             <div class="main-content-layout-content">
                 <RouterView :key="route.name"/>
             </div>
@@ -106,6 +125,10 @@ watch(() => route.path, (newPath) => {
     right: 0;
     background-color: #fff;
     z-index: 100;
+}
+
+.main-content-layout-header-box {
+    padding: 20px;
 }
 
 .main-content-layout-content {
