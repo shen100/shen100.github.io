@@ -1,5 +1,7 @@
 export function formatMoney(number /* float */, precision /* float */) {
-	let str = Number(number.toFixed(precision)).toLocaleString();
+	let str = Number(number.toFixed(precision)).toLocaleString(undefined, {
+        minimumFractionDigits: precision,  // 最小小数位数
+    });
     if (number === 0) {
 		str = "0";
     }

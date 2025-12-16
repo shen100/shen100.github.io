@@ -17,7 +17,7 @@
                     <div>{{ formatMoney(data.totalExpense, 2) }}</div>
                 </FormItem>
             </Form>
-            <Table v-if="data.isEdit" border :columns="data.columns" :data="data.buyPoints">
+            <Table v-if="data.isEdit" border :columns="data.columns1" :data="data.buyPoints">
                 <template #price="{ row, index }">
 					<InputNumber number v-model="row.price" @on-change="() => onPriceChange(index, row.price)"></InputNumber>
 				</template>
@@ -33,14 +33,17 @@
                 <template #expense="{ row }">
 					<div>{{ formatMoney(row.expense, 2) }}</div>
 				</template>
-                <template #avgCost="{ row, index }">
-					<div>{{ index === 0 ? row.avgCost : formatMoney(row.avgCost, 4) }}</div>
+                <template #avgCost="{ row }">
+					<div>{{ formatMoney(row.avgCost, 4) }}</div>
 				</template>
                 <template #sumExpense="{ row }">
 					<div>{{ formatMoney(row.sumExpense, 2) }}</div>
 				</template>
                 <template #profit="{ row }">
 					<div>{{ formatMoney(row.profit, 2) }}</div>
+				</template>
+                <template #action="{ row, index }">
+                    <Button size="small" type="error" @click="onDelBuyPoints(index)">删除</Button>
 				</template>
             </Table>
             <Table v-else border :columns="data.columns2" :data="data.buyPoints">
@@ -53,8 +56,8 @@
                 <template #expense="{ row }">
 					<div>{{ formatMoney(row.expense, 2) }}</div>
 				</template>
-                <template #avgCost="{ row, index }">
-					<div>{{ index === 0 ? row.avgCost : formatMoney(row.avgCost, 4) }}</div>
+                <template #avgCost="{ row }">
+					<div>{{ formatMoney(row.avgCost, 4) }}</div>
 				</template>
                 <template #sumExpense="{ row }">
 					<div>{{ formatMoney(row.sumExpense, 2) }}</div>
@@ -88,16 +91,45 @@ import { requestStockDetail } from '../util/stock';
 import { addStockExchangePrefix } from '../util/big_a';
 import { formatMoney } from '../util/money';
 import { globalEventEmitter } from '../../../util/event';
+import { trim } from '../util/str';
 
 const route = useRoute()
 const router = useRouter()
 
+let columns = [
+    {
+        title: '花费',
+        slot: 'expense'
+    },
+    {
+        title: '累计花费',
+        slot: 'sumExpense'
+    },
+    {
+        title: '平均成本',
+        slot: 'avgCost'
+    },
+    {
+        title: '(买入价格 - 首次买入价格) / 首次买入价格',
+        width: 320,
+        slot: 'upDownRate1'
+    },
+    {
+        title: '(最新价格 - 平均成本) / 平均成本',
+        width: 250,
+        slot: 'upDownRate2'
+    },
+    {
+        title: '利润',
+        slot: 'profit'
+    }
+];
 let data = ref({
     isEdit: false,
     id: '',
     stockId: '',
     stockName: '',
-    columns: [
+    columns1: [
 		{
 			title: '买入价格',
 			slot: 'price',
@@ -106,32 +138,11 @@ let data = ref({
 			title: '买入数量',
 			slot: 'count'
 		},
+        ...columns,
         {
-			title: '平均成本',
-			slot: 'avgCost'
-		},
-        {
-			title: '花费',
-			slot: 'expense'
-		},
-        {
-			title: '累计花费',
-			slot: 'sumExpense'
-		},
-        {
-			title: '(买入价格 - 首次买入价格) / 首次买入价格',
-            width: 320,
-			slot: 'upDownRate1'
-		},
-        {
-			title: '(最新价格 - 平均成本) / 平均成本',
-            width: 250,
-			slot: 'upDownRate2'
-		},
-        {
-			title: '利润',
-			slot: 'profit'
-		}
+            title: '操作',
+            slot: 'action'
+        }
     ],
     columns2: [
 		{
@@ -142,38 +153,13 @@ let data = ref({
 			title: '买入数量',
 			key: 'count'
 		},
-        {
-			title: '平均成本',
-			slot: 'avgCost'
-		},
-        {
-			title: '花费',
-			slot: 'expense'
-		},
-        {
-			title: '累计花费',
-			slot: 'sumExpense'
-		},
-        {
-			title: '(买入价格 - 首次买入价格) / 首次买入价格',
-            width: 320,
-			slot: 'upDownRate1'
-		},
-        {
-			title: '(最新价格 - 平均成本) / 平均成本',
-            width: 250,
-			slot: 'upDownRate2'
-		},
-        {
-			title: '利润',
-			slot: 'profit'
-		}
+        ...columns
     ],
     list: [],
     buyPoints: ref([]),
     curStockPrice: 0, // 最新价格
     totalExpense: 0, // 总花费
-    tempData: null,
+    tempData: null
 })
 
 onMounted(async () => {
@@ -248,12 +234,30 @@ function onCountChange(index, count) {
 }
 
 function onBuyPointsEditOk() {
+    let stockId = trim(data.value.stockId);
+    let stockName = trim(data.value.stockName);
+    if (!stockId) {
+        Message.error({
+            duration: 10,
+            content: '请输入股票代码'
+        });
+        return
+    }
+    if (!stockName) {
+        Message.error({
+            duration: 10,
+            content: '请输入股票名称'
+        });
+        return
+    }
+
     data.value.isEdit = false;
     let list = data.value.list;
     calculateAverageCostChangeRate();
     for (let i = 0; i < list.length; i++) {
         if (list[i].id === data.value.id) {
-            list[i].totalExpense = data.value.totalExpense; // 总花费
+            list[i].stockId = stockId;
+            list[i].stockName = stockName;
             break;
         }
     }
@@ -289,8 +293,14 @@ function calculateAverageCostChangeRate() {
         }
         avgCost = sumExpense / sumCount;
         buyPoints[i].upDownRate1 = (buyPoints[i].price - firstBuyPrice) / firstBuyPrice;
-        buyPoints[i].upDownRate2 = (data.value.curStockPrice - buyPoints[i].avgCost) / buyPoints[i].avgCost;
+        buyPoints[i].upDownRate2 = (data.value.curStockPrice - avgCost) / avgCost;
         buyPoints[i].profit = data.value.curStockPrice * sumCount - sumExpense;
+        buyPoints[i].sumExpense = sumExpense;
+        buyPoints[i].avgCost = avgCost;
     }
+}
+
+function onDelBuyPoints(index) {
+    data.value.buyPoints.splice(index, 1);
 }
 </script>
