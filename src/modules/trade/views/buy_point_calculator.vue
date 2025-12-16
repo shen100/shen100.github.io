@@ -116,7 +116,8 @@ function addStockOk() {
         stockFullId,
         stockName,
         buyPoints: [],
-        totalExpense: 0
+        totalExpense: 0, // 总花费
+        finalPrice: 0 // 最终价格 
     });
     localStorage.setItem('tradeBuyPointCalculator', JSON.stringify({
         list: data.value.list

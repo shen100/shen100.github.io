@@ -200,6 +200,7 @@ onMounted(async () => {
             data.value.stockName = list[i].stockName;
             data.value.buyPoints = ref(list[i].buyPoints || []);
             data.value.totalExpense = list[i].totalExpense || 0;
+            data.value.finalPrice = list[i].finalPrice || 0;
         }
     }
 
@@ -286,6 +287,7 @@ function onBuyPointsEditOk() {
             list[i].stockFullId = stockFullId;
             list[i].stockName = stockName;
             list[i].totalExpense = data.value.totalExpense;
+            list[i].finalPrice = data.value.finalPrice;
             break;
         }
     }
