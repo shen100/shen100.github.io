@@ -136,7 +136,7 @@ let columns = [
         slot: 'upDownRate2'
     },
     {
-        title: '利润',
+        title: '利润2',
         slot: 'profit2'
     },
     {
@@ -145,7 +145,7 @@ let columns = [
         slot: 'upDownRate3'
     },
     {
-        title: '利润',
+        title: '利润3',
         slot: 'profit3'
     }
 ];
