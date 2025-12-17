@@ -107,72 +107,88 @@ let data = ref({
         {
             title: '序号',
 			slot: 'rowIndex',
+            align: 'center',
         },
 		{
 			title: '买入价格',
 			slot: 'price',
+            align: 'center',
 		},
 		{
 			title: '买入数量',
-			slot: 'count'
+			slot: 'count',
+            align: 'center',
 		},
         {
             title: '花费',
-            slot: 'expense'
+            slot: 'expense',
+            align: 'center',
         },
         {
             title: 'ƒ(买入价格, 首次买入价格)',
             width: 220,
-            slot: 'upDownRate1'
+            slot: 'upDownRate1',
+            align: 'center',
         },
         {
             title: '操作',
-            slot: 'action'
+            slot: 'action',
+            align: 'center',
         }
     ],
     columns2: [
 		{
 			title: '买入价格',
 			key: 'price',
+            align: 'center',
 		},
 		{
 			title: '买入数量',
-			key: 'count'
+			key: 'count',
+            align: 'center',
 		},
         {
             title: '花费',
-            slot: 'expense'
+            slot: 'expense',
+            align: 'center',
         },
         {
             title: '累计花费',
-            slot: 'sumExpense'
+            slot: 'sumExpense',
+            align: 'center',
         },
         {
             title: '平均成本',
-            slot: 'avgCost'
+            slot: 'avgCost',
+            align: 'center',
         },
         {
             title: 'ƒ(买入价格, 首次买入价格)',
             width: 220,
-            slot: 'upDownRate1'
+            slot: 'upDownRate1',
+            align: 'center',
         },
         {
             title: 'ƒ(买入价格, 平均成本)',
             width: 200,
-            slot: 'upDownRate2'
+            slot: 'upDownRate2',
+            align: 'center',
         },
         {
             title: '利润2',
-            slot: 'profit2'
+            slot: 'profit2',
+            align: 'center',
         },
         {
             title: 'ƒ(最终价格, 平均成本)',
             width: 200,
-            slot: 'upDownRate3'
+            slot: 'upDownRate3',
+            align: 'center',
         },
         {
             title: '利润3',
-            slot: 'profit3'
+            slot: 'profit3',
+            align: 'center',
         }
     ],
     list: [],
