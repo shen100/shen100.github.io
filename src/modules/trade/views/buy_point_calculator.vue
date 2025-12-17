@@ -1,10 +1,18 @@
 <template>
     <div>
         <Card>
-            <div style="margin-bottom: 15px;">
+            <div class="buy-point-calculator-btnbox">
                 <Button type="primary" @click="onAddStock">添加股票</Button>
+                <div class="buy-point-calculator-btnbox-space"></div>
+                <div>
+                    <span>总花费: </span>
+                    <span>{{ formatMoney(data.totalExpense, 2) }}</span>
+                </div>
             </div>
             <Table border :columns="data.columns" :data="data.list">
+                <template #totalExpense="{ row, index }">
+					<div>{{ formatMoney(row.totalExpense, 2)}}</div>
+				</template>
 				<template #action="{ row }">
 					<Button size="small" type="primary" @click="onStockDetail(row)">查看</Button>
                     <Button size="small" type="error" @click="onDelStock(row)" style="margin-left: 10px;">删除</Button>
@@ -47,6 +55,7 @@ import { onMounted, ref } from 'vue';
 import { Message } from 'view-ui-plus';
 import { useRouter } from 'vue-router'
 import { trim } from '../util/str';
+import { formatMoney } from '../util/money';
 
 const router = useRouter()
 
@@ -62,7 +71,7 @@ let data = ref({
 		},
         {
 			title: '花费',
-			key: 'totalExpense'
+			slot: 'totalExpense'
 		},
 		{
 			title: '操作',
@@ -77,12 +86,16 @@ let data = ref({
     delStockVisible: false,
     idToDelete: '',
     stockNameToDelete: '',
+    totalExpense: 0
 })
 
 onMounted(async () => {
     let listStr = localStorage.getItem('tradeBuyPointCalculator') || '{"list": []}';
     let jsonData = JSON.parse(listStr);
     data.value.list = jsonData.list;
+    for (let i = 0; i < data.value.list.length; i++) {
+        data.value.totalExpense += data.value.list[i].totalExpense;
+    }
 });
 
 function onAddStock() {
@@ -162,6 +175,15 @@ function delStockCancel() {
 </script>
 
 <style scoped>
+.buy-point-calculator-btnbox {
+    margin-bottom: 15px;
+    display: flex;
+}
+
+.buy-point-calculator-btnbox-space {
+    flex: 1;
+}
+
 .del-stock-buy-point-calculator {
     font-weight: 700;
 }
