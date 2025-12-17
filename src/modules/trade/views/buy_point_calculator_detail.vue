@@ -35,7 +35,7 @@
 					<div>{{ formatMoney(row.expense, 2) }}</div>
 				</template>
                 <template #upDownRate1="{ row, index }">
-					<div>{{ index === 0 ? '' : formatMoney(row.upDownRate1 * 100, 2) + '%'}}</div>
+					<div>{{ index === 0 ? '-' : formatMoney(row.upDownRate1 * 100, 2) + '%'}}</div>
 				</template>
                 <template #action="{ row, index }">
                     <Button :disabled="index === 0" @click="onBuyPointsSwap(index - 1, index)" shape="circle" icon="md-arrow-round-up"></Button>
@@ -44,23 +44,23 @@
 				</template>
             </Table>
             <Table v-else border :columns="data.columns2" :data="data.buyPoints">
-                <template #upDownRate1="{ row, index }">
-					<div>{{ index === 0 ? '' : formatMoney(row.upDownRate1 * 100, 2) + '%'}}</div>
-				</template>
-                <template #upDownRate2="{ row }">
-					<div>{{ formatMoney(row.upDownRate2 * 100, 2) + '%' }}</div>
-				</template>
                 <template #expense="{ row }">
 					<div>{{ formatMoney(row.expense, 2) }}</div>
-				</template>
-                <template #avgCost="{ row }">
-					<div>{{ formatMoney(row.avgCost, 4) }}</div>
 				</template>
                 <template #sumExpense="{ row }">
 					<div>{{ formatMoney(row.sumExpense, 2) }}</div>
 				</template>
-                <template #profit2="{ row }">
-					<div>{{ formatMoney(row.profit2, 2) }}</div>
+                <template #avgCost="{ row }">
+					<div>{{ formatMoney(row.avgCost, 4) }}</div>
+				</template>
+                <template #upDownRate1="{ row, index }">
+					<div>{{ index === 0 ? '-' : formatMoney(row.upDownRate1 * 100, 2) + '%'}}</div>
+				</template>
+                <template #upDownRate2="{ row, index }">
+					<div>{{ index === 0 ? '-' : formatMoney(row.upDownRate2 * 100, 2) + '%' }}</div>
+				</template>
+                <template #profit2="{ row, index }">
+					<div>{{ index === 0 ? '-' : formatMoney(row.profit2, 2) }}</div>
 				</template>
                 <template #upDownRate3="{ row }">
 					<div>{{ formatMoney(row.upDownRate3 * 100, 2) + '%' }}</div>
