@@ -22,37 +22,24 @@
                 </FormItem>
             </Form>
             <Table v-if="data.isEdit" border :columns="data.columns1" :data="data.buyPoints">
+                <template #rowIndex="{ row, index }">
+                    <div>{{ index + 1 }}</div>
+				</template>
                 <template #price="{ row, index }">
 					<InputNumber number v-model="row.price" @on-change="() => onPriceChange(index, row.price)"></InputNumber>
 				</template>
                 <template #count="{ row, index }">
 					<InputNumber number v-model="row.count" @on-change="() => onCountChange(index, row.count)"></InputNumber>
 				</template>
-                <template #upDownRate1="{ row, index }">
-					<div>{{ index === 0 ? '' : formatMoney(row.upDownRate1 * 100, 2) + '%'}}</div>
-				</template>
-                <template #upDownRate2="{ row }">
-					<div>{{ formatMoney(row.upDownRate2 * 100, 2) + '%' }}</div>
-				</template>
                 <template #expense="{ row }">
 					<div>{{ formatMoney(row.expense, 2) }}</div>
 				</template>
-                <template #avgCost="{ row }">
-					<div>{{ formatMoney(row.avgCost, 4) }}</div>
-				</template>
-                <template #sumExpense="{ row }">
-					<div>{{ formatMoney(row.sumExpense, 2) }}</div>
-				</template>
-                <template #profit2="{ row }">
-					<div>{{ formatMoney(row.profit2, 2) }}</div>
-				</template>
-                <template #upDownRate3="{ row }">
-					<div>{{ formatMoney(row.upDownRate3 * 100, 2) + '%' }}</div>
-				</template>
-                <template #profit3="{ row }">
-					<div>{{ formatMoney(row.profit3, 2) }}</div>
+                <template #upDownRate1="{ row, index }">
+					<div>{{ index === 0 ? '' : formatMoney(row.upDownRate1 * 100, 2) + '%'}}</div>
 				</template>
                 <template #action="{ row, index }">
+                    <Button :disabled="index === 0" @click="onBuyPointsSwap(index - 1, index)" shape="circle" icon="md-arrow-round-up"></Button>
+                    <Button :disabled="index === data.buyPoints.length - 1" @click="onBuyPointsSwap(index, index + 1)" shape="circle" icon="md-arrow-round-down" style="margin: 0 10px 0 10px;"></Button>
                     <Button size="small" type="error" @click="onDelBuyPoints(index)">删除</Button>
 				</template>
             </Table>
@@ -111,49 +98,16 @@ import { trim } from '../util/str';
 const route = useRoute()
 const router = useRouter()
 
-let columns = [
-    {
-        title: '花费',
-        slot: 'expense'
-    },
-    {
-        title: '累计花费',
-        slot: 'sumExpense'
-    },
-    {
-        title: '平均成本',
-        slot: 'avgCost'
-    },
-    {
-        title: 'ƒ(买入价格, 首次买入价格)',
-        width: 220,
-        slot: 'upDownRate1'
-    },
-    {
-        title: 'ƒ(买入价格, 平均成本)',
-        width: 200,
-        slot: 'upDownRate2'
-    },
-    {
-        title: '利润2',
-        slot: 'profit2'
-    },
-    {
-        title: 'ƒ(最终价格, 平均成本)',
-        width: 200,
-        slot: 'upDownRate3'
-    },
-    {
-        title: '利润3',
-        slot: 'profit3'
-    }
-];
 let data = ref({
     isEdit: false,
     id: '',
     stockFullId: '',
     stockName: '',
     columns1: [
+        {
+            title: '序号',
+			slot: 'rowIndex',
+        },
 		{
 			title: '买入价格',
 			slot: 'price',
@@ -162,7 +116,15 @@ let data = ref({
 			title: '买入数量',
 			slot: 'count'
 		},
-        ...columns,
+        {
+            title: '花费',
+            slot: 'expense'
+        },
+        {
+            title: 'ƒ(买入价格, 首次买入价格)',
+            width: 220,
+            slot: 'upDownRate1'
+        },
         {
             title: '操作',
             slot: 'action'
@@ -177,7 +139,41 @@ let data = ref({
 			title: '买入数量',
 			key: 'count'
 		},
-        ...columns
+        {
+            title: '花费',
+            slot: 'expense'
+        },
+        {
+            title: '累计花费',
+            slot: 'sumExpense'
+        },
+        {
+            title: '平均成本',
+            slot: 'avgCost'
+        },
+        {
+            title: 'ƒ(买入价格, 首次买入价格)',
+            width: 220,
+            slot: 'upDownRate1'
+        },
+        {
+            title: 'ƒ(买入价格, 平均成本)',
+            width: 200,
+            slot: 'upDownRate2'
+        },
+        {
+            title: '利润2',
+            slot: 'profit2'
+        },
+        {
+            title: 'ƒ(最终价格, 平均成本)',
+            width: 200,
+            slot: 'upDownRate3'
+        },
+        {
+            title: '利润3',
+            slot: 'profit3'
+        }
     ],
     list: [],
     buyPoints: ref([]),
@@ -256,11 +252,19 @@ function onAddBuyPoints() {
 }
 
 function onPriceChange(index, price) {
-    data.value.buyPoints[index].price = price;
+    let buyPoints = data.value.buyPoints;
+    buyPoints[index].price = price;
+    buyPoints[index].expense = price * buyPoints[index].count;
+    let firstBuyPrice = buyPoints[0].price;
+    buyPoints[index].upDownRate1 = (buyPoints[index].price - firstBuyPrice) / firstBuyPrice;
 }
 
 function onCountChange(index, count) {
-    data.value.buyPoints[index].count = count;
+    let buyPoints = data.value.buyPoints;
+    buyPoints[index].count = count;
+    buyPoints[index].expense = buyPoints[index].price * count;
+    let firstBuyPrice = buyPoints[0].price;
+    buyPoints[index].upDownRate1 = (buyPoints[index].price - firstBuyPrice) / firstBuyPrice;
 }
 
 function onBuyPointsEditOk() {
@@ -281,8 +285,25 @@ function onBuyPointsEditOk() {
         return
     }
 
-    data.value.isEdit = false;
     let list = data.value.list;
+    let buyPoints = data.value.buyPoints;
+    for (let i = 0; i < buyPoints.length; i++) {
+        if (buyPoints[i].price <= 0) {
+            Message.error({
+                duration: 10,
+                content: `第${i + 1}行的买入价格要大于 0`
+            });
+            return
+        }
+        if (buyPoints[i].count <= 0) {
+            Message.error({
+                duration: 10,
+                content: `第${i + 1}行的买入数量要大于 0`
+            });
+            return
+        }
+    }
+
     calculateAverageCostChangeRate();
     for (let i = 0; i < list.length; i++) {
         if (list[i].id === data.value.id) {
@@ -296,6 +317,8 @@ function onBuyPointsEditOk() {
     localStorage.setItem('tradeBuyPointCalculator', JSON.stringify({
         list: data.value.list,
     }));
+
+    data.value.isEdit = false;
 }
 
 function onBuyPointsEditCancel() {
@@ -310,6 +333,7 @@ function calculateAverageCostChangeRate() {
     if (!buyPoints || !buyPoints.length) {
         return;
     }
+
     // 首次买入价格
     let firstBuyPrice = buyPoints[0].price;
     data.value.totalExpense = 0; // 总花费
@@ -332,6 +356,20 @@ function calculateAverageCostChangeRate() {
         buyPoints[i].sumExpense = sumExpense;
         buyPoints[i].avgCost = avgCost;
     }
+}
+
+function onBuyPointsSwap(i, j) {
+    let p1 = data.value.buyPoints[i];
+    let p2 = data.value.buyPoints[j];
+    data.value.buyPoints[i] = p2;
+    data.value.buyPoints[j] = p1;
+    let newBuyPoints = [ ...data.value.buyPoints ];
+    data.value.buyPoints = newBuyPoints;
+    data.value.list.forEach((item) => {
+        if (item.id === data.value.id) {
+            item.buyPoints = newBuyPoints;
+        }
+    });
 }
 
 function onDelBuyPoints(index) {
