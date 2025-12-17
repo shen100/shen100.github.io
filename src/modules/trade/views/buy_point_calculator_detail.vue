@@ -131,7 +131,7 @@ let columns = [
         slot: 'upDownRate1'
     },
     {
-        title: 'ƒ(最新价格, 平均成本)',
+        title: 'ƒ(买入价格, 平均成本)',
         width: 200,
         slot: 'upDownRate2'
     },
@@ -326,8 +326,8 @@ function calculateAverageCostChangeRate() {
         }
         avgCost = sumExpense / sumCount;
         buyPoints[i].upDownRate1 = (buyPoints[i].price - firstBuyPrice) / firstBuyPrice;
-        buyPoints[i].upDownRate2 = (data.value.curStockPrice - avgCost) / avgCost;
-        buyPoints[i].profit2 = data.value.curStockPrice * sumCount - sumExpense;
+        buyPoints[i].upDownRate2 = (buyPoints[i].price - avgCost) / avgCost;
+        buyPoints[i].profit2 = buyPoints[i].price * sumCount - sumExpense;
         buyPoints[i].upDownRate3 = (data.value.finalPrice - avgCost) / avgCost;
         buyPoints[i].profit3 = data.value.finalPrice * sumCount - sumExpense;
         buyPoints[i].sumExpense = sumExpense;
