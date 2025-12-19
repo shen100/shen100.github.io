@@ -168,17 +168,17 @@ let data = ref({
             slot: 'upDownRate1',
             align: 'center',
         },
-        {
-            title: 'ƒ(买入价格, 平均成本)',
-            width: 200,
-            slot: 'upDownRate2',
-            align: 'center',
-        },
-        {
-            title: '利润2',
-            slot: 'profit2',
-            align: 'center',
-        },
+        // {
+        //     title: 'ƒ(买入价格, 平均成本)',
+        //     width: 200,
+        //     slot: 'upDownRate2',
+        //     align: 'center',
+        // },
+        // {
+        //     title: '利润2',
+        //     slot: 'profit2',
+        //     align: 'center',
+        // },
         {
             title: 'ƒ(最终价格, 平均成本)',
             width: 200,
@@ -186,7 +186,7 @@ let data = ref({
             align: 'center',
         },
         {
-            title: '利润3',
+            title: '利润',
             slot: 'profit3',
             align: 'center',
         }
