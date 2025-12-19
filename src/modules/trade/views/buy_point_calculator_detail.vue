@@ -180,8 +180,7 @@ let data = ref({
         //     align: 'center',
         // },
         {
-            title: 'ƒ(最终价格, 平均成本)',
-            width: 200,
+            title: '利润率',
             slot: 'upDownRate3',
             align: 'center',
         },
