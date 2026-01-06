@@ -8,7 +8,7 @@
             <li><a href="/docs/2/chapter/1750703380377">开发辅助工具</a></li>
             <li><a href="/docs/4/chapter/1752041149735">备忘</a></li>
             <li><a href="/docs/5/chapter/1765031641629">投资心得</a></li>
-            <li><a href="/docs/5/chapter/1767687389503">学习规划</a></li>
+            <li><a href="/docs/6/chapter/1767687389503">学习规划</a></li>
         </ul>
     </div>
 </template>
