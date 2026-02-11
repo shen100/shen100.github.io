@@ -8,9 +8,9 @@ const __dirname = path.dirname(__filename);
 
 // ************************************************************
 // 创建文档，改这 3 个变量即可，然后 node create_doc.js             
-const bookId = 6;               // 文档集ID                                   
-const bookName = '学习规划';    // 文档集名称                           
-const chapterName = '学校选择'; // 章节名称                   
+const bookId = 5;               // 文档集ID                                   
+const bookName = '投资心得';    // 文档集名称                           
+const chapterName = '黄金'; // 章节名称                   
 // ************************************************************
 
 const chapterId = Date.now();
