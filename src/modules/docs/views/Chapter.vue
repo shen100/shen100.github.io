@@ -168,6 +168,9 @@ onMounted(async () => {
     if (route.params.chapterId) {
         chapterId.value = parseInt(route.params.chapterId) || 0
     }
+    if (route.query.hideSidebar) {
+        onToggleBtnClick()
+    }
     requestBook()
 })
 
