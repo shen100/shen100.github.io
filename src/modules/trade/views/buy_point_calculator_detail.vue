@@ -1,7 +1,7 @@
 <template>
     <div>
         <Card>
-            <Form :label-width="80">
+            <Form :label-width="100">
                 <FormItem label="股票代码">
                     <Input v-if="data.isEdit" v-model="data.stockFullId" style="width: 300px;"></Input>
                     <div v-else>{{ data.stockFullId }}</div>
@@ -12,6 +12,9 @@
                 </FormItem>
                 <FormItem label="最新价格">
                     <div>{{ data.curStockPrice }}</div>
+                </FormItem>
+                <FormItem label="指数 / 价格">
+                     <Input v-model="data.zhiShuWithPrice" style="width: 300px;"></Input>
                 </FormItem>
                 <FormItem label="最终价格">
                     <Input v-if="data.isEdit" v-model="data.finalPrice" style="width: 300px;"></Input>
@@ -44,6 +47,13 @@
 				</template>
             </Table>
             <Table v-else border :columns="data.columns2" :data="data.buyPoints">
+                <template #price="{ row }">
+                    <div v-if="!data.zhiShuWithPrice">{{ row.price }}</div>
+                    <div>
+                        <div>{{ row.price }}</div>
+                        <div>{{ parseInt(Number(row.price) * data.zhiShuWithPrice) }} (指数)</div>
+                    </div>
+				</template>
                 <template #expense="{ row }">
 					<div>{{ formatMoney(row.expense, 2) }}</div>
 				</template>
@@ -139,7 +149,7 @@ let data = ref({
     columns2: [
 		{
 			title: '买入价格',
-			key: 'price',
+			slot: 'price',
             align: 'center',
 		},
 		{
@@ -196,7 +206,10 @@ let data = ref({
     curStockPrice: 0, // 最新价格
     finalPrice: 0,  // 最终价格 
     totalExpense: 0, // 总花费
-    tempData: null
+    tempData: null,
+    // 指数与价格的比值，如 当 "上证指数" 为 4093.73， "上证指数ETF富国" 的价格为 1.033 时,
+    // 那么比值为 4093.73 / 1.033
+    zhiShuWithPrice: '' 
 })
 
 onMounted(async () => {
@@ -212,6 +225,7 @@ onMounted(async () => {
             data.value.buyPoints = ref(list[i].buyPoints || []);
             data.value.totalExpense = list[i].totalExpense || 0;
             data.value.finalPrice = list[i].finalPrice || 0;
+            data.value.zhiShuWithPrice = list[i].zhiShuWithPrice || '';
             break;
         }
     }
@@ -327,6 +341,7 @@ function onBuyPointsEditOk() {
             list[i].stockName = stockName;
             list[i].totalExpense = data.value.totalExpense;
             list[i].finalPrice = data.value.finalPrice;
+            list[i].zhiShuWithPrice = data.value.zhiShuWithPrice;
             break;
         }
     }
