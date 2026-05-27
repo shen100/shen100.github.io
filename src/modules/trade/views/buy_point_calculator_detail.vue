@@ -51,7 +51,7 @@
                     <div v-if="!data.zhiShuWithPrice">{{ row.price }}</div>
                     <div>
                         <div>{{ row.price }}</div>
-                        <div>{{ parseInt(Number(row.price) * data.zhiShuWithPrice) }} (指数)</div>
+                        <div>{{ formatMoney((Number(row.price) * data.zhiShuWithPrice), 2) }} (指数)</div>
                     </div>
 				</template>
                 <template #expense="{ row }">
