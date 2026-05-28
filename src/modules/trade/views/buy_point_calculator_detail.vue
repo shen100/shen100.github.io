@@ -49,7 +49,7 @@
             <Table v-else border :columns="data.columns2" :data="data.buyPoints">
                 <template #price="{ row }">
                     <div v-if="!data.zhiShuWithPrice">{{ row.price }}</div>
-                    <div>
+                    <div v-else>
                         <div>{{ row.price }}</div>
                         <div>{{ formatMoney((Number(row.price) * data.zhiShuWithPrice), 2) }} (指数)</div>
                     </div>
