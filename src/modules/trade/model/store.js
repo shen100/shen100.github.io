@@ -43,9 +43,9 @@ let compositeIndex = null;
 
 let etfStocks = [
     {
-        stockFullId: "sh510300",
-        stockId: "510300",
-        stockName: "沪深300ETF"
+        stockFullId: "sh510210",
+        stockId: "510210",
+        stockName: "上证指数ETF富国"
     },
     {
         stockFullId: "sh588000",
@@ -56,6 +56,16 @@ let etfStocks = [
         stockFullId: "sz159915",
         stockId: "159915",
         stockName: "创业板ETF"
+    },
+    {
+        stockFullId: "sh562500",
+        stockId: "562500",
+        stockName: "机器人ETF"
+    },
+    {
+        stockFullId: "sz159530",
+        stockId: "159530",
+        stockName: "机器人ETF易方达"
     },
     {
         stockFullId: "sh513010",
@@ -121,11 +131,6 @@ let etfStocks = [
         stockFullId: "sh515790",
         stockId: "515790",
         stockName: "光伏ETF"
-    },
-    {
-        stockFullId: "sh562500",
-        stockId: "562500",
-        stockName: "机器人ETF"
     },
     {
         stockFullId: "sh512880",
