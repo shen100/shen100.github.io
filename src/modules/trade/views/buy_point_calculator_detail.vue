@@ -341,13 +341,11 @@ function onBuyPointsEditOk() {
             list[i].stockName = stockName;
             list[i].totalExpense = data.value.totalExpense;
             list[i].finalPrice = data.value.finalPrice;
+            list[i].buyPoints = JSON.parse(JSON.stringify(data.value.buyPoints));
             list[i].zhiShuWithPrice = data.value.zhiShuWithPrice;
             break;
         }
     }
-    console.log('tradeBuyPointCalculatorSave', JSON.stringify({
-        list: data.value.list,
-    }));
     localStorage.setItem('tradeBuyPointCalculator', JSON.stringify({
         list: data.value.list,
     }));
