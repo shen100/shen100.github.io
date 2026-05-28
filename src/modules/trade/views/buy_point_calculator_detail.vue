@@ -345,6 +345,9 @@ function onBuyPointsEditOk() {
             break;
         }
     }
+    console.log('tradeBuyPointCalculatorSave', JSON.stringify({
+        list: data.value.list,
+    }));
     localStorage.setItem('tradeBuyPointCalculator', JSON.stringify({
         list: data.value.list,
     }));
