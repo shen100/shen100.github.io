@@ -22,7 +22,7 @@ const infoPath = path.join(bookPath, 'info.json');
 
 let chapterData = {
     "bookId": bookId,
-    "_id": Date.now(),
+    "_id": chapterId,
     "parentId": 0,
     "title": chapterName
 };
