@@ -1,5 +1,5 @@
 import bluebird from 'bluebird';
-import { requestMonthK } from '../src/modules/trade/util/stock.js';
+import { requestStockDetail, requestMonthK } from '../src/modules/trade/util/stock.js';
 import { parseLocalYMDString } from '../src/modules/trade/util/date.js';
 
 const allStocksRes = {
@@ -66421,6 +66421,8 @@ function getPreviousMonth(date = new Date()) {
 
 let stocks = [];
 
+// myItems = myItems.slice(0, 2);
+
 (async function() {
 	await bluebird.map(myItems, async function (stockData, index) {
 		console.log(index, 'requestMonthK\n');
@@ -66429,6 +66431,10 @@ let stocks = [];
 		convertKListToNumbers(myKList);
 		let highPriceInAll = -10000000;
 		let date = '';
+
+		if (myKList.length < 12) {
+			return;
+		}
 		for (let i = 0; i < myKList.length; i++) {
 			let highPrice = myKList[i][3];
 			if (highPrice > highPriceInAll) {
@@ -66439,14 +66445,21 @@ let stocks = [];
 		let yearMonth = date.substring(0, 7); // '2021-05';
 		let curMonth = endStr.substring(0, 7); // '2021-05';
 		let prevMonth = getPreviousMonth(new Date()).toISOString().substring(0, 7); // '2021-05';
-		if (yearMonth === curMonth || yearMonth === prevMonth) {
-			stocks.push({
-				stockFullId: stockData.stockFullId,
-				stockId: stockData.symbol,
-				stockName: stockData.name
-			});
+
+		let theStock = {
+			stockFullId: stockData.stockFullId,
+			stockId: stockData.symbol,
+			stockName: stockData.name
 		}
-		return myKList;
+		let stockDetail = await requestStockDetail(theStock);
+		// console.log('stockDetail', stockDetail);
+		if (stockDetail.zongShiZhi < 100) {
+			return;
+		}
+		if (yearMonth === curMonth || yearMonth === prevMonth) {
+			stocks.push(theStock);
+		}
+		return;
 	}, { concurrency: 20 });
 
 	console.log('stocks', JSON.stringify(stocks));
