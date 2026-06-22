@@ -439,7 +439,9 @@ function onNextChapter() {
 .book-summary .book-summary-inner .book-directory {
     box-sizing: border-box;
     -webkit-overflow-scrolling: touch;
-    height: calc(100% - 180px);
+    height: calc(100% - 60px);
+    overflow-y: auto;
+    overflow-x: hidden;
     color: #fff;
     padding: 18px 0;
 }
