@@ -9,7 +9,7 @@
             <li><a href="/docs/4/chapter/1752041149735">备忘</a></li>
             <li><a href="/docs/5/chapter/1765031641629">投资心得</a></li>
             <li><a href="/docs/6/chapter/1767687389503">学习规划</a></li>
-            <li><a href="/docs/7/chapter/1781969394977">量价分析</a></li>
+            <li><a href="/docs/7/chapter/1781969394977">量价原理</a></li>
         </ul>
     </div>
 </template>
