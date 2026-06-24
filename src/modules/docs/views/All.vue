@@ -10,6 +10,7 @@
             <li><a href="/docs/5/chapter/1765031641629">投资心得</a></li>
             <li><a href="/docs/6/chapter/1767687389503">学习规划</a></li>
             <li><a href="/docs/7/chapter/1781969394977">量价原理</a></li>
+            <li><a href="/docs/8/chapter/1782314613455">3L交易体系构建</a></li>
         </ul>
     </div>
 </template>
