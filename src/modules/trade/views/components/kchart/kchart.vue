@@ -41,6 +41,13 @@
         </div>
 		<StockInfoPopup v-if="data.activeCandleData" :info="data.activeCandleData" />
     </div>
+	<div class="kchart-volume">
+		<div class="kchart-volume-list">
+			<div v-for="(item, i) in data.myKList" :key="i" class="kchart-volume-item-box">
+				<div class="kchart-volume-item" :style="{height: getVolumeItemHeight(item), 'background-color': getVolumeItemColor(item)}"></div>
+			</div>
+		</div>
+	</div>
 </template>
 
 <script setup>
@@ -68,6 +75,7 @@ let data = ref({
 	start: '',
     end: '',
     myKList: [],
+	maxVolume: 0,
 	yAxis1: 0,
     yAxis2: 0,
     yAxis3: 0,
@@ -343,14 +351,35 @@ async function requestYearK(stock, start, end, count) {
 }
 
 function convertKListToNumbers(myKList) {
+	data.value.maxVolume = 0;
 	for (let i = 0; i < myKList.length; i++) {
-		myKList[i][1] = Number(myKList[i][1]);
-		myKList[i][2] = Number(myKList[i][2]);
-		myKList[i][3] = Number(myKList[i][3]);
-		myKList[i][4] = Number(myKList[i][4]);
-		myKList[i][5] = Number(myKList[i][5]);
+		myKList[i][1] = Number(myKList[i][1]); // 开盘价
+		myKList[i][2] = Number(myKList[i][2]); // 收盘价
+		myKList[i][3] = Number(myKList[i][3]); // 最高价
+		myKList[i][4] = Number(myKList[i][4]); // 最低价
+		myKList[i][5] = Number(myKList[i][5]); // 成交量
+		if (myKList[i][5] > data.value.maxVolume) {
+			data.value.maxVolume = myKList[i][5];
+		}
 	}
 	data.value.myKList = myKList;
+}
+
+function getVolumeItemHeight(item) {
+	let volume = item[5];
+	return (volume / data.value.maxVolume) * 100 + '%'
+}
+
+function getVolumeItemColor(item) {
+	let openPrice = item[1];
+	let closePrice = item[2];
+	if (closePrice > openPrice) {
+        return '#ee2500';
+    } else if (closePrice === openPrice) {
+        return '#868686';
+    } else {
+        return '#02b33d';
+    }
 }
 
 function updateChart(type) {
@@ -430,7 +459,6 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	height: 370px; /* 比 data.candleMaxHeight 高出 90px */
 	padding: 15px 20px 20px 20px;
 	box-sizing: border-box;
-	margin-bottom: 20px;
 	position: relative;
 }
 
@@ -502,4 +530,36 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	margin-left: 20px;
 	text-align: left;
 }
+
+.kchart-volume {
+	margin-top: 10px;
+	margin-bottom: 20px;
+	padding: 15px 20px 15px 20px;
+	background-color: #fff;
+}
+
+.kchart-volume-list {
+	display: flex;
+	gap: 2px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: calc(100vw - 320px);
+	background-color: #eee;
+}
+
+.kchart-volume-item-box {
+	width: 7px;
+	height: 100px;
+	background-color: #eee;
+	position: relative;
+}
+
+.kchart-volume-item {
+	width: 7px;
+	background-color: #f00;
+	position: absolute;
+	left: 0;
+	bottom: 0;
+}
+
 </style>
