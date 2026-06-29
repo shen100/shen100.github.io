@@ -156,7 +156,12 @@ async function requestDayK(stock, start, end, count) {
 		myKList = res.data.data[stock.stockFullId].day;
     }
 	convertKListToNumbers(myKList);
-	requestToday(stock.stockFullId)
+
+	let todayStr = new Date().toISOString().substring(0, 10);
+	let endStr = myKList && myKList.length && myKList[myKList.length - 1][0];
+	if (endStr && todayStr !== endStr) {
+		requestToday(stock.stockFullId)
+	}
 }
 
 async function requestToday(stockFullId) {
