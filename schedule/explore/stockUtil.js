@@ -36,7 +36,6 @@ export async function requestStockDetail(dayJSONMap, stock) {
 export async function requestDayK(dayJSONMap, stock, start, end, count) {
     let key = `${stock.stockFullId}-${start}-${end}-${count}`;
 
-
     if (dayJSONMap && dayJSONMap[key]) {
         return dayJSONMap[key];
     }
@@ -62,16 +61,17 @@ export async function requestDayK(dayJSONMap, stock, start, end, count) {
 
 	let todayStr = new Date().toISOString().substring(0, 10);
 	let endStr = myKList && myKList.length && myKList[myKList.length - 1][0];
-	if (endStr && todayStr !== endStr) {
-		let todayData = await requestToday(stock.stockFullId, todayStr)
-		if (todayData) {
-			myKList.push(todayData);
+	if (endStr && todayStr > endStr && todayStr <= end) {
+		let todayKData = await requestToday(stock.stockFullId);
+		if (todayKData[0] > endStr) {
+			myKList.push(todayKData);
 		}
 	}
+
 	return myKList;
 }
 
-async function requestToday(stockFullId, end) {
+async function requestToday(stockFullId) {
 	let url = "https://qt.gtimg.cn/q=" + stockFullId;
 
 	let res = await axios.get(url, {
@@ -99,15 +99,15 @@ async function requestToday(stockFullId, end) {
     }
 
 	let todayData = todayStr.split('~');
+    let dateStr = todayData[30];
 	const kData = [
-		end,
+		`${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`,
 		todayData[5],  // 开盘价
 		todayData[3],  // 收盘价
 		todayData[33], // 最高价
 		todayData[34], // 最低价
 		todayData[6],  // 总手
 	];
-
 	return kData;
 }
 

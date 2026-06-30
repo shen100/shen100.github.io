@@ -158,10 +158,9 @@ async function requestDayK(stock, start, end, count) {
 
 	let todayStr = new Date().toISOString().substring(0, 10);
 	let endStr = myKList && myKList.length && myKList[myKList.length - 1][0];
-	if (endStr && todayStr > endStr) {
+	if (endStr && todayStr > endStr && todayStr <= end) {
 		let todayKData = await requestToday(stock.stockFullId);
 		if (todayKData[0] > endStr) {
-			console.log(todayKData);
 			myKList.push(todayKData);
 		}
 	}
@@ -198,7 +197,7 @@ async function requestToday(stockFullId) {
     }
 
 	let todayData = todayStr.split('~');
-	let dateStr = todayData[30];
+    let dateStr = todayData[30];
 	const kData = [
 		`${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`,
 		todayData[5],  // 开盘价

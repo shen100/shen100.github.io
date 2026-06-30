@@ -5,6 +5,10 @@ import { fileURLToPath } from 'url';
 import { requestStockDetail, requestDayK, requestMonthK } from './stockUtil.js';
 import { parseLocalYMDString } from '../../src/modules/trade/util/date.js';
 import { allStocksRes } from './json/allStocks.js';
+import * as strategy1 from './strategy/strategy1.js';
+import * as strategy2 from './strategy/strategy2.js';
+import * as strategy3 from './strategy/strategy3.js';
+import * as strategy4 from './strategy/strategy4.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,7 +30,7 @@ for (let i = 0; i < allStocksRes.data.items.length; i++) {
 console.log('myItems', myItems[myItems.length - 1]);
 
 let startStr = '2025-01-01';
-let endStr = '2026-06-29'; // new Date().toISOString().substring(0, 10);
+let endStr = new Date().toISOString().substring(0, 10);
 console.log();
 console.log('startStr', startStr);
 console.log('endStr', endStr);
@@ -46,93 +50,7 @@ function convertKListToNumbers(myKList) {
     }
 }
 
-function getPreviousMonth(date = new Date()) {
-    const d = new Date(date);
-    // 注意：getMonth() 返回 0-11，减 1 后若为 -1，则自动变为上一年的 11 月
-    d.setMonth(d.getMonth() - 1);
-    return d;
-}
-
 let stocks = [];
-
-// myItems = myItems.slice(0, 1);
-
-// myItems = [
-//     {
-//         stockFullId: 'sz301200',
-//         symbol: '301200',
-//         name: '大族数控'
-//     }
-// ];
-
-// act_ent_type =
-// '无'
-// act_name =
-// '无实际控制人'
-// area =
-// '深圳'
-// cnspell =
-// 'PAYH'
-// industry =
-// '银行'
-// list_date =
-// '19910403'
-// market =
-// '主板'
-// name =
-// '平安银行'
-// stockFullId =
-// 'sz000001'
-// symbol =
-// '000001'
-// ts_code =
-// '000001.SZ'
-
-
-
-function detectDowntrend(allItems) {
-    let rightIndex = -11;
-    const items = allItems.slice(rightIndex);
-
-    let passed = false;
-    let trendChangePointIndex = -1;
-    for (let i = -rightIndex; i >= 2; i--) {
-        let maxPrice = 0;
-        let maxPriceIndex = -1;
-        let minPrice = 100000000;
-        let minPriceIndex = -1;
-        let index = items.length - i;
-        for (let j = index + 1; j < items.length; j++) {
-            if (items[j].closePrice > maxPrice) {
-                maxPrice = items[j].closePrice;
-                maxPriceIndex = j;
-            }
-            if (items[j].closePrice < minPrice) {
-                minPrice = items[j].closePrice;
-                minPriceIndex = j;
-            }
-        }
-        let downRate = (items[index].closePrice - minPrice) / items[index].closePrice;
-        if (items[index].closePrice > maxPrice && downRate > 0.15) {
-            passed = true;
-            trendChangePointIndex = allItems.length - items.length + index;
-            break;
-        }
-    }
-
-    if (!passed) {
-        return false;
-    }
-    if (trendChangePointIndex >= allItems.length - 2) {
-        return false;
-    }
-    for (let i = 0; i < trendChangePointIndex; i++) {
-        if (allItems[i].highPrice > allItems[trendChangePointIndex].closePrice) {
-            return false;
-        }
-    }
-    return true;
-}
 
 (async function() {
     let dayJSONMap = {};
@@ -171,43 +89,19 @@ function detectDowntrend(allItems) {
             return;
         }
 
-        if (stockData.name === '凌云光') {
-            console.log();
-        }
-
-        if (!detectDowntrend(kListData)) {
-            return;
-        }
-
-        // let trendData = findBestTrendReversalWithRegression(kListData);
-        // if (stockData.name === '厦钨新能') {
-        //     console.log('findBestTrendReversalWithRegression', {
-        //         ...trendData,
-        //         stockName: stockData.name
-        //     });
-        // }
-
-        // console.log(highPriceDate.substring(0, 4), new Date().toISOString().substring(0, 4));
-
-        // if (highPriceDate.substring(0, 4) !== new Date().toISOString().substring(0, 4)) {
-        //     return;
-        // }
-
-        // if (!trendData || trendData.n < 15 || trendData.m < 2) {
-        //     return;
-        // }
-
         let theStock = {
             stockFullId: stockData.stockFullId,
             stockId: stockData.symbol,
             stockName: stockData.name
         }
+
         let stockDetail = await requestStockDetail(stockDetailJSONMap, theStock);
         stockDetailJSONMap[stockData.stockFullId] = stockDetail;
 
-        if (stockDetail.zongShiZhi > 100) {
+        if (!strategy2.detectTrend(kListData, stockDetail).ok) {
             return;
         }
+
         stocks.push(theStock);
     }, { concurrency: 20 });
 
