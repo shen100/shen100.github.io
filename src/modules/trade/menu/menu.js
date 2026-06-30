@@ -38,5 +38,9 @@ export default {
             title: '账户统计',
             path: '/trade/my'
         },
+        {
+            title: '本地存储',
+            path: '/trade/localstorage'
+        },
     ]
 }

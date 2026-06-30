@@ -155,13 +155,19 @@ async function requestDayK(stock, start, end, count) {
     } else {
 		myKList = res.data.data[stock.stockFullId].day;
     }
-	convertKListToNumbers(myKList);
 
 	let todayStr = new Date().toISOString().substring(0, 10);
 	let endStr = myKList && myKList.length && myKList[myKList.length - 1][0];
-	if (endStr && todayStr !== endStr) {
-		requestToday(stock.stockFullId)
+	if (endStr && todayStr > endStr) {
+		let todayKData = await requestToday(stock.stockFullId);
+		if (todayKData[0] > endStr) {
+			console.log(todayKData);
+			myKList.push(todayKData);
+		}
 	}
+
+	convertKListToNumbers(myKList);
+	updateChart("day");
 }
 
 async function requestToday(stockFullId) {
@@ -192,16 +198,16 @@ async function requestToday(stockFullId) {
     }
 
 	let todayData = todayStr.split('~');
+	let dateStr = todayData[30];
 	const kData = [
-		data.value.end,
+		`${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`,
 		todayData[5],  // 开盘价
 		todayData[3],  // 收盘价
 		todayData[33], // 最高价
 		todayData[34], // 最低价
 		todayData[6],  // 总手
 	];
-	convertKListToNumbers([ ...data.value.myKList, kData ]);
-	updateChart("day");
+	return kData;
 }
 
 async function requestWeekK(stock, start, end, count) {

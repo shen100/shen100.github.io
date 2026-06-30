@@ -25,8 +25,8 @@ for (let i = 0; i < allStocksRes.data.items.length; i++) {
 
 console.log('myItems', myItems[myItems.length - 1]);
 
-let startStr = '2026-06-01';
-let endStr = new Date().toISOString().substring(0, 10);
+let startStr = '2025-01-01';
+let endStr = '2026-06-29'; // new Date().toISOString().substring(0, 10);
 console.log();
 console.log('startStr', startStr);
 console.log('endStr', endStr);
@@ -90,58 +90,48 @@ let stocks = [];
 
 
 
-function findBestTrendReversalWithRegression(data) {
-    if (data.length < 20) return null;
-    
-    const last20 = data.slice(-20);
-    let bestMatch = null;
-    let bestScore = -Infinity;
-    
-    for (let n = 10; n <= 19; n++) {
-        const firstN = last20.slice(0, n);
-        const lastM = last20.slice(n);
-        
-        // 使用线性回归计算斜率
-        const firstNSlope = calculateSlope(firstN);
-        const lastMSlope = calculateSlope(lastM);
-        
-        // 前N个上升（斜率>0），后M个下降（斜率<0）
-        if (firstNSlope > 0 && lastMSlope < 0) {
-            // 综合得分：上升斜率绝对值 + 下降斜率绝对值
-            const score = Math.abs(firstNSlope) + Math.abs(lastMSlope);
-            
-            if (score > bestScore) {
-                bestScore = score;
-                bestMatch = {
-                    n,
-                    m: 20 - n,
-                    firstNSlope: firstNSlope,
-                    lastMSlope: lastMSlope,
-                    score: score
-                };
+function detectDowntrend(allItems) {
+    let rightIndex = -11;
+    const items = allItems.slice(rightIndex);
+
+    let passed = false;
+    let trendChangePointIndex = -1;
+    for (let i = -rightIndex; i >= 2; i--) {
+        let maxPrice = 0;
+        let maxPriceIndex = -1;
+        let minPrice = 100000000;
+        let minPriceIndex = -1;
+        let index = items.length - i;
+        for (let j = index + 1; j < items.length; j++) {
+            if (items[j].closePrice > maxPrice) {
+                maxPrice = items[j].closePrice;
+                maxPriceIndex = j;
+            }
+            if (items[j].closePrice < minPrice) {
+                minPrice = items[j].closePrice;
+                minPriceIndex = j;
             }
         }
+        let downRate = (items[index].closePrice - minPrice) / items[index].closePrice;
+        if (items[index].closePrice > maxPrice && downRate > 0.15) {
+            passed = true;
+            trendChangePointIndex = allItems.length - items.length + index;
+            break;
+        }
     }
-    
-    return bestMatch;
-}
 
-function calculateSlope(prices) {
-    if (prices.length < 2) return 0;
-    
-    const n = prices.length;
-    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-    
-    for (let i = 0; i < n; i++) {
-        const x = i;
-        const y = prices[i].closePrice;
-        sumX += x;
-        sumY += y;
-        sumXY += x * y;
-        sumX2 += x * x;
+    if (!passed) {
+        return false;
     }
-    
-    return (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    if (trendChangePointIndex >= allItems.length - 2) {
+        return false;
+    }
+    for (let i = 0; i < trendChangePointIndex; i++) {
+        if (allItems[i].highPrice > allItems[trendChangePointIndex].closePrice) {
+            return false;
+        }
+    }
+    return true;
 }
 
 (async function() {
@@ -166,13 +156,46 @@ function calculateSlope(prices) {
         let keyInMap = `${stockData.stockFullId}-${startStr}-${endStr}-${count}`;
         dayJSONMap[keyInMap] = myKList;
 
-        let highPriceInAll = -10000000;
-        let date = '';
+        let highPriceDate = '';
+        let highPriceInAll = 0;
 
         let kListData = myKList.map((item) => {
-            return { date: item[0], closePrice: item[2] }
+            if (item[3] > highPriceInAll) {
+                highPriceInAll = item[3];
+                highPriceDate = item[0];
+            }
+            return { date: item[0], closePrice: item[2], highPrice: item[3] }
         });
-        console.log('findBestTrendReversalWithRegression', findBestTrendReversalWithRegression(kListData));
+
+        if (kListData.length < 100) {
+            return;
+        }
+
+        if (stockData.name === '凌云光') {
+            console.log();
+        }
+
+        if (!detectDowntrend(kListData)) {
+            return;
+        }
+
+        // let trendData = findBestTrendReversalWithRegression(kListData);
+        // if (stockData.name === '厦钨新能') {
+        //     console.log('findBestTrendReversalWithRegression', {
+        //         ...trendData,
+        //         stockName: stockData.name
+        //     });
+        // }
+
+        // console.log(highPriceDate.substring(0, 4), new Date().toISOString().substring(0, 4));
+
+        // if (highPriceDate.substring(0, 4) !== new Date().toISOString().substring(0, 4)) {
+        //     return;
+        // }
+
+        // if (!trendData || trendData.n < 15 || trendData.m < 2) {
+        //     return;
+        // }
 
         let theStock = {
             stockFullId: stockData.stockFullId,
@@ -181,20 +204,23 @@ function calculateSlope(prices) {
         }
         let stockDetail = await requestStockDetail(stockDetailJSONMap, theStock);
         stockDetailJSONMap[stockData.stockFullId] = stockDetail;
-        return;
 
-        // if (stockDetail.zongShiZhi < 100) {
-        //     return;
-        // }
+        if (stockDetail.zongShiZhi > 100) {
+            return;
+        }
+        stocks.push(theStock);
     }, { concurrency: 20 });
 
-    console.log('stocks', JSON.stringify(stocks));
+    // console.log('stocks', JSON.stringify(stocks));
 
     try {
         fs.writeFileSync( path.join(__dirname, 'json', 'stock_day.json'), JSON.stringify(dayJSONMap, null, 2), 'utf-8');
         console.log('✅ 文件写入成功');
 
         fs.writeFileSync( path.join(__dirname, 'json', 'stock_detail.json'), JSON.stringify(stockDetailJSONMap, null, 2), 'utf-8');
+        console.log('✅ 文件写入成功');
+
+        fs.writeFileSync( path.join(__dirname, 'json', 'stocks_pool.json'), JSON.stringify(stocks, null, 2), 'utf-8');
         console.log('✅ 文件写入成功');
     } catch (err) {
         console.error('❌ 写入失败:', err);
