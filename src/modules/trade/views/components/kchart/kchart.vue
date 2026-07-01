@@ -48,6 +48,7 @@
 		<div class="kchart-volume-list">
 			<div v-for="(item, i) in data.myKList" :key="i" class="kchart-volume-item-box">
 				<div class="kchart-volume-item" :style="{height: getVolumeItemHeight(item), 'background-color': getVolumeItemColor(item)}"></div>
+				<div v-if="data.activeCandleData && data.activeCandleData.date === item[0]" class="full-line"></div>
 			</div>
 		</div>
 	</div>
@@ -567,25 +568,26 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 }
 
 .kchart-volume {
-	margin-top: 10px;
+	margin-top: 0px;
 	margin-bottom: 20px;
-	padding: 15px 20px 15px 20px;
+	padding: 0px 20px 15px 20px;
 	background-color: #fff;
 }
 
 .kchart-volume-list {
+	border-top: 1px #eee dashed;
 	display: flex;
 	gap: 2px;
     flex-wrap: nowrap;
     overflow-x: auto;
     width: calc(100vw - 320px);
-	background-color: #eee;
+	/* background-color: #eee; */
 }
 
 .kchart-volume-item-box {
 	width: 7px;
 	height: 100px;
-	background-color: #eee;
+	/* background-color: #eee; */
 	position: relative;
 }
 
@@ -597,6 +599,14 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	bottom: 0;
 }
 
+.full-line {
+    position: absolute;
+    border-left: 1px dashed #cecece;
+    height: 100%;
+    pointer-events: none;
+	left: 3px;
+}
+
 .stock-cur-price {
 	margin: 0 10px 0 20px;
 }
@@ -605,4 +615,5 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	font-size: 18px;
 	font-weight: 400;
 }
+
 </style>
