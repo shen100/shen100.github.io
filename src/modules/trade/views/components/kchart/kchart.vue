@@ -427,11 +427,11 @@ function updateChart(type) {
 		data.value.dtPrice = item1[2] - item2[2];
 		data.value.dtRate = data.value.dtPrice / item2[2];
 		if (item1[2] > item2[2]) {
-			data.value.lastPriceUpColor = 'rgb(238, 37, 0)'
+			data.value.lastPriceUpColor = '#ee2500'
 		} else if (item1[2] === item2[2]) {
-			data.value.lastPriceUpColor = 'rgb(2, 179, 61)';
+			data.value.lastPriceUpColor = '#868686';
 		} else {
-			data.value.lastPriceUpColor = 'rgb(2, 179, 61)';
+			data.value.lastPriceUpColor = '#02b33d';
 		}
 	}
 
