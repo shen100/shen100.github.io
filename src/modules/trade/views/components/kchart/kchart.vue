@@ -172,7 +172,6 @@ async function requestDayK(stock, start, end, count) {
 			myKList.push(todayKData);
 		}
 	}
-
 	convertKListToNumbers(myKList);
 	updateChart("day");
 }
@@ -376,6 +375,7 @@ function convertKListToNumbers(myKList) {
 		myKList[i][3] = Number(myKList[i][3]); // 最高价
 		myKList[i][4] = Number(myKList[i][4]); // 最低价
 		myKList[i][5] = Number(myKList[i][5]); // 成交量
+
 		if (myKList[i][5] > data.value.maxVolume) {
 			data.value.maxVolume = myKList[i][5];
 		}
@@ -419,7 +419,6 @@ function updateChart(type) {
     }
 
 	data.value.dtPriceUpdated = false;
-	console.log('myKList', myKList);
 	if (myKList.length > 1) {
 		data.value.dtPriceUpdated = true;
 		let item1 = myKList[myKList.length - 1];
@@ -429,12 +428,11 @@ function updateChart(type) {
 		data.value.dtRate = data.value.dtPrice / item2[2];
 		if (item1[2] > item2[2]) {
 			data.value.lastPriceUpColor = 'rgb(238, 37, 0)'
-		} else if (item1[2] = item2[2]) {
+		} else if (item1[2] === item2[2]) {
 			data.value.lastPriceUpColor = 'rgb(2, 179, 61)';
 		} else {
 			data.value.lastPriceUpColor = 'rgb(2, 179, 61)';
 		}
-		console.log(item1[2], item2[2], data.value.dtPrice, data.value.dtRate);
 	}
 
 	data.value.lowPriceInAll = lowPriceInAll;
