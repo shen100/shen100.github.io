@@ -4,6 +4,10 @@ import * as strategy4 from './strategy4.js';
  * 找出最近20天的收盘价是历史最高价、公司市值小于 100 亿、最近若干天处于下跌趋势的股票
  */
 export function detectTrend(allItems, stockDetail, options) {
+    // 上市时间少于 100 个交易日的，不考虑
+    if (allItems.length < 100) {
+        return;
+    }
     if (stockDetail.stockName === '合锻智能') {
         console.log();
     }
@@ -37,9 +41,9 @@ export function detectTrend(allItems, stockDetail, options) {
         }
     }
     
-    if (downPriceCount / count < 0.1) { // 0.7
-        return { ok: false };
-    }
+    // if (downPriceCount / count < 0.1) { // 0.7
+    //     return { ok: false };
+    // }
     if ((maxPrice - downMinPrice) / maxPrice < 0.15) {
         return { ok: false };
     }

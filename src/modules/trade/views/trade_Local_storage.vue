@@ -26,6 +26,9 @@ let data = ref({
             value: 'tradeTrackedStocks'
         },
         {
+            value: 'tradeInvestedStocks'
+        },
+        {
             value: 'tradeTrackedStocksByStrategy1',
             label: '到达最高价后回踩'
         },

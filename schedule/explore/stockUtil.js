@@ -29,7 +29,7 @@ export async function requestStockDetail(dayJSONMap, stock) {
 		stockFullId: stock.stockFullId,
 		stockName: stock.stockName,
 		zongShiZhi: Number(arr[45] || '0'), // 总市值
-		price: Number(arr[3] || '3'), // 当前价格  
+		price: Number(arr[3] || '0'), // 当前价格  
 	}
 }
 
@@ -68,7 +68,18 @@ export async function requestDayK(dayJSONMap, stock, start, end, count) {
 		}
 	}
 
+	convertKListToNumbers(myKList)
 	return myKList;
+}
+
+function convertKListToNumbers(myKList) {
+    for (let i = 0; i < myKList.length; i++) {
+        myKList[i][1] = Number(myKList[i][1]);
+        myKList[i][2] = Number(myKList[i][2]);
+        myKList[i][3] = Number(myKList[i][3]);
+        myKList[i][4] = Number(myKList[i][4]);
+        myKList[i][5] = Number(myKList[i][5]);
+    }
 }
 
 async function requestToday(stockFullId) {
@@ -109,28 +120,4 @@ async function requestToday(stockFullId) {
 		todayData[6],  // 总手
 	];
 	return kData;
-}
-
-export async function requestMonthK(stock, start, end, count) {
-	let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=";
-	url += (stock.stockFullId + ",month," + start + "," + end + "," + count + ",qfq");
-
-	let res = await axios.get(url);
-	
-	if (!(res.data && res.data.data)) {
-		return null;
-    }
-
-	let myKList = [];
-    if (res.data.data[stock.stockFullId]['qfqmonth']) {
-		myKList = res.data.data[stock.stockFullId].qfqmonth;
-    } else {
-		myKList = res.data.data[stock.stockFullId].month;
-    }
-		
-	let dates = []
-	for (let i = 0; i < myKList.length; i++) {
-		dates.push(myKList[i][0]); // 之前请求成交量用了dates
-    }
-	return myKList;
 }

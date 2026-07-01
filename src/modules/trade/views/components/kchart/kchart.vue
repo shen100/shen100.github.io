@@ -3,6 +3,9 @@
 		<div class="stock-name" @mouseleave="onStockNameMouseLeave">
 			<div class="stock-name-txt" @mouseenter="onStockNameMouseEnter">
 				{{ data.stockData ? `${data.stockName}&nbsp;(总市值&nbsp;${zongShiZhi})` : data.stockName }}
+				<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice }}</span>
+				<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(2) : ''}}</span>
+				<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
 			</div>
 			<div v-if="props.addToTrackingEnabled" class="add-to-tracking">
 				<Button v-if="data.addToTrackingBtnVisible" @click="onShowAddToTrackingModal" type="primary" size="small">加入跟踪K线</Button>
@@ -90,6 +93,11 @@ let data = ref({
     yAxisText5: '',
 	activeCandleData: null,
 	addToTrackingBtnVisible: false,
+	dtPriceUpdated: false,
+	dtPrice: 0,
+	dtRate: 0,
+	curPrice: 0,
+	lastPriceUpColor: ''
 })
 
 onMounted(async () => {
@@ -410,6 +418,25 @@ function updateChart(type) {
         }
     }
 
+	data.value.dtPriceUpdated = false;
+	console.log('myKList', myKList);
+	if (myKList.length > 1) {
+		data.value.dtPriceUpdated = true;
+		let item1 = myKList[myKList.length - 1];
+		let item2 = myKList[myKList.length - 2];
+		data.value.curPrice = item1[2];
+		data.value.dtPrice = item1[2] - item2[2];
+		data.value.dtRate = data.value.dtPrice / item2[2];
+		if (item1[2] > item2[2]) {
+			data.value.lastPriceUpColor = 'rgb(238, 37, 0)'
+		} else if (item1[2] = item2[2]) {
+			data.value.lastPriceUpColor = 'rgb(2, 179, 61)';
+		} else {
+			data.value.lastPriceUpColor = 'rgb(2, 179, 61)';
+		}
+		console.log(item1[2], item2[2], data.value.dtPrice, data.value.dtRate);
+	}
+
 	data.value.lowPriceInAll = lowPriceInAll;
 	data.value.highPriceInAll = highPriceInAll;
 	
@@ -572,4 +599,12 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	bottom: 0;
 }
 
+.stock-cur-price {
+	margin: 0 10px 0 20px;
+}
+
+.stock-price-change {
+	font-size: 18px;
+	font-weight: 400;
+}
 </style>
