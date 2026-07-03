@@ -141,11 +141,16 @@ async function onRequest(type) {
 		count = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
     }
     data.value.kCharts = [];
+    console.log('props.stocks', props.stocks);
     props.stocks.forEach(stock => {
         data.value.kCharts.push({
             stockId: stock.stockId,
             stockFullId: stock.stockFullId,
-            stockName: stock.stockName
+            stockName: stock.stockName,
+            highPrice: stock.highPrice,
+            avgCost: stock.avgCost,
+            stopPrice: stock.stopPrice,
+            tradeActions: stock.tradeActions,
         });
     });
 

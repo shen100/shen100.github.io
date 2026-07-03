@@ -8,6 +8,12 @@
             <div :style="candleInnerBoxStyle"></div>
         </div>
         <div v-if="data.isMouseOver" class="full-line" :style="{left: `${data.lineX}px`}"></div>
+
+        <div v-if="tradeAction && tradeAction.type === 'buy'" class="candle-line candle-trade-line" :style="candleTradelineStyle"></div>
+        <div v-if="tradeAction && tradeAction.type === 'buy'" class="candle-box candle-trade-small-box" :style="candleTradeSmallBoxStyle"></div>
+        <div v-if="tradeAction && tradeAction.type === 'buy'" class="candle-box candle-trade-box" :style="candleTradeBoxStyle">
+            <div class="candle-trade-box-txt">B</div>
+        </div>
     </div>
 </template>
 
@@ -25,6 +31,7 @@ const props = defineProps([
     'lowPriceInAll',
     'highPriceInAll',
     'candleMaxHeight',
+    'tradeActions',
 ]);
 
 const emit = defineEmits(['mouse-over', 'mouse-out', 'mouse-move']);
@@ -89,6 +96,61 @@ const candleInnerBoxStyle = computed(() => {
         backgroundColor,
         border,
     }
+});
+
+const candleTradelineStyle = computed(() => {
+    let theY = data.value.lineY - 40;
+    if (data.value.lineY < 100) {
+        theY = data.value.lineY + data.value.lineHeight + 5;
+    }
+    return {
+        width: `${data.value.lineWidth}px`,
+        height: `30px`,
+        borderLeft: '1px #ee2500 dashed',
+        left: `${data.value.lineX}px`,
+        top: `${theY}px`
+    }
+});
+
+const candleTradeSmallBoxStyle = computed(() => {
+    let theY = data.value.lineY - 9;
+    if (data.value.lineY < 100) {
+        theY = data.value.lineY + data.value.lineHeight + 5;
+    }
+    return {
+        width: `4px`,
+        height: `4px`,
+        borderRadius: '2px',
+        backgroundColor: '#ee2500',
+        left: '1.5px',
+        top: `${theY}px`
+    }
+});
+
+const candleTradeBoxStyle = computed(() => {
+    let theY = data.value.lineY - 56;
+    if (data.value.lineY < 100) {
+        theY = data.value.lineY + data.value.lineHeight + 35;
+    }
+    return {
+        width: `16px`,
+        height: `16px`,
+        borderRadius: '8px',
+        backgroundColor: '#ee2500',
+        left: '-4.5px',
+        top: `${theY}px`
+    }
+});
+
+const tradeAction = computed(() => {
+    if (props.tradeActions && props.tradeActions.length) {
+        for (let i = 0 ; i < props.tradeActions.length; i++) {
+            if (props.tradeActions[i].date === props.date) {
+                return props.tradeActions[i]
+            }
+        }
+    }
+    return null;
 });
 
 onMounted(async () => {
@@ -161,5 +223,21 @@ function onMouseMove(event) {
     border-left: 1px dashed #cecece;
     height: 100%;
     pointer-events: none;
+}
+
+.candle-trade-line {
+}
+
+.candle-trade-small-box {
+}
+
+.candle-trade-box {
+}
+
+.candle-trade-box-txt {
+    color: #fff;
+    line-height: 16px;
+    text-align: center;
+    font-size: 10px;
 }
 </style>

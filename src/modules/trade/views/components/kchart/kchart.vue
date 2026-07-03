@@ -2,10 +2,15 @@
     <div class="kchart-container">
 		<div class="stock-name" @mouseleave="onStockNameMouseLeave">
 			<div class="stock-name-txt" @mouseenter="onStockNameMouseEnter">
-				{{ data.stockData ? `${data.stockName}&nbsp;(总市值&nbsp;${zongShiZhi})` : data.stockName }}
+				<a class="stock-name-link" :href="`https://xueqiu.com/S/${data.stock && data.stock.stockFullId}`" target="_blank">
+					{{ data.stockData ? `${data.stockName}&nbsp;(总市值&nbsp;${zongShiZhi})` : data.stockName }}
+				</a>
 				<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice }}</span>
 				<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(2) : ''}}</span>
 				<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
+				<span v-if="data.stock" class="stop-rate-label">当前跌幅 {{ currentDownRate }}</span>
+				<span v-if="data.stock" class="stop-rate-label">最多可跌 {{  allowMaxDownRate }}</span>
+				<span v-if="data.stock" class="stop-rate-label">止损 {{ stopRate }}</span>
 			</div>
 			<div v-if="props.addToTrackingEnabled" class="add-to-tracking">
 				<Button v-if="data.addToTrackingBtnVisible" @click="onShowAddToTrackingModal" type="primary" size="small">加入跟踪K线</Button>
@@ -22,6 +27,18 @@
 		<div class="y-axis-txt" :style="{top: `${data.yAxis4}px`}">{{ data.yAxisText4 }}</div>
 		<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
 		<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
+
+		<div v-if="data.highPriceY >= 0" class="y-axis-price-line avg-high-line" :style="{top: `${data.highPriceY}px`}">
+			<div class="y-axis-price-line-price avg-high-line-price">{{ data.stock.highPrice }}</div>
+		</div>
+
+
+		<div v-if="data.avgCostY >= 0" class="y-axis-price-line avg-cost-line" :style="{top: `${data.avgCostY}px`}">
+			<div class="y-axis-price-line-price avg-cost-line-price">{{ data.stock.avgCost }}</div>
+		</div>
+		<div v-if="data.stopPriceY >= 0" class="y-axis-price-line avg-stop-price-line" :style="{top: `${data.stopPriceY}px`}">
+			<div class="y-axis-price-line-price avg-stop-price-line-price">{{ data.stock.stopPrice }}</div>
+		</div>
 		<div v-if="data.activeCandleData" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
 			<div class="y-axis-price-line-price">{{ data.yAxisPriceLinePrice }}</div>
 		</div>
@@ -30,6 +47,7 @@
 				v-for="(item, i) in data.myKList" :key="i"
 				:candleType="data.type"
 				:date="item[0]"
+				:tradeActions="data.stock.tradeActions"
 				:openPrice="item[1]"
 				:closePrice="item[2]"
 				:highPrice="item[3]"
@@ -70,9 +88,12 @@ const props = defineProps([
 let data = ref({
 	dataLoaded: false,
 	type: 'day',
-	stock: null, // { "stockFullId": "sz000858", "stockId": "000858", "stockName": "五粮液" }
+	stock: null, // { "stockFullId": "sz000858", "stockId": "000858", "stockName": "五粮液", avgCost: 100, stopPrice: 90, tradeActions: [] }
 	stockData: null, //  { stockId: '000858', zongShiZhi: '4623.77亿' }
 	stockName: '',
+	highPriceY: -1, // 前一最高价
+	avgCostY: -1, // 成本价
+	stopPriceY: -1, // 止损价
     lowPriceInAll: 0,
 	highPriceInAll: 0,
     candleMaxHeight: 280,
@@ -112,9 +133,36 @@ const zongShiZhi = computed(() => {
 	return data.value.stockData ? data.value.stockData.zongShiZhi + '亿' : '';
 })
 
+const currentDownRate = computed(() => {
+	if (!data.value.stock || !data.value.stock.highPrice) {
+		return '';
+	}
+	let rate = (data.value.stock.highPrice - data.value.curPrice) / data.value.stock.highPrice * 100;
+	return rate.toFixed(2) + '%'
+})
+
+const stopRate = computed(() => {
+	if (!data.value.stock || !data.value.stock.stopPrice) {
+		return '';
+	}
+	let rate = (data.value.stock.avgCost - data.value.stock.stopPrice) / data.value.stock.avgCost * 100;
+	return rate.toFixed(2) + '%'
+})
+
+const allowMaxDownRate = computed(() => {
+	if (!data.value.stock || !data.value.stock.stopPrice || !data.value.stock.highPrice) {
+		return '';
+	}
+	let rate = (data.value.stock.highPrice - data.value.stock.stopPrice) / data.value.stock.highPrice * 100;
+	return rate.toFixed(2) + '%'
+})
+
 function resetData(stock, start, end, count) {
 	data.value.dataLoaded = false;
 	data.value.stock = stock;
+	data.value.highPriceY = -1;
+	data.value.avgCostY = -1;
+	data.value.stopPriceY = -1;
 	data.value.stockData = null;
 	data.value.stockName = stock.stockName;
 	data.value.myKList = [];
@@ -453,6 +501,24 @@ function updateChart(type) {
 	data.value.yAxisText4 = (highPriceInAll - 3 * incAxis).toFixed(2);
 	data.value.yAxisText5 = lowPriceInAll.toFixed(2);
 	data.value.dataLoaded = true;
+
+	let priceDt = highPriceInAll - lowPriceInAll;
+	if (data.value.stock && typeof data.value.stock.avgCost !== 'undefined') {
+		let value1 = (data.value.stock.avgCost - lowPriceInAll);
+		// 加上 kchart-container 的 paddingTop
+		// 加上 stock-name 的 高度
+		// 加上 space 的高度
+		// 总共加上 55
+		data.value.avgCostY = (1 - value1 / priceDt) * data.value.candleMaxHeight + 15 + 30 + 10;
+	}
+	if (data.value.stock && typeof data.value.stock.stopPrice !== 'undefined') {
+		let value2 = (data.value.stock.stopPrice - lowPriceInAll);
+		data.value.stopPriceY = (1 - value2 / priceDt) * data.value.candleMaxHeight + 15 + 30 + 10;
+	}
+	if (data.value.stock && typeof data.value.stock.highPrice !== 'undefined') {
+		let value3 = (data.value.stock.highPrice - lowPriceInAll);
+		data.value.highPriceY = (1 - value3 / priceDt) * data.value.candleMaxHeight + 15 + 30 + 10;
+	}
 }
 
 function onCandleMouseOver(i, candleData) {
@@ -501,6 +567,10 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 .stock-name {
 	text-align: center;
 	font-size: 0;
+}
+
+.stock-name-link {
+	color: rgb(81, 90, 110);
 }
 
 .stock-name-txt {
@@ -616,4 +686,35 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	font-weight: 400;
 }
 
+.avg-cost-line {
+	border-color: #debf42;
+}
+
+.avg-cost-line-price {
+	background-color: #debf42;
+	color: #000;
+}
+
+.avg-stop-price-line {
+	border-color: #9163f1;
+}
+
+.avg-stop-price-line-price {
+	background-color: #9163f1;
+	color: #fff;
+}
+
+.avg-high-line {
+	border-color: #5cc255;
+}
+
+.avg-high-line-price {
+	background-color: #5cc255;
+	color: #fff;
+}
+
+.stop-rate-label {
+	font-size: 14px;
+	padding-left: 20px;
+}
 </style>

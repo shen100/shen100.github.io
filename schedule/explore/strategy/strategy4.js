@@ -2,7 +2,7 @@
  * 找出最近 30 天（其中某一天）的收盘价是历史最高价
  */
 export function detectTrend(allItems, stockDetail, options) {
-    if (stockDetail.stockName === '精研科技') {
+    if (stockDetail.stockName === '鹏鼎控股') {
         console.log();
     }
 
@@ -26,6 +26,9 @@ export function detectTrend(allItems, stockDetail, options) {
         if (items2[i].highPrice > highPrice) {
             return { ok: false };
         }
+    }
+    if (stockDetail.stockName === '艾罗能源') {
+        console.log();
     }
     return { ok: true };
 }

@@ -26,7 +26,8 @@ let data = ref({
             value: 'tradeTrackedStocks'
         },
         {
-            value: 'tradeInvestedStocks'
+            value: 'tradeInvestedStocks',
+            label: '当前持仓'
         },
         {
             value: 'tradeTrackedStocksByStrategy1',

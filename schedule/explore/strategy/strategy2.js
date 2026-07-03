@@ -6,7 +6,7 @@ import * as strategy4 from './strategy4.js';
  * 2. 公司市值小于 100 亿
  */
 export function detectTrend(allItems, stockDetail, options) {
-    if (stockDetail.stockName === '精研科技') {
+    if (stockDetail.stockName === '艾罗能源') {
         console.log();
     }
 
