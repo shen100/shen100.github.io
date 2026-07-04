@@ -1,8 +1,8 @@
 <template>
     <div>
         <Card>
-            <Select v-model="data.localKey" @on-change="onChange" style="width: 300px">
-                <Option v-for="item in data.localKeys" :value="item.value" :key="item.value">{{ item.value }}</Option>
+            <Select v-model="data.myLocalKey" @on-change="onChange" style="width: 300px">
+                <Option v-for="item in data.localKeys" :value="item.value" :key="item.value">{{ item.label }}</Option>
             </Select>
             <div style="margin-top: 10px; color: rgb(246 108 108);">{{ tipText }}</div>
             <div>
@@ -20,14 +20,23 @@ import { onMounted, ref, computed } from 'vue'
 import { Message } from 'view-ui-plus'
 
 let data = ref({
-    localKey: '',
+    myLocalKey: '',
     localKeys: [
         {
-            value: 'tradeTrackedStocks'
+            value: 'tradeAllFullIdStocks',
+            label: '全部股票'
         },
         {
             value: 'tradeInvestedStocks',
             label: '当前持仓'
+        },
+        {
+            value: 'tradePotentialStocks',
+            label: '候选股'
+        },
+        {
+            value: 'tradeTrackedStocks',
+            label: '股票池'
         },
         {
             value: 'tradeTrackedStocksByStrategy1',
@@ -42,12 +51,11 @@ let data = ref({
 })
 
 onMounted(async () => {
-    
 })
 
 const tipText = computed(() => {
     for (let i = 0; i < data.value.localKeys.length; i++) {
-        if (data.value.localKeys[i].value === data.value.localKey) {
+        if (data.value.localKeys[i].value === data.value.myLocalKey) {
             return data.value.localKeys[i].label
         }
     }
@@ -63,14 +71,14 @@ function onChange(key) {
 }
 
 function onSubmit() {
-    if (!data.value.localKey) {
+    if (!data.value.myLocalKey) {
         Message.error({
             duration: 10,
             content: '请选择key'
         });
         return
     }
-    localStorage.setItem(data.value.localKey, data.value.jsonStr);
+    localStorage.setItem(data.value.myLocalKey, data.value.jsonStr);
     Message.success({
         duration: 10,
         content: ' 设置成功'

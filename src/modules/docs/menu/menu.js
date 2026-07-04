@@ -1,9 +1,9 @@
 export default {
-    title: '文档',
-    icon: 'ios-hammer',
+    title: '阅读',
+    icon: 'ios-book',
     children: [
         {
-            title: '文档',
+            title: '阅读',
             path: '/docs'
         },
     ]

@@ -9,7 +9,9 @@
             @start-change="onStartChange"
             @end-change="onEndChange"
             @type-change="onTypeChange"
-            @stock-add="onStockAdd"></KChartList>
+            @local-key-change="onLocalKeyChange"
+            @stock-add="onStockAdd"
+            @stock-search="onStockSearch"></KChartList>
         <div class="page-container">
             <Page @on-change="onPageChange" :modelValue="data.page" :page-size="data.pageSize" :total="data.total" simple />
             <div style="margin-left: 10px;">共 {{ data.total }} 条</div>
@@ -35,7 +37,8 @@ let data = ref({
     total: 0,
     pageSize: 20,
     page: 1,
-    addToTrackingEnabled: false
+    addToTrackingEnabled: false,
+    filterData: null
 })
 
 onMounted(async () => {
@@ -80,6 +83,10 @@ function init() {
         data.value.page = store.settings.etfStockKChart.page;
         stocks = store.getEtfStocks();
     }
+
+    stocks = getStocks();
+    console.log('stocks stocks stocks', stocks);
+
     data.value.total = stocks.length;
     let start = (data.value.page - 1) * data.value.pageSize;
     data.value.curStocks = stocks.slice(start, start + data.value.pageSize);
@@ -133,10 +140,27 @@ function onPageChange(page) {
         store.settings.etfStockKChart.page = page;
         stocks = store.getEtfStocks();
     }
+
+
+    stocks = getStocks();
+
     let start = (page - 1) * data.value.pageSize;
     data.value.curStocks = stocks.slice(start, start + data.value.pageSize);
     window.scrollTo(0, 0);
     store.setSettings(store.settings);
+}
+
+function getStocks() {
+    let kChartLocalKey = localStorage.getItem('kChartLocalKey');
+    if (!kChartLocalKey) {
+        kChartLocalKey = 'tradeTrackedStocks';
+        localStorage.setItem('kChartLocalKey', kChartLocalKey)
+    }
+    let stocks = JSON.parse(localStorage.getItem(kChartLocalKey) || '[]');
+
+    stocks = filterStocks(stocks);
+    data.value.total = stocks.length;
+    return stocks;
 }
 
 function onTypeChange(type) {
@@ -154,8 +178,50 @@ function onTypeChange(type) {
     store.setSettings(store.settings);
 }
 
+function onLocalKeyChange() {
+    store.settings.trackedStockKChart.page = 1;
+    store.setSettings(store.settings);
+    location.reload();
+}
+
 function onStockAdd(stock) {
     store.addTrackedStock(stock);
+}
+
+function onStockSearch(filterData) {
+    let page = 1
+    store.settings.trackedStockKChart.page = page;
+
+    data.value.filterData = filterData;
+    let stocks = getStocks();
+
+    console.log('la la la ', stocks);
+    
+    let start = (page - 1) * data.value.pageSize;
+    data.value.curStocks = stocks.slice(start, start + data.value.pageSize);
+    window.scrollTo(0, 0);
+    store.setSettings(store.settings);
+}
+
+function filterStocks(stocks) {
+    let filterData = data.value.filterData;
+    let theStocks = [];
+    for (let i = 0; i < stocks.length; i++) {
+        let stock = stocks[i];
+        if (filterData && filterData.stockInput) {
+            if (stock.stockId.indexOf(filterData.stockInput) >= 0) {
+                theStocks.push(stock);
+                continue;
+            }
+            if (stock.stockName.indexOf(filterData.stockInput) >= 0) {
+                theStocks.push(stock);
+                continue;
+            }
+        } else {
+            theStocks.push(stock);
+        }
+    }
+    return theStocks;
 }
 </script>
 

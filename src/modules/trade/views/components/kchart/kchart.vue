@@ -3,14 +3,17 @@
 		<div class="stock-name" @mouseleave="onStockNameMouseLeave">
 			<div class="stock-name-txt" @mouseenter="onStockNameMouseEnter">
 				<a class="stock-name-link" :href="`https://xueqiu.com/S/${data.stock && data.stock.stockFullId}`" target="_blank">
-					{{ data.stockData ? `${data.stockName}&nbsp;(总市值&nbsp;${zongShiZhi})` : data.stockName }}
+					{{ data.stockName }}
 				</a>
+				{{ data.stockData ? `&nbsp;(总市值&nbsp;${zongShiZhi})` : '' }}
 				<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice }}</span>
 				<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(2) : ''}}</span>
 				<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
-				<span v-if="data.stock" class="stop-rate-label">当前跌幅 {{ currentDownRate }}</span>
-				<span v-if="data.stock" class="stop-rate-label">最多可跌 {{  allowMaxDownRate }}</span>
-				<span v-if="data.stock" class="stop-rate-label">止损 {{ stopRate }}</span>
+				<span v-if="data.stock && currentDownRate" class="stop-rate-label">当前跌幅 {{ currentDownRate }}</span>
+				<span v-if="data.stock && allowMaxDownRate" class="stop-rate-label">最多可跌 {{  allowMaxDownRate }}</span>
+				<span v-if="data.stock && stopRate" class="stop-rate-label">止损 {{ stopRate }}</span>
+				<Button @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
+				<Button v-if="props.kChartLocalKey === 'tradeTrackedStocks'" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
 			</div>
 			<div v-if="props.addToTrackingEnabled" class="add-to-tracking">
 				<Button v-if="data.addToTrackingBtnVisible" @click="onShowAddToTrackingModal" type="primary" size="small">加入跟踪K线</Button>
@@ -28,15 +31,15 @@
 		<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
 		<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
 
-		<div v-if="data.highPriceY >= 0" class="y-axis-price-line avg-high-line" :style="{top: `${data.highPriceY}px`}">
+		<div v-if="data.stock && data.stock.highPrice > 0" class="y-axis-price-line avg-high-line" :style="{top: `${data.highPriceY}px`}">
 			<div class="y-axis-price-line-price avg-high-line-price">{{ data.stock.highPrice }}</div>
 		</div>
 
 
-		<div v-if="data.avgCostY >= 0" class="y-axis-price-line avg-cost-line" :style="{top: `${data.avgCostY}px`}">
-			<div class="y-axis-price-line-price avg-cost-line-price">{{ data.stock.avgCost }}</div>
+		<div v-if="avgCost > 0" class="y-axis-price-line avg-cost-line" :style="{top: `${data.avgCostY}px`}">
+			<div class="y-axis-price-line-price avg-cost-line-price">{{ avgCost.toFixed(2) }}</div>
 		</div>
-		<div v-if="data.stopPriceY >= 0" class="y-axis-price-line avg-stop-price-line" :style="{top: `${data.stopPriceY}px`}">
+		<div v-if="data.stock && data.stock.stopPrice > 0" class="y-axis-price-line avg-stop-price-line" :style="{top: `${data.stopPriceY}px`}">
 			<div class="y-axis-price-line-price avg-stop-price-line-price">{{ data.stock.stopPrice }}</div>
 		</div>
 		<div v-if="data.activeCandleData" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
@@ -70,6 +73,8 @@
 			</div>
 		</div>
 	</div>
+	<EditKChartModal @hide-modal="onHideEditModal" :stock="data.stock" :editModalVisible="data.editModalVisible" />
+	<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :addPotentialModalVisible="data.addPotentialModalVisible" />
 </template>
 
 <script setup>
@@ -78,17 +83,20 @@ import { onMounted, ref, computed } from 'vue'
 import { findFromRight } from '../../../util/str';
 import Candle from './candle.vue';
 import StockInfoPopup from './stock_info_popup.vue';
+import EditKChartModal from './edit_kchart_modal.vue';
+import AddPotentialModal from './add_potential_modal.vue';
 
 const emit = defineEmits(['add-to-tracking']);
 
 const props = defineProps([
     'addToTrackingEnabled',
+	'kChartLocalKey'
 ]);
 
 let data = ref({
 	dataLoaded: false,
 	type: 'day',
-	stock: null, // { "stockFullId": "sz000858", "stockId": "000858", "stockName": "五粮液", avgCost: 100, stopPrice: 90, tradeActions: [] }
+	stock: null, // { "stockFullId": "sz000858", "stockId": "000858", "stockName": "五粮液", highPrice: 100, stopPrice: 90, tradeActions: [] }
 	stockData: null, //  { stockId: '000858', zongShiZhi: '4623.77亿' }
 	stockName: '',
 	highPriceY: -1, // 前一最高价
@@ -119,7 +127,9 @@ let data = ref({
 	dtPrice: 0,
 	dtRate: 0,
 	curPrice: 0,
-	lastPriceUpColor: ''
+	lastPriceUpColor: '',
+	editModalVisible: false,
+	addPotentialModalVisible: false,
 })
 
 onMounted(async () => {
@@ -133,6 +143,25 @@ const zongShiZhi = computed(() => {
 	return data.value.stockData ? data.value.stockData.zongShiZhi + '亿' : '';
 })
 
+const avgCost = computed(() => {
+	if (!data.value.stock || !data.value.stock.tradeActions || !data.value.stock.tradeActions.length) {
+		return 0;
+	}
+	let amount = 0;
+	let count = 0;
+	for (let i = 0; i < data.value.stock.tradeActions.length; i++) {
+		let action = data.value.stock.tradeActions[i];
+		if (action.type === 'buy') {
+			amount = amount + (action.price * action.count);
+			count = count + action.count;
+		} else if (action.type === 'sell') {
+			amount = amount - (action.price * action.count);
+			count = count - action.count;
+		}
+	}
+	return Number(amount / count);
+})
+
 const currentDownRate = computed(() => {
 	if (!data.value.stock || !data.value.stock.highPrice) {
 		return '';
@@ -142,10 +171,17 @@ const currentDownRate = computed(() => {
 })
 
 const stopRate = computed(() => {
-	if (!data.value.stock || !data.value.stock.stopPrice) {
+	if (data.value.stock && data.value.stock.stockName === '中控技术') {
+		console.log();
+
+	}
+	if (!data.value.stock || !(avgCost.value > 0) || !data.value.stock.stopPrice) {
+		if (data.value.stock && data.value.stock.stockName === '中控技术') {
+			console.log('avgCost', avgCost.value, 'stopPrice', data.value.stock.stopPrice);
+		}
 		return '';
 	}
-	let rate = (data.value.stock.avgCost - data.value.stock.stopPrice) / data.value.stock.avgCost * 100;
+	let rate = (avgCost.value - data.value.stock.stopPrice) / avgCost.value * 100;
 	return rate.toFixed(2) + '%'
 })
 
@@ -503,8 +539,8 @@ function updateChart(type) {
 	data.value.dataLoaded = true;
 
 	let priceDt = highPriceInAll - lowPriceInAll;
-	if (data.value.stock && typeof data.value.stock.avgCost !== 'undefined') {
-		let value1 = (data.value.stock.avgCost - lowPriceInAll);
+	if (data.value.stock && avgCost.value > 0) {
+		let value1 = (avgCost.value - lowPriceInAll);
 		// 加上 kchart-container 的 paddingTop
 		// 加上 stock-name 的 高度
 		// 加上 space 的高度
@@ -552,6 +588,25 @@ function onShowAddToTrackingModal() {
 	emit('add-to-tracking', data.value.stock);
 }
 
+function onShowEditModal() {
+	data.value.editModalVisible = true;
+	console.log('onShowEditModal', data.value.editModalVisible);
+}
+
+function onHideEditModal() {
+	data.value.editModalVisible = false;
+}
+
+function onShowPotentialModal() {
+	data.value.addPotentialModalVisible = true;
+	console.log('onShowPotentialModal', data.value.addPotentialModalVisible);
+}
+
+function onHidePotentialModal() {
+	data.value.addPotentialModalVisible = false;
+	console.log('onHidePotentialModal~~~');
+}
+
 defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 </script>
 
@@ -571,6 +626,10 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 
 .stock-name-link {
 	color: rgb(81, 90, 110);
+}
+
+.stock-name-link:hover {
+	color: #2d8cf0;
 }
 
 .stock-name-txt {
@@ -615,7 +674,7 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	font-size: 12px;
 	background-color: #e7e7e7;
     color: #222;
-    width: 40px;
+    width: 46px;
     text-align: center;
 }
 

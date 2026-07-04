@@ -2,7 +2,10 @@
     <div>
         <Card class="kcharts-type-card">
             <div style="display: flex;">
-                <div class="date-label">开始日期</div>
+                <Select v-model="data.kChartLocalKey" @on-change="onLocalKeyChange" style="width: 300px">
+                    <Option v-for="item in data.localKeys" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                </Select>
+                <div class="date-label" style="margin-left: 10px;">开始日期</div>
                 <DatePicker :model-value="data.start"
                     type="date" placeholder="Select date" style="width: 200px"
                     @on-change="(dateStr, dateType) => onStartDateChange(dateStr, dateType, data.type)"/>
@@ -16,11 +19,14 @@
                     <Button @click="onTypeChange('month')" :type="data.type === 'month' ? 'primary' : 'default'">月</Button>
                     <Button @click="onTypeChange('year')" :type="data.type === 'year' ? 'primary' : 'default'">年</Button>
                 </ButtonGroup>
+                <Input v-model="data.stockInput" placeholder="股票" style="width: 200px; margin-left: 15px" />
+                <Button type="primary" @click="onSearch" icon="ios-search" style="margin-left: 15px">搜素</Button>
                 <div class="space-all"></div>
             </div>
         </Card>
         <div v-if="data.kCharts && data.kCharts.length">
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" 
+                :kChartLocalKey="data.kChartLocalKey"
                 :addToTrackingEnabled="props.addToTrackingEnabled"
                 @add-to-tracking="onAddToTracking" />
         </div>
@@ -40,9 +46,9 @@
 import { nextTick, onMounted, ref, watch } from 'vue';
 import KChart from './kchart.vue';
 import { formatLocalYMD, parseLocalYMDString } from '../../../util/date';
-import { replaceAllSpace } from '../../../util/str';
+import { replaceAllSpace, trim } from '../../../util/str';
 
-const emit = defineEmits(['start-change', 'end-change', 'type-change', 'stock-add']);
+const emit = defineEmits(['start-change', 'end-change', 'type-change', 'stock-add', 'local-key-change', 'stock-search']);
 
 const itemRefs = ref([]);
 
@@ -55,6 +61,33 @@ const props = defineProps([
 ]);
 
 let data = ref({
+    kChartLocalKey: '',
+    localKeys: [
+        {
+            value: 'tradeAllFullIdStocks',
+            label: '全部股票'
+        },
+        {
+            value: 'tradeInvestedStocks',
+            label: '当前持仓'
+        },
+        {
+            value: 'tradePotentialStocks',
+            label: '候选股'
+        },
+        {
+            value: 'tradeTrackedStocks',
+            label: '股票池'
+        },
+        {
+            value: 'tradeTrackedStocksByStrategy1',
+            label: '到达最高价后回踩'
+        },
+        {
+            value: 'tradeTrackedStocksByStrategy2',
+            label: '最近 20 天， 80% 的时间处于上涨'
+        }
+    ],
     type: 'day',
     kCharts: [],
     start: formatLocalYMD(new Date(new Date().getTime() - 180 * 24 * 3600 * 1000)),
@@ -63,9 +96,16 @@ let data = ref({
     stockId: '',
     stockFullId: '',
     stockName: '',
+    stockInput: ''
 })
 
+function onLocalKeyChange(key) {
+    localStorage.setItem('kChartLocalKey', key)
+    emit('local-key-change')
+}
+
 onMounted(async () => {
+    data.value.kChartLocalKey = localStorage.getItem('kChartLocalKey') || 'tradeTrackedStocks';
     data.value.type = props.type || data.value.type;
     data.value.start = props.start || data.value.start;
     data.value.end = props.end || data.value.end;
@@ -75,6 +115,9 @@ onMounted(async () => {
 watch(
     () => props.stocks,
     (newValue, oldValue) => {
+        if (newValue && newValue.length === 1) {
+            console.log();
+        }
         onRequest(data.value.type);
     }
 )
@@ -148,7 +191,6 @@ async function onRequest(type) {
             stockFullId: stock.stockFullId,
             stockName: stock.stockName,
             highPrice: stock.highPrice,
-            avgCost: stock.avgCost,
             stopPrice: stock.stopPrice,
             tradeActions: stock.tradeActions,
         });
@@ -159,6 +201,11 @@ async function onRequest(type) {
 	itemRefs.value.forEach((el, index) => {
         if (el) {
             let stock = data.value.kCharts[index];
+            // 每页 20 个，假如最后一页小于 20 个，翻到最后一页时，itemRefs 这时仍旧是 20 个，没有及时销毁
+            // 此时 用 index 从 kCharts 里取 stock，就为空
+            if (!stock) {
+                return;
+            }
             let requestType = data.value.type;
             if (requestType == "day") {
                 el.requestDayK(stock, startStr, endStr, count);
@@ -200,6 +247,17 @@ function onAddCancel() {
     data.value.stockId = '';
     data.value.stockFullId = '';
     data.value.stockName = '';
+}
+
+function onSearch() {
+    let filterData = null;
+    let stockInput = trim(data.value.stockInput || '');
+    if (stockInput.length > 0) {
+        filterData = {
+            stockInput
+        }
+    }
+    emit('stock-search', filterData);
 }
 </script>
 

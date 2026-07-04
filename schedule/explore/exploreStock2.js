@@ -35,10 +35,10 @@ console.log('股票数据结构:', myItems[myItems.length - 1]);
 const pastDate = new Date(new Date());
 pastDate.setDate(pastDate.getDate() - 365);
 
-// let startStr = '2025-01-01';
-// let endStr = '2026-06-29';
-let startStr = pastDate.toISOString().substring(0, 10); // 2025-07-01
-let endStr = new Date().toISOString().substring(0, 10); // 2026-07-01
+let startStr = '2025-07-03';
+let endStr = '2026-07-03';
+// let startStr = pastDate.toISOString().substring(0, 10); // 2025-07-01
+// let endStr = new Date().toISOString().substring(0, 10); // 2026-07-01
 console.log('\nstartStr', startStr);
 console.log('endStr', endStr, '\n');
 
