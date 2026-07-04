@@ -9,11 +9,14 @@
 				<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice }}</span>
 				<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(2) : ''}}</span>
 				<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
-				<span v-if="data.stock && currentDownRate" class="stop-rate-label">当前跌幅 {{ currentDownRate }}</span>
-				<span v-if="data.stock && allowMaxDownRate" class="stop-rate-label">最多可跌 {{  allowMaxDownRate }}</span>
-				<span v-if="data.stock && stopRate" class="stop-rate-label">止损 {{ stopRate }}</span>
-				<Button @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
-				<Button v-if="props.kChartLocalKey === 'tradeTrackedStocks'" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
+				<template v-if="props.kChartLocalKey !== 'tradeAllFullIdStocks'">
+					<span v-if="data.stock && currentDownRate" class="stop-rate-label">当前跌幅 {{ currentDownRate }}</span>
+					<span v-if="data.stock && allowMaxDownRate" class="stop-rate-label">最多可跌 {{  allowMaxDownRate }}</span>
+					<span v-if="data.stock && stopRate" class="stop-rate-label">止损 {{ stopRate }}</span>
+					<Button @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
+					<Button v-if="props.kChartLocalKey === 'tradeTrackedStocks'" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
+					<Button v-if="props.kChartLocalKey === 'tradePotentialStocks'" @click="onShowRemovePotentialModal" type="primary" size="small" style="margin-left: 10px;">移出候选股</Button>
+				</template>
 			</div>
 			<div v-if="props.addToTrackingEnabled" class="add-to-tracking">
 				<Button v-if="data.addToTrackingBtnVisible" @click="onShowAddToTrackingModal" type="primary" size="small">加入跟踪K线</Button>
@@ -75,6 +78,7 @@
 	</div>
 	<EditKChartModal @hide-modal="onHideEditModal" :stock="data.stock" :editModalVisible="data.editModalVisible" />
 	<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :addPotentialModalVisible="data.addPotentialModalVisible" />
+	<RemovePotentialModal @hide-modal="onHideRemovePotentialModal" :stock="data.stock" :removePotentialModalVisible="data.removePotentialModalVisible" />
 </template>
 
 <script setup>
@@ -85,6 +89,7 @@ import Candle from './candle.vue';
 import StockInfoPopup from './stock_info_popup.vue';
 import EditKChartModal from './edit_kchart_modal.vue';
 import AddPotentialModal from './add_potential_modal.vue';
+import RemovePotentialModal from './remove_potential_modal.vue';
 
 const emit = defineEmits(['add-to-tracking']);
 
@@ -130,6 +135,7 @@ let data = ref({
 	lastPriceUpColor: '',
 	editModalVisible: false,
 	addPotentialModalVisible: false,
+	removePotentialModalVisible: false
 })
 
 onMounted(async () => {
@@ -605,6 +611,16 @@ function onShowPotentialModal() {
 function onHidePotentialModal() {
 	data.value.addPotentialModalVisible = false;
 	console.log('onHidePotentialModal~~~');
+}
+
+function onShowRemovePotentialModal() {
+	data.value.removePotentialModalVisible = true;
+	console.log('onShowRemovePotentialModal~~~~', data.value.removePotentialModalVisible);
+}
+
+function onHideRemovePotentialModal() {
+	data.value.removePotentialModalVisible = false;
+	console.log('onHideRemovePotentialModal~~~');
 }
 
 defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });

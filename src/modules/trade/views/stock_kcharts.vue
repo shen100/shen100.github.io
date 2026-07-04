@@ -11,7 +11,8 @@
             @type-change="onTypeChange"
             @local-key-change="onLocalKeyChange"
             @stock-add="onStockAdd"
-            @stock-search="onStockSearch"></KChartList>
+            @stock-search="onStockSearch"
+            @stocks-uion="onStocksUion"></KChartList>
         <div class="page-container">
             <Page @on-change="onPageChange" :modelValue="data.page" :page-size="data.pageSize" :total="data.total" simple />
             <div style="margin-left: 10px;">共 {{ data.total }} 条</div>
@@ -85,7 +86,6 @@ function init() {
     }
 
     stocks = getStocks();
-    console.log('stocks stocks stocks', stocks);
 
     data.value.total = stocks.length;
     let start = (data.value.page - 1) * data.value.pageSize;
@@ -222,6 +222,19 @@ function filterStocks(stocks) {
         }
     }
     return theStocks;
+}
+
+function onStocksUion() {
+    let page = 1
+    store.settings.trackedStockKChart.page = page;
+    let stocks = getStocks();
+
+    console.log('la la la ', stocks);
+    
+    let start = (page - 1) * data.value.pageSize;
+    data.value.curStocks = stocks.slice(start, start + data.value.pageSize);
+    window.scrollTo(0, 0);
+    store.setSettings(store.settings);
 }
 </script>
 

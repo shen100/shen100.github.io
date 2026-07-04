@@ -22,6 +22,7 @@
                 <Input v-model="data.stockInput" placeholder="股票" style="width: 200px; margin-left: 15px" />
                 <Button type="primary" @click="onSearch" icon="ios-search" style="margin-left: 15px">搜素</Button>
                 <div class="space-all"></div>
+                <Button v-if="ifAllowUnion" type="success" @click="onShowUnionStocks" icon="md-sync" style="margin-left: 15px">更新数据</Button>
             </div>
         </Card>
         <div v-if="data.kCharts && data.kCharts.length">
@@ -39,16 +40,23 @@
                 <Button type="primary" @click="onAddOK">确定</Button>
             </template>
         </Modal>
+        <StocksUnionModal 
+            :kChartLocalKeyLabel="kChartLocalKeyLabel"
+            :unionModalVisible="data.unionModalVisible" 
+            :kChartLocalKey="data.kChartLocalKey"
+            @hide-modal="onHideUnionStocks"
+            @stocks-uion="onStocksUion" />
     </div>
 </template>
 
 <script setup>
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch, computed } from 'vue';
 import KChart from './kchart.vue';
 import { formatLocalYMD, parseLocalYMDString } from '../../../util/date';
 import { replaceAllSpace, trim } from '../../../util/str';
+import StocksUnionModal from './stocks_union_modal.vue';
 
-const emit = defineEmits(['start-change', 'end-change', 'type-change', 'stock-add', 'local-key-change', 'stock-search']);
+const emit = defineEmits(['start-change', 'end-change', 'type-change', 'stock-add', 'local-key-change', 'stock-search', 'stocks-uion']);
 
 const itemRefs = ref([]);
 
@@ -96,7 +104,8 @@ let data = ref({
     stockId: '',
     stockFullId: '',
     stockName: '',
-    stockInput: ''
+    stockInput: '',
+    unionModalVisible: false
 })
 
 function onLocalKeyChange(key) {
@@ -111,6 +120,23 @@ onMounted(async () => {
     data.value.end = props.end || data.value.end;
     onRequest(props.type);
 });
+
+const ifAllowUnion = computed(() => {
+    let list = [ 'tradeTrackedStocks', 'tradeTrackedStocksByStrategy1', 'tradeTrackedStocksByStrategy2' ];
+    if (list.indexOf(data.value.kChartLocalKey) >= 0) {
+        return true;
+    }
+    return false;
+});
+
+const kChartLocalKeyLabel = computed(() => {
+	for (let i = 0; i < data.value.localKeys.length; i++) {
+        if (data.value.localKeys[i].value === data.value.kChartLocalKey) {
+            return data.value.localKeys[i].label;
+        }
+    }
+	return ''
+})
 
 watch(
     () => props.stocks,
@@ -184,7 +210,6 @@ async function onRequest(type) {
 		count = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
     }
     data.value.kCharts = [];
-    console.log('props.stocks', props.stocks);
     props.stocks.forEach(stock => {
         data.value.kCharts.push({
             stockId: stock.stockId,
@@ -258,6 +283,19 @@ function onSearch() {
         }
     }
     emit('stock-search', filterData);
+}
+
+function onShowUnionStocks() {
+    data.value.unionModalVisible = true;
+}
+
+function onHideUnionStocks() {
+    data.value.unionModalVisible = false;
+}
+
+function onStocksUion() {
+    data.value.unionModalVisible = false;
+    emit('stocks-uion');
 }
 </script>
 
