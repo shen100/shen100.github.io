@@ -5,14 +5,13 @@
             :end="data.end"
             :page="data.page"
             :stocks="data.curStocks"
-            :addToTrackingEnabled="data.addToTrackingEnabled"
+            :filterData="data.filterData"
             @start-change="onStartChange"
             @end-change="onEndChange"
             @type-change="onTypeChange"
             @local-key-change="onLocalKeyChange"
-            @stock-add="onStockAdd"
             @stock-search="onStockSearch"
-            @stocks-uion="onStocksUion"></KChartList>
+            @stocks-union="onStocksUion"></KChartList>
         <div class="page-container">
             <Page @on-change="onPageChange" :modelValue="data.page" :page-size="data.pageSize" :total="data.total" simple />
             <div style="margin-left: 10px;">共 {{ data.total }} 条</div>
@@ -24,7 +23,6 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
 import KChartList from './components/kchart/kchart_list.vue';
-import store from '../model/store';
 import { formatLocalYMD } from '../util/date';
 import { useRoute } from 'vue-router'
 
@@ -38,8 +36,7 @@ let data = ref({
     total: 0,
     pageSize: 20,
     page: 1,
-    addToTrackingEnabled: false,
-    filterData: null
+    filterData: null,
 })
 
 onMounted(async () => {
@@ -47,160 +44,87 @@ onMounted(async () => {
 });
 
 function init() {
-    console.log('init', route.name)
-    let stocks;
-    data.value.addToTrackingEnabled = false;
-    if (route.name === 'allKCharts') {
-        data.value.addToTrackingEnabled = true;
-        data.value.type = store.settings.allStockKChart.type;
-        data.value.start = store.settings.allStockKChart.start;
-        data.value.end = store.settings.allStockKChart.end;
-        data.value.page = store.settings.allStockKChart.page;
-        stocks = store.allStocks;
-    } else if (route.name === 'investedKCharts') {
-        data.value.type = store.settings.investedStockKChart.type;
-        data.value.start = store.settings.investedStockKChart.start;
-        data.value.end = store.settings.investedStockKChart.end;
-        data.value.page = store.settings.investedStockKChart.page;
-        stocks = store.getInvestedStocks();
-    } else if (route.name === 'trackedKCharts') {
-        data.value.type = store.settings.trackedStockKChart.type;
-        data.value.start = store.settings.trackedStockKChart.start;
-        data.value.end = store.settings.trackedStockKChart.end;
-        data.value.page = store.settings.trackedStockKChart.page;
-        stocks = store.getTrackedStocks();
-    } else if (route.name === 'selectedKCharts') {
-        data.value.addToTrackingEnabled = true;
-        data.value.type = store.settings.selectedStockKChart.type;
-        data.value.start = store.settings.selectedStockKChart.start;
-        data.value.end = store.settings.selectedStockKChart.end;
-        data.value.page = store.settings.selectedStockKChart.page;
-        stocks = store.getSelectedStocks();
-    } else if (route.name === 'etfKCharts') {
-        data.value.addToTrackingEnabled = true;
-        data.value.type = store.settings.etfStockKChart.type;
-        data.value.start = store.settings.etfStockKChart.start;
-        data.value.end = store.settings.etfStockKChart.end;
-        data.value.page = store.settings.etfStockKChart.page;
-        stocks = store.getEtfStocks();
+    let settingsStr = localStorage.getItem('tradeTrackedStockKChartSettings') || '{}';
+    let settings = JSON.parse(settingsStr);
+
+    // type: day week month year
+    if (settings.type) {
+        data.value.type = settings.type;
+    }
+    if (settings.start) {
+        data.value.start = settings.start;
+    }
+    if (settings.end) {
+        data.value.end = settings.end;
+    }
+    if (settings.page) {
+        data.value.page = settings.page;
+    }
+    if (settings.filterData) {
+        data.value.filterData = settings.filterData;
     }
 
-    stocks = getStocks();
-
+    let stocks = getStocks();
     data.value.total = stocks.length;
     let start = (data.value.page - 1) * data.value.pageSize;
     data.value.curStocks = stocks.slice(start, start + data.value.pageSize);
 }
 
+function onTypeChange(type) {
+    // type: day week month year
+    data.value.type = type;
+    saveSettings();
+}
+
 function onStartChange(dateStr) {
-    if (route.name === 'allKCharts') {
-        store.settings.allStockKChart.start = dateStr;
-    } else if (route.name === 'investedKCharts') {
-        store.settings.investedStockKChart.start = dateStr;
-    } else if (route.name === 'trackedKCharts') {
-        store.settings.trackedStockKChart.start = dateStr;
-    } else if (route.name === 'selectedKCharts') {
-        store.settings.selectedStockKChart.start = dateStr;
-    } else if (route.name === 'etfKCharts') {
-        store.settings.etfStockKChart.start = dateStr;
-    }
-    store.setSettings(store.settings);
+    data.value.start = dateStr;
+    saveSettings();
 }
 
 function onEndChange(dateStr) {
-    if (route.name === 'allKCharts') {
-        store.settings.allStockKChart.end = dateStr;
-    } else if (route.name === 'investedKCharts') {
-        store.settings.investedStockKChart.end = dateStr;
-    } else if (route.name === 'trackedKCharts') {
-        store.settings.trackedStockKChart.end = dateStr;
-    } else if (route.name === 'selectedKCharts') {
-        store.settings.selectedStockKChart.end = dateStr;
-    } else if (route.name === 'etfKCharts') {
-        store.settings.etfStockKChart.end = dateStr;
-    }
-    store.setSettings(store.settings);
+    data.value.end = dateStr;
+    saveSettings();
 }
 
 function onPageChange(page) {
-    let stocks;
-    if (route.name === 'allKCharts') {
-        store.settings.allStockKChart.page = page;
-        stocks = store.allStocks;
-    } else if (route.name === 'investedKCharts') {
-        store.settings.investedStockKChart.page = page;
-        stocks = store.getInvestedStocks();
-    } else if (route.name === 'trackedKCharts') {
-        store.settings.trackedStockKChart.page = page;
-        stocks = store.getTrackedStocks();
-    } else if (route.name === 'selectedKCharts') {
-        store.settings.selectedStockKChart.page = page;
-        stocks = store.getSelectedStocks();
-    } else if (route.name === 'etfKCharts') {
-        store.settings.etfStockKChart.page = page;
-        stocks = store.getEtfStocks();
-    }
+    data.value.page = page;
 
-
-    stocks = getStocks();
-
+    let stocks = getStocks();
     let start = (page - 1) * data.value.pageSize;
     data.value.curStocks = stocks.slice(start, start + data.value.pageSize);
     window.scrollTo(0, 0);
-    store.setSettings(store.settings);
+    saveSettings();
 }
 
 function getStocks() {
-    let kChartLocalKey = localStorage.getItem('kChartLocalKey');
+    let kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
     if (!kChartLocalKey) {
         kChartLocalKey = 'tradeTrackedStocks';
-        localStorage.setItem('kChartLocalKey', kChartLocalKey)
+        localStorage.setItem('tradeKChartLocalKey', kChartLocalKey)
     }
     let stocks = JSON.parse(localStorage.getItem(kChartLocalKey) || '[]');
-
     stocks = filterStocks(stocks);
     data.value.total = stocks.length;
     return stocks;
 }
 
-function onTypeChange(type) {
-    if (route.name === 'allKCharts') {
-        store.settings.allStockKChart.type = type;
-    } else if (route.name === 'investedKCharts') {
-        store.settings.investedStockKChart.type = type;
-    } else if (route.name === 'trackedKCharts') {
-        store.settings.trackedStockKChart.type = type;
-    } else if (route.name === 'selectedKCharts') {
-        store.settings.selectedStockKChart.type = type;
-    } else if (route.name === 'etfKCharts') {
-        store.settings.etfStockKChart.type = type;
-    }
-    store.setSettings(store.settings);
-}
-
 function onLocalKeyChange() {
-    store.settings.trackedStockKChart.page = 1;
-    store.setSettings(store.settings);
+    data.value.page = 1;
+    saveSettings();
     location.reload();
-}
-
-function onStockAdd(stock) {
-    store.addTrackedStock(stock);
 }
 
 function onStockSearch(filterData) {
     let page = 1
-    store.settings.trackedStockKChart.page = page;
+    data.value.page = page;
 
     data.value.filterData = filterData;
     let stocks = getStocks();
-
-    console.log('la la la ', stocks);
     
     let start = (page - 1) * data.value.pageSize;
     data.value.curStocks = stocks.slice(start, start + data.value.pageSize);
     window.scrollTo(0, 0);
-    store.setSettings(store.settings);
+    saveSettings();
 }
 
 function filterStocks(stocks) {
@@ -226,15 +150,24 @@ function filterStocks(stocks) {
 
 function onStocksUion() {
     let page = 1
-    store.settings.trackedStockKChart.page = page;
-    let stocks = getStocks();
+    data.value.page = page;
 
-    console.log('la la la ', stocks);
-    
+    let stocks = getStocks();
     let start = (page - 1) * data.value.pageSize;
     data.value.curStocks = stocks.slice(start, start + data.value.pageSize);
     window.scrollTo(0, 0);
-    store.setSettings(store.settings);
+    saveSettings();
+}
+
+function saveSettings() {
+    let jsonStr = JSON.stringify({
+        type: data.value.type,
+        start: data.value.start,
+        end: data.value.end,
+        page: data.value.page,
+        filterData: data.value.filterData
+    });
+    localStorage.setItem('tradeTrackedStockKChartSettings', jsonStr)
 }
 </script>
 

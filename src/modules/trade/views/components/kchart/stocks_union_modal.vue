@@ -18,7 +18,7 @@
 import { onMounted, ref, computed, watch } from 'vue';
 import { Message } from 'view-ui-plus';
 
-const emit = defineEmits(['hide-modal', 'stocks-uion']);
+const emit = defineEmits(['hide-modal', 'stocks-union']);
 
 const props = defineProps([
     'kChartLocalKey',
@@ -58,7 +58,7 @@ function onEditOK() {
     }
     let jsonStr = JSON.stringify(newStocks, null, 4);
     localStorage.setItem(props.kChartLocalKey, jsonStr);
-    emit('stocks-uion')
+    emit('stocks-union')
 }
 
 function onBeforeClose() {

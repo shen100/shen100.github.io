@@ -18,9 +18,6 @@
 					<Button v-if="props.kChartLocalKey === 'tradePotentialStocks'" @click="onShowRemovePotentialModal" type="primary" size="small" style="margin-left: 10px;">移出候选股</Button>
 				</template>
 			</div>
-			<div v-if="props.addToTrackingEnabled" class="add-to-tracking">
-				<Button v-if="data.addToTrackingBtnVisible" @click="onShowAddToTrackingModal" type="primary" size="small">加入跟踪K线</Button>
-			</div>
 		</div>
 		<div class="space"></div>
 		<div class="y-axis" :style="{top: `${data.yAxis1}px`}"></div>
@@ -91,10 +88,7 @@ import EditKChartModal from './edit_kchart_modal.vue';
 import AddPotentialModal from './add_potential_modal.vue';
 import RemovePotentialModal from './remove_potential_modal.vue';
 
-const emit = defineEmits(['add-to-tracking']);
-
 const props = defineProps([
-    'addToTrackingEnabled',
 	'kChartLocalKey'
 ]);
 
@@ -588,10 +582,6 @@ function onStockNameMouseEnter() {
 
 function onStockNameMouseLeave() {
 	data.value.addToTrackingBtnVisible = false;
-}
-
-function onShowAddToTrackingModal() {
-	emit('add-to-tracking', data.value.stock);
 }
 
 function onShowEditModal() {

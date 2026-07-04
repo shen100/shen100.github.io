@@ -27,25 +27,14 @@
         </Card>
         <div v-if="data.kCharts && data.kCharts.length">
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" 
-                :kChartLocalKey="data.kChartLocalKey"
-                :addToTrackingEnabled="props.addToTrackingEnabled"
-                @add-to-tracking="onAddToTracking" />
+                :kChartLocalKey="data.kChartLocalKey" />
         </div>
-        <Modal
-            v-model="data.addModalVisible"
-            title="跟踪K线">
-            <div>确定要加入到跟踪K线?</div>
-            <template #footer>
-                <Button type="text" @click="onAddCancel">取消</Button>
-                <Button type="primary" @click="onAddOK">确定</Button>
-            </template>
-        </Modal>
         <StocksUnionModal 
             :kChartLocalKeyLabel="kChartLocalKeyLabel"
             :unionModalVisible="data.unionModalVisible" 
             :kChartLocalKey="data.kChartLocalKey"
             @hide-modal="onHideUnionStocks"
-            @stocks-uion="onStocksUion" />
+            @stocks-union="onStocksUion" />
     </div>
 </template>
 
@@ -56,7 +45,7 @@ import { formatLocalYMD, parseLocalYMDString } from '../../../util/date';
 import { replaceAllSpace, trim } from '../../../util/str';
 import StocksUnionModal from './stocks_union_modal.vue';
 
-const emit = defineEmits(['start-change', 'end-change', 'type-change', 'stock-add', 'local-key-change', 'stock-search', 'stocks-uion']);
+const emit = defineEmits(['start-change', 'end-change', 'type-change', 'local-key-change', 'stock-search', 'stocks-union']);
 
 const itemRefs = ref([]);
 
@@ -65,7 +54,7 @@ const props = defineProps([
     'type',
     'start',
     'end',
-    'addToTrackingEnabled'
+    'filterData'
 ]);
 
 let data = ref({
@@ -100,7 +89,6 @@ let data = ref({
     kCharts: [],
     start: formatLocalYMD(new Date(new Date().getTime() - 180 * 24 * 3600 * 1000)),
     end: formatLocalYMD(new Date()), // 2025-06-12
-    addModalVisible: false,
     stockId: '',
     stockFullId: '',
     stockName: '',
@@ -109,12 +97,12 @@ let data = ref({
 })
 
 function onLocalKeyChange(key) {
-    localStorage.setItem('kChartLocalKey', key)
+    localStorage.setItem('tradeKChartLocalKey', key)
     emit('local-key-change')
 }
 
 onMounted(async () => {
-    data.value.kChartLocalKey = localStorage.getItem('kChartLocalKey') || 'tradeTrackedStocks';
+    data.value.kChartLocalKey = localStorage.getItem('tradeKChartLocalKey') || 'tradeTrackedStocks';
     data.value.type = props.type || data.value.type;
     data.value.start = props.start || data.value.start;
     data.value.end = props.end || data.value.end;
@@ -169,6 +157,10 @@ watch(
     }
 )
 
+watch(() => props.filterData?.stockInput, (newVal) => {
+    data.value.stockInput = newVal || ''
+})
+
 function onStartDateChange(dateStr, dateType, type) {
     data.value.start = dateStr;
     onRequest(type);
@@ -188,11 +180,13 @@ function onTypeChange(type) {
 }
 
 async function onRequest(type) {
+    data.value.type = type;
+    data.value.kCharts = [];
+
     if (!(props.stocks && props.stocks.length > 0)) {
         return;
     }
 
-    data.value.type = type;
     let startStr = data.value.start; // 2025-06-12
     let endStr = data.value.end;
 	let startDate = parseLocalYMDString(startStr);
@@ -209,7 +203,7 @@ async function onRequest(type) {
     } else if (type === "year") {
 		count = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
     }
-    data.value.kCharts = [];
+    
     props.stocks.forEach(stock => {
         data.value.kCharts.push({
             stockId: stock.stockId,
@@ -245,35 +239,6 @@ async function onRequest(type) {
     });
 }
 
-function onAddToTracking(stock) {
-    data.value.stockId = stock.stockId;
-    data.value.stockFullId = stock.stockFullId;
-    data.value.stockName = stock.stockName;
-    data.value.addModalVisible = true;
-}
-
-function onAddOK() {
-    data.value.stockId = replaceAllSpace(data.value.stockId);
-    data.value.stockFullId = replaceAllSpace(data.value.stockFullId);
-    data.value.stockName = replaceAllSpace(data.value.stockName);
-    data.value.addModalVisible = false;
-    emit('stock-add', {
-        stockId: data.value.stockId,
-        stockFullId: data.value.stockFullId,
-        stockName: data.value.stockName
-    });
-    data.value.stockId = '';
-    data.value.stockFullId = '';
-    data.value.stockName = '';
-}
-
-function onAddCancel() {
-    data.value.addModalVisible = false;
-    data.value.stockId = '';
-    data.value.stockFullId = '';
-    data.value.stockName = '';
-}
-
 function onSearch() {
     let filterData = null;
     let stockInput = trim(data.value.stockInput || '');
@@ -295,7 +260,7 @@ function onHideUnionStocks() {
 
 function onStocksUion() {
     data.value.unionModalVisible = false;
-    emit('stocks-uion');
+    emit('stocks-union');
 }
 </script>
 

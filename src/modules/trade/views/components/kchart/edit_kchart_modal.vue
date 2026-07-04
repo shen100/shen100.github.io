@@ -112,7 +112,7 @@ function onEditOK() {
         return
     }
 
-    let kChartLocalKey = localStorage.getItem('kChartLocalKey');
+    let kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
     let stocks = JSON.parse(localStorage.getItem(kChartLocalKey) || '[]');
 
 	for (let i = 0; i < stocks.length; i++) {

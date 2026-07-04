@@ -6,6 +6,47 @@ import allStocksRes from './json/all_original_stocks.json' with { type: 'json' }
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/*
+allStocksRes 的数据结构
+
+{
+    "code": 0,
+    "message": "",
+    "data": {
+        "fields": [
+            "ts_code",
+            "symbol",
+            "name",
+            "area",
+            "industry",
+            "cnspell",
+            "market",
+            "list_date",
+            "act_name",
+            "act_ent_type"
+        ],
+        "items": [
+            [
+                "000001.SZ",
+                "000001",
+                "平安银行",
+                "深圳",
+                "银行",
+                "PAYH",
+                "主板",
+                "19910403",
+                "无实际控制人",
+                "无"
+            ]
+        ],
+        "has_more": false,
+        "count": 0
+    },
+    "request_id": "be73a421-2016-4fa1-9fef-adda080a5fb8",
+    "chart": null
+}
+*/
+
 let fields = allStocksRes.data.fields;
 let myItems = [];
 
@@ -40,4 +81,8 @@ try {
     console.log('✅ all_stocks.json 文件写入成功');
 } catch (err) {
     console.error('❌ 写入失败:', err);
+}
+
+export function getAllStocks() {
+    return myStocks;
 }
