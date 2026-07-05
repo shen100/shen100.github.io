@@ -173,7 +173,7 @@ function onOK() {
             stocks[i].stopPrice = data.value.editModelData.stopPrice;
             stocks[i].isStar = data.value.editModelData.isStar;
             stocks[i].tradeActions = tradeActions;
-            localStorage.setItem(kChartLocalKey, JSON.stringify(stocks));
+            localStorage.setItem(kChartLocalKey, JSON.stringify(stocks, null, 4));
             location.reload();
             break;
         }
