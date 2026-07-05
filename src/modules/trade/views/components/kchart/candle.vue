@@ -1,5 +1,6 @@
 <template>
     <div :id="'candle-container-' + date"
+        @click="onClick"
         @mouseenter="onMouseOver"
         @mouseleave="onMouseOut"
         @mousemove="onMouseMove" class="candle-container" :style="{minWidth: `${data.boxWidth + 2}px`}">
@@ -196,6 +197,17 @@ function onMouseMove(event) {
         price = price.toFixed(2);
 
         emit('mouse-move', { price, y });
+    }
+}
+
+async function onClick() {
+    if (!props.closePrice) {
+        return;
+    }
+    try {
+        await navigator.clipboard.writeText('' + props.closePrice);
+    } catch (err) {
+        console.error('复制失败:', err);
     }
 }
 </script>
