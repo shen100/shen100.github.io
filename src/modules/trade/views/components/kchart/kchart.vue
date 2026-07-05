@@ -40,10 +40,10 @@
 		<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
 		
 		<template v-if="data.activeCandleData && data.activeCandleData.tradeAction">
-			<div v-if="data.activeCandleData.tradeAction.type === 'buy'" class="kchart-trade-buy">
+			<div v-if="data.activeCandleData.tradeAction.type === 'buy'" class="kchart-trade-buy-or-sell">
 				买入 {{data.activeCandleData.tradeAction.price}} X {{data.activeCandleData.tradeAction.count}} 股
 			</div>
-			<div v-else-if="data.activeCandleData.tradeAction.type === 'sell'" class="kchart-trade-sell">
+			<div v-else-if="data.activeCandleData.tradeAction.type === 'sell'" class="kchart-trade-buy-or-sell" style="background-color: #5287ee;">
 				卖出 {{data.activeCandleData.tradeAction.price}} X {{data.activeCandleData.tradeAction.count}} 股
 			</div>
 		</template>
@@ -183,11 +183,8 @@ const avgCost = computed(() => {
 			count = count - action.count;
 		}
 	}
-	if (data.value.stock.stockName === '东材科技') {
-		console.log(amount, count);
-	}
 	if (count === 0) {
-		return -1;
+		return 0;
 	}
 	return Number(amount / count);
 })
@@ -256,12 +253,6 @@ const profitRateColor = computed(() => {
 		return '#02b33d';
 	}
 	return '#ee2500';
-
-		// data.value.lastPriceUpColor = '#ee2500'
-		// } else if (item1[2] === item2[2]) {
-		// 	data.value.lastPriceUpColor = '#868686';
-		// } else {
-		// 	data.value.lastPriceUpColor = '#02b33d';
 });
 
 const allowMaxDownRate = computed(() => {
@@ -274,10 +265,6 @@ const allowMaxDownRate = computed(() => {
 
 const allowAddToPotential = computed(() => {
 	let arr = [ 'tradeAllFullIdStocks', 'tradeStocksByStrategy1', 'tradeStocksByStrategy2' ];
-	console.log('输出 props.kChartLocalKey', props.kChartLocalKey);
-	setTimeout(function() {
-		console.log('3 秒后输出 props.kChartLocalKey', props.kChartLocalKey);
-	}, 3000);
 	return arr.indexOf(props.kChartLocalKey) >= 0;
 })
 
@@ -890,18 +877,8 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	padding-left: 20px;
 }
 
-.kchart-trade-buy {
+.kchart-trade-buy-or-sell {
 	background-color: #ee2500;
-	position: absolute;
-	color: #fff;
-	z-index: 3;
-	left: 0;
-	top: 55px;
-	padding: 2px 6px;
-}
-
-.kchart-trade-sell {
-	background-color: #5287ee;
 	position: absolute;
 	color: #fff;
 	z-index: 3;
