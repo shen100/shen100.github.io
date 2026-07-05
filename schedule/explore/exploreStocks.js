@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { requestStockDetail, requestDayK } from './stockUtil.js';
 import { parseLocalYMDString } from '../../src/modules/trade/util/date.js';
-import { allStocksRes } from './allStocks.js';
+import { getAllStocks } from './allStocks.js';
 import * as strategy1 from './strategy/strategy1.js';
 import * as strategy2 from './strategy/strategy2.js';
 import * as strategy3 from './strategy/strategy3.js';
@@ -13,24 +13,7 @@ import * as strategy4 from './strategy/strategy4.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-let fields = allStocksRes.data.fields;
-let myItems = [];
-
-(function() {
-    for (let i = 0; i < allStocksRes.data.items.length; i++) {
-        let myItem = {};
-        let item = allStocksRes.data.items[i];
-        for (let j = 0; j < fields.length; j++) {
-            myItem[fields[j]] = item[j];
-            let arr = myItem.ts_code.split('.');
-            myItem.stockFullId = arr[1].toLowerCase() + arr[0];
-        }
-        myItems.push(myItem);
-    }
-}());
-
-console.log('全部股票数量:', myItems.length);
-console.log('股票数据结构:', myItems[myItems.length - 1]);
+let myItems = getAllStocks();
 
 const pastDate = new Date(new Date());
 pastDate.setDate(pastDate.getDate() - 365);
@@ -74,8 +57,8 @@ let stocks = [];
 
         let theStock = {
             stockFullId: stockData.stockFullId,
-            stockId: stockData.symbol,
-            stockName: stockData.name
+            stockId: stockData.stockId,
+            stockName: stockData.stockName
         }
 
         let stockDetail = await requestStockDetail(stockDetailJSONMap, theStock);

@@ -190,7 +190,7 @@ const allowMaxDownRate = computed(() => {
 })
 
 const allowAddToPotential = computed(() => {
-	let arr = [ 'tradeTrackedStocks', 'tradeTrackedStocksByStrategy1' ];
+	let arr = [ 'tradeStocksByStrategy1', 'tradeStocksByStrategy2' ];
 	return arr.indexOf(props.kChartLocalKey) >= 0;
 })
 

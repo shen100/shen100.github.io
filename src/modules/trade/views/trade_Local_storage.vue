@@ -34,15 +34,11 @@ let data = ref({
             label: '候选股'
         },
         {
-            value: 'tradeTrackedStocks',
-            label: '股票池'
-        },
-        {
-            value: 'tradeTrackedStocksByStrategy1',
+            value: 'tradeStocksByStrategy1',
             label: '到达最高价后回踩'
         },
         {
-            value: 'tradeTrackedStocksByStrategy2',
+            value: 'tradeStocksByStrategy2',
             label: '最后一个交易日达到最高价'
         }
     ],

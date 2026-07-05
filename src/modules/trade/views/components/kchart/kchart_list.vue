@@ -82,16 +82,12 @@ let data = ref({
             label: '候选股'
         },
         {
-            value: 'tradeTrackedStocks',
-            label: '股票池'
-        },
-        {
-            value: 'tradeTrackedStocksByStrategy1',
+            value: 'tradeStocksByStrategy1',
             label: '到达最高价后回踩'
         },
         {
-            value: 'tradeTrackedStocksByStrategy2',
-            label: '最近 20 天， 80% 的时间处于上涨'
+            value: 'tradeStocksByStrategy2',
+            label: '最后一个交易日达到最高价'
         }
     ],
     type: 'day',
@@ -111,15 +107,17 @@ function onLocalKeyChange(key) {
 }
 
 onMounted(async () => {
-    data.value.kChartLocalKey = localStorage.getItem('tradeKChartLocalKey') || 'tradeTrackedStocks';
-    data.value.type = props.type || data.value.type;
-    data.value.start = props.start || data.value.start;
-    data.value.end = props.end || data.value.end;
-    onRequest(props.type);
+    nextTick(() => {
+        data.value.kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
+        data.value.type = props.type || data.value.type;
+        data.value.start = props.start || data.value.start;
+        data.value.end = props.end || data.value.end;
+        onRequest(props.type);
+    })
 });
 
 const ifAllowUnion = computed(() => {
-    let list = [ 'tradeTrackedStocks', 'tradeTrackedStocksByStrategy1', 'tradeTrackedStocksByStrategy2' ];
+    let list = [ 'tradeStocksByStrategy1', 'tradeStocksByStrategy2' ];
     return list.indexOf(data.value.kChartLocalKey) >= 0;
 });
 

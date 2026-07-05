@@ -100,7 +100,7 @@ function onPageChange(page) {
 function getStocks() {
     let kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
     if (!kChartLocalKey) {
-        kChartLocalKey = 'tradeTrackedStocks';
+        kChartLocalKey = 'tradeAllFullIdStocks';
         localStorage.setItem('tradeKChartLocalKey', kChartLocalKey)
     }
     let stocks = JSON.parse(localStorage.getItem(kChartLocalKey) || '[]');
