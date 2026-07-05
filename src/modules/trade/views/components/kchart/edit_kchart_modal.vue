@@ -11,15 +11,32 @@
 				<InputNumber :max="100000000" :min="-100000000" :step="0.0001" v-model="data.editModelData.stopPrice" style="width: 100px"/>
 			</FormItem>
 			<FormItem label="买入">
-				<div :key="i" v-for="(tradeAction, i) in data.editModelData.tradeActions" style="margin-bottom: 10px;">
-					<DatePicker v-if="tradeAction.type === 'buy'" v-model="tradeAction.date" type="date" show-week-numbers placeholder="Select date" style="width: 120px" />
-					<span style="margin: 0 10px;">价格</span>
-					<InputNumber :max="100000000" :min="-100000000" :step="0.0001" v-model="tradeAction.price" style="width: 100px"/>
-					<span style="margin: 0 10px;">股数</span>
-					<InputNumber :max="1000000000" :min="1" v-model="tradeAction.count" />
-					<Button @click="onRemoveTradeActionBuy(i)" shape="circle" icon="md-remove" size="small" style="margin-left: 10px"></Button>
+				<div :key="i" v-for="(tradeAction, i) in data.editModelData.tradeActions">
+                    <template v-if="tradeAction.type === 'buy'">
+                        <DatePicker v-model="tradeAction.date" type="date" show-week-numbers placeholder="Select date" style="width: 120px" />
+                        <span style="margin: 0 10px;">价格</span>
+                        <InputNumber :max="100000000" :min="-100000000" :step="0.0001" v-model="tradeAction.price" style="width: 100px"/>
+                        <span style="margin: 0 10px;">股数</span>
+                        <InputNumber :max="1000000000" :min="1" v-model="tradeAction.count" />
+                        <Button @click="onRemoveTradeAction(i)" shape="circle" icon="md-remove" size="small" style="margin-left: 10px"></Button>
+                        <div style="height: 10px;"></div>
+                    </template>
 				</div>
-				<Button @click="onAddTradeActionBuy" shape="circle" icon="md-add" size="small"></Button>
+				<Button @click="onAddTradeAction('buy')" shape="circle" icon="md-add" size="small"></Button>
+			</FormItem>
+            <FormItem label="卖出">
+				<div :key="i" v-for="(tradeAction, i) in data.editModelData.tradeActions">
+                    <template v-if="tradeAction.type === 'sell'">
+                        <DatePicker v-model="tradeAction.date" type="date" show-week-numbers placeholder="Select date" style="width: 120px" />
+                        <span style="margin: 0 10px;">价格</span>
+                        <InputNumber :max="100000000" :min="-100000000" :step="0.0001" v-model="tradeAction.price" style="width: 100px"/>
+                        <span style="margin: 0 10px;">股数</span>
+                        <InputNumber :max="1000000000" :min="1" v-model="tradeAction.count" />
+                        <Button @click="onRemoveTradeAction(i)" shape="circle" icon="md-remove" size="small" style="margin-left: 10px"></Button>
+                        <div style="height: 10px;"></div>
+                    </template>
+				</div>
+				<Button @click="onAddTradeAction('sell')" shape="circle" icon="md-add" size="small"></Button>
 			</FormItem>
 		</Form>
 		<template #footer>
@@ -79,16 +96,16 @@ watch(() => props.modalVisible, (newVal) => {
     }
 })
 
-function onAddTradeActionBuy() {
+function onAddTradeAction(type) {
 	data.value.editModelData.tradeActions.push({
-		"type": "buy", 
+		"type": type, 
 		"date": new Date(),
 		"price": 0, 
 		"count": 0, 
 	});
 }
 
-function onRemoveTradeActionBuy(i) {
+function onRemoveTradeAction(i) {
 	data.value.editModelData.tradeActions.splice(i, 1)
 }
 

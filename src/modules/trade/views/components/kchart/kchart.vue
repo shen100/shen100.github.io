@@ -1,8 +1,8 @@
 <template>
     <div class="kchart-container">
 		<div class="stock-name" @mouseleave="onStockNameMouseLeave">
-			<div class="stock-name-left-box">left</div>
-			<div class="stock-name-space">space</div>
+			<div class="stock-name-left-box"></div>
+			<div class="stock-name-space"></div>
 			<div class="stock-name-txt" @mouseenter="onStockNameMouseEnter">
 				<a class="stock-name-link" :href="`https://xueqiu.com/S/${data.stock && data.stock.stockFullId}`" target="_blank">
 					{{ data.stockName }}
@@ -15,12 +15,14 @@
 					<span v-if="data.stock && currentDownRate" class="stop-rate-label">当前跌幅 {{ currentDownRate }}</span>
 					<span v-if="data.stock && allowMaxDownRate" class="stop-rate-label">最多可跌 {{  allowMaxDownRate }}</span>
 					<span v-if="data.stock && stopRate" class="stop-rate-label">止损 {{ stopRate }}</span>
+					<span v-if="data.stock && chiCangShiZhi" class="stop-rate-label">持仓市值 {{ chiCangShiZhi.toLocaleString() }}</span>
+					<span v-if="data.stock && profitRate" class="stop-rate-label">利润 <span :style="{color: profitRateColor}">{{ profitRate }}</span></span>
 					<Button @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
-					<Button v-if="allowAddToPotential" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
-					<Button v-if="props.kChartLocalKey === 'tradePotentialStocks'" @click="onShowRemovePotentialModal" type="primary" size="small" style="margin-left: 10px;">移出候选股</Button>
 				</template>
+				<Button v-if="allowAddToPotential" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
+				<Button v-if="props.kChartLocalKey === 'tradePotentialStocks'" @click="onShowRemovePotentialModal" type="primary" size="small" style="margin-left: 10px;">移出候选股</Button>
 			</div>
-			<div class="stock-name-space">space</div>
+			<div class="stock-name-space"></div>
 			<div class="stock-name-right-box">
 				<Button @click="onShowAskAIModal" type="warning" size="small" style="margin-left: 10px;">问AI?</Button>
 			</div>
@@ -37,11 +39,20 @@
 		<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
 		<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
 		
+		<template v-if="data.activeCandleData && data.activeCandleData.tradeAction">
+			<div v-if="data.activeCandleData.tradeAction.type === 'buy'" class="kchart-trade-buy">
+				买入 {{data.activeCandleData.tradeAction.price}} X {{data.activeCandleData.tradeAction.count}} 股
+			</div>
+			<div v-else-if="data.activeCandleData.tradeAction.type === 'sell'" class="kchart-trade-sell">
+				卖出 {{data.activeCandleData.tradeAction.price}} X {{data.activeCandleData.tradeAction.count}} 股
+			</div>
+		</template>
+
 		<div v-if="data.stock && data.stock.highPrice > 0" class="y-axis-price-line avg-high-line" :style="{top: `${data.highPriceY}px`}">
 			<div class="y-axis-price-line-price avg-high-line-price">{{ data.stock.highPrice }}</div>
 		</div>
 		<div v-if="avgCost > 0" class="y-axis-price-line avg-cost-line" :style="{top: `${data.avgCostY}px`}">
-			<div class="y-axis-price-line-price avg-cost-line-price">{{ avgCost.toFixed(2) }}</div>
+			<div class="y-axis-price-line-price avg-cost-line-price">{{ avgCost.toFixed(3) }}</div>
 		</div>
 		<div v-if="data.stock && data.stock.stopPrice > 0" class="y-axis-price-line avg-stop-price-line" :style="{top: `${data.stopPriceY}px`}">
 			<div class="y-axis-price-line-price avg-stop-price-line-price">{{ data.stock.stopPrice }}</div>
@@ -172,6 +183,12 @@ const avgCost = computed(() => {
 			count = count - action.count;
 		}
 	}
+	if (data.value.stock.stockName === '东材科技') {
+		console.log(amount, count);
+	}
+	if (count === 0) {
+		return -1;
+	}
 	return Number(amount / count);
 })
 
@@ -184,12 +201,68 @@ const currentDownRate = computed(() => {
 })
 
 const stopRate = computed(() => {
-	if (!data.value.stock || !avgCost.value || !data.value.stock.stopPrice) {
+	if (!data.value.stock || !(avgCost.value > 0) || !data.value.stock.stopPrice) {
 		return '';
 	}
 	let rate = (avgCost.value - data.value.stock.stopPrice) / avgCost.value * 100;
 	return rate.toFixed(2) + '%'
+});
+
+const chiCangShiZhi = computed(() => {
+	if (!(data.value.stock && data.value.stock.tradeActions && data.value.stock.tradeActions.length)) {
+		return '';
+	}
+	let remainingCount = 0;
+	for (let i = 0; i < data.value.stock.tradeActions.length; i++) {
+		let action = data.value.stock.tradeActions[i];
+		if (action.type === 'buy') {
+			remainingCount += action.count;
+		} else if (action.type === 'sell') {
+			remainingCount -= action.count;
+		}
+	}
+	if (remainingCount > 0) {
+		return data.value.curPrice * remainingCount;
+	}
+	return '';
+});
+
+const profitRate = computed(() => {
+	if (!(data.value.stock && data.value.stock.tradeActions && data.value.stock.tradeActions.length)) {
+		return '';
+	}
+	let buyAmount = 0;
+	let sellAmount = 0;
+	let remainingCount = 0;
+	for (let i = 0; i < data.value.stock.tradeActions.length; i++) {
+		let action = data.value.stock.tradeActions[i];
+		if (action.type === 'buy') {
+			buyAmount += (action.price * action.count);
+			remainingCount += action.count;
+		} else if (action.type === 'sell') {
+			sellAmount += (action.price * action.count);
+			remainingCount -= action.count;
+		}
+	}
+	let finalAmount = sellAmount;
+	if (remainingCount > 0) {
+		finalAmount += (data.value.curPrice * remainingCount);
+	}
+	return (finalAmount - buyAmount).toFixed(2) + ' ' + (100 * (finalAmount - buyAmount) / buyAmount).toFixed(2) + '%';
 })
+
+const profitRateColor = computed(() => {
+	if (profitRate.value.charAt(0) === '-') {
+		return '#02b33d';
+	}
+	return '#ee2500';
+
+		// data.value.lastPriceUpColor = '#ee2500'
+		// } else if (item1[2] === item2[2]) {
+		// 	data.value.lastPriceUpColor = '#868686';
+		// } else {
+		// 	data.value.lastPriceUpColor = '#02b33d';
+});
 
 const allowMaxDownRate = computed(() => {
 	if (!data.value.stock || !data.value.stock.stopPrice || !data.value.stock.highPrice) {
@@ -200,7 +273,11 @@ const allowMaxDownRate = computed(() => {
 })
 
 const allowAddToPotential = computed(() => {
-	let arr = [ 'tradeStocksByStrategy1', 'tradeStocksByStrategy2' ];
+	let arr = [ 'tradeAllFullIdStocks', 'tradeStocksByStrategy1', 'tradeStocksByStrategy2' ];
+	console.log('输出 props.kChartLocalKey', props.kChartLocalKey);
+	setTimeout(function() {
+		console.log('3 秒后输出 props.kChartLocalKey', props.kChartLocalKey);
+	}, 3000);
 	return arr.indexOf(props.kChartLocalKey) >= 0;
 })
 
@@ -813,4 +890,23 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	padding-left: 20px;
 }
 
+.kchart-trade-buy {
+	background-color: #ee2500;
+	position: absolute;
+	color: #fff;
+	z-index: 3;
+	left: 0;
+	top: 55px;
+	padding: 2px 6px;
+}
+
+.kchart-trade-sell {
+	background-color: #5287ee;
+	position: absolute;
+	color: #fff;
+	z-index: 3;
+	left: 0;
+	top: 55px;
+	padding: 2px 6px;
+}
 </style>

@@ -49,8 +49,8 @@ function onOK() {
         }
     }
     let theStock = JSON.parse(JSON.stringify(props.stock));
-    stocks.push(theStock);
-    let jsonStr = JSON.stringify(stocks);
+    stocks.unshift(theStock);
+    let jsonStr = JSON.stringify(stocks, null, 4);
     localStorage.setItem('tradePotentialStocks', jsonStr);
     Message.success({
         duration: 10,
