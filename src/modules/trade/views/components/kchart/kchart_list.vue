@@ -212,6 +212,7 @@ async function onRequest(type) {
             stockName: stock.stockName,
             highPrice: stock.highPrice,
             stopPrice: stock.stopPrice,
+            isStar: !!stock.isStar,
             tradeActions: stock.tradeActions,
         });
     });

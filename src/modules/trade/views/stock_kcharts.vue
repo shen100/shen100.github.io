@@ -105,6 +105,15 @@ function getStocks() {
     }
     let stocks = JSON.parse(localStorage.getItem(kChartLocalKey) || '[]');
     stocks = filterStocks(stocks);
+    stocks.sort((a, b) => {
+        if (a.isStar && !b.isStar) {
+            return -1;
+        }
+        if (b.isStar && !a.isStar) {
+            return 1;
+        }
+        return 0;
+    });
     data.value.total = stocks.length;
     return stocks;
 }

@@ -2,8 +2,11 @@
 	<Modal
 		v-model="data.myModalVisible"
         :before-close="onBeforeClose"
-		title="编辑K线" :width="600">
+		:title="`编辑 ${props.stock?.stockName} 的K线`" :width="600">
 		<Form :label-width="100">
+            <FormItem label="标星">
+                <Radio v-model="data.editModelData.isStar">⭐️</Radio>
+			</FormItem>
 			<FormItem label="最高价">
 				<InputNumber :max="100000000" :min="-100000000" :step="0.0001" v-model="data.editModelData.highPrice" style="width: 100px"/>
 			</FormItem>
@@ -64,7 +67,8 @@ let data = ref({
 	editModelData: {
 		highPrice: 0, 
         stopPrice: 0, 
-		tradeActions: []
+		tradeActions: [],
+        isStar: false
 	}
 })
 
@@ -80,11 +84,15 @@ watch(() => props.modalVisible, (newVal) => {
     data.value.editModelData.highPrice = 0;
     data.value.editModelData.stopPrice = 0;
     data.value.editModelData.tradeActions = [];
+    data.value.editModelData.isStar = false;
     if (props.stock && props.stock.highPrice) {
         data.value.editModelData.highPrice = props.stock.highPrice;
     }
     if (props.stock && props.stock.stopPrice) {
         data.value.editModelData.stopPrice = props.stock.stopPrice;
+    }
+    if (props.stock) {
+        data.value.editModelData.isStar = !!props.stock.isStar;
     }
     if (props.stock && props.stock.tradeActions) {
         for (let i = 0; i < props.stock.tradeActions.length; i++) {
@@ -163,6 +171,7 @@ function onOK() {
             }
             stocks[i].highPrice = data.value.editModelData.highPrice;
             stocks[i].stopPrice = data.value.editModelData.stopPrice;
+            stocks[i].isStar = data.value.editModelData.isStar;
             stocks[i].tradeActions = tradeActions;
             localStorage.setItem(kChartLocalKey, JSON.stringify(stocks));
             location.reload();
