@@ -7,23 +7,21 @@
             <Input v-model="data.jsonStr" type="textarea" :rows="20" placeholder="" style="margin: 20px 0" />    
         </div>
 		<template #footer>
-			<Button type="text" @click="onEditCancel">取消</Button>
-			<Button type="primary" @click="onEditOK">确定</Button>
+			<Button type="text" @click="onCancel">取消</Button>
+			<Button type="primary" @click="onOK">确定</Button>
 		</template>
 	</Modal>
 </template>
 
-
 <script setup>
-import { onMounted, ref, computed, watch } from 'vue';
-import { Message } from 'view-ui-plus';
+import { onMounted, ref, watch } from 'vue';
 
 const emit = defineEmits(['hide-modal', 'stocks-union']);
 
 const props = defineProps([
     'kChartLocalKey',
     'kChartLocalKeyLabel',
-    'unionModalVisible'
+    'modalVisible'
 ]);
 
 let data = ref({
@@ -35,12 +33,11 @@ onMounted(async () => {
 
 });
 
-watch(() => props.unionModalVisible, (newVal) => {
+watch(() => props.modalVisible, (newVal) => {
     data.value.myModalVisible = newVal;
 })
 
-
-function onEditOK() {
+function onOK() {
     let newStocks = JSON.parse(data.value.jsonStr);
     let stocks = JSON.parse(localStorage.getItem(props.kChartLocalKey) || '[]');
 
@@ -62,13 +59,11 @@ function onEditOK() {
 }
 
 function onBeforeClose() {
-    console.log('onBeforeClose');
     data.value.myModalVisible = false;
     emit('hide-modal');
 }
 
-function onEditCancel() {
-    console.log('onEditCancel');
+function onCancel() {
     data.value.myModalVisible = false;
     emit('hide-modal');
 }

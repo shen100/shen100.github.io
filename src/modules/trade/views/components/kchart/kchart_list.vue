@@ -31,7 +31,7 @@
         </div>
         <StocksUnionModal 
             :kChartLocalKeyLabel="kChartLocalKeyLabel"
-            :unionModalVisible="data.unionModalVisible" 
+            :modalVisible="data.unionModalVisible" 
             :kChartLocalKey="data.kChartLocalKey"
             @hide-modal="onHideUnionStocks"
             @stocks-union="onStocksUion" />
@@ -111,10 +111,7 @@ onMounted(async () => {
 
 const ifAllowUnion = computed(() => {
     let list = [ 'tradeTrackedStocks', 'tradeTrackedStocksByStrategy1', 'tradeTrackedStocksByStrategy2' ];
-    if (list.indexOf(data.value.kChartLocalKey) >= 0) {
-        return true;
-    }
-    return false;
+    return list.indexOf(data.value.kChartLocalKey) >= 0;
 });
 
 const kChartLocalKeyLabel = computed(() => {
@@ -129,9 +126,6 @@ const kChartLocalKeyLabel = computed(() => {
 watch(
     () => props.stocks,
     (newValue, oldValue) => {
-        if (newValue && newValue.length === 1) {
-            console.log();
-        }
         onRequest(data.value.type);
     }
 )

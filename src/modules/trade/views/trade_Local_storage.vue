@@ -4,7 +4,6 @@
             <Select v-model="data.myLocalKey" @on-change="onChange" style="width: 300px">
                 <Option v-for="item in data.localKeys" :value="item.value" :key="item.value">{{ item.label }}</Option>
             </Select>
-            <div style="margin-top: 10px; color: rgb(246 108 108);">{{ tipText }}</div>
             <div>
                 <Input v-model="data.jsonStr" type="textarea" :rows="20" placeholder="" style="width: 600px; margin: 20px 0" />    
             </div>
@@ -44,7 +43,7 @@ let data = ref({
         },
         {
             value: 'tradeTrackedStocksByStrategy2',
-            label: '最近 20 天， 80% 的时间处于上涨'
+            label: '最后一个交易日达到最高价'
         }
     ],
     jsonStr: ''
@@ -53,20 +52,11 @@ let data = ref({
 onMounted(async () => {
 })
 
-const tipText = computed(() => {
-    for (let i = 0; i < data.value.localKeys.length; i++) {
-        if (data.value.localKeys[i].value === data.value.myLocalKey) {
-            return data.value.localKeys[i].label
-        }
-    }
-    return '';
-})
-
 function onChange(key) {
-    let value = localStorage.getItem(key);
+    let str = localStorage.getItem(key);
     data.value.jsonStr = '';
-    if (value) {
-        data.value.jsonStr = value;
+    if (str) {
+        data.value.jsonStr = str;
     }
 }
 

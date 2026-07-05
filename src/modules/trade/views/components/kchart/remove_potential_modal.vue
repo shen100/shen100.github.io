@@ -2,25 +2,23 @@
 	<Modal
 		v-model="data.myModalVisible"
         :before-close="onBeforeClose"
-		title="候选股" :width="400">
+		title="移出候选股" :width="400">
 		<div>确定要把 <span class="potential-stock-name">{{ props.stock && props.stock.stockName }}</span> 从候选股移出?</div>
 		<template #footer>
-			<Button type="text" @click="onEditCancel">取消</Button>
-			<Button type="primary" @click="onEditOK">确定</Button>
+			<Button type="text" @click="onCancel">取消</Button>
+			<Button type="primary" @click="onOK">确定</Button>
 		</template>
 	</Modal>
 </template>
 
-
 <script setup>
-import { onMounted, ref, computed, watch } from 'vue';
-import { Message } from 'view-ui-plus';
+import { onMounted, ref, watch } from 'vue';
 
 const emit = defineEmits(['hide-modal']);
 
 const props = defineProps([
     'stock',
-    'removePotentialModalVisible'
+    'modalVisible'
 ]);
 
 let data = ref({
@@ -31,12 +29,12 @@ onMounted(async () => {
 
 });
 
-watch(() => props.removePotentialModalVisible, (newVal) => {
+watch(() => props.modalVisible, (newVal) => {
     data.value.myModalVisible = newVal;
 })
 
 
-function onEditOK() {
+function onOK() {
     let stocks = JSON.parse(localStorage.getItem('tradePotentialStocks') || '[]');
     for (let i = 0; i < stocks.length; i++) {
         if (stocks[i].stockId === props.stock.stockId) {
@@ -50,13 +48,11 @@ function onEditOK() {
 }
 
 function onBeforeClose() {
-    console.log('onBeforeClose');
     data.value.myModalVisible = false;
     emit('hide-modal');
 }
 
-function onEditCancel() {
-    console.log('onEditCancel');
+function onCancel() {
     data.value.myModalVisible = false;
     emit('hide-modal');
 }

@@ -14,7 +14,7 @@
 					<span v-if="data.stock && allowMaxDownRate" class="stop-rate-label">最多可跌 {{  allowMaxDownRate }}</span>
 					<span v-if="data.stock && stopRate" class="stop-rate-label">止损 {{ stopRate }}</span>
 					<Button @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
-					<Button v-if="props.kChartLocalKey === 'tradeTrackedStocks'" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
+					<Button v-if="allowAddToPotential" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
 					<Button v-if="props.kChartLocalKey === 'tradePotentialStocks'" @click="onShowRemovePotentialModal" type="primary" size="small" style="margin-left: 10px;">移出候选股</Button>
 				</template>
 			</div>
@@ -30,18 +30,17 @@
 		<div class="y-axis-txt" :style="{top: `${data.yAxis4}px`}">{{ data.yAxisText4 }}</div>
 		<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
 		<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
-
+		
 		<div v-if="data.stock && data.stock.highPrice > 0" class="y-axis-price-line avg-high-line" :style="{top: `${data.highPriceY}px`}">
 			<div class="y-axis-price-line-price avg-high-line-price">{{ data.stock.highPrice }}</div>
 		</div>
-
-
 		<div v-if="avgCost > 0" class="y-axis-price-line avg-cost-line" :style="{top: `${data.avgCostY}px`}">
 			<div class="y-axis-price-line-price avg-cost-line-price">{{ avgCost.toFixed(2) }}</div>
 		</div>
 		<div v-if="data.stock && data.stock.stopPrice > 0" class="y-axis-price-line avg-stop-price-line" :style="{top: `${data.stopPriceY}px`}">
 			<div class="y-axis-price-line-price avg-stop-price-line-price">{{ data.stock.stopPrice }}</div>
 		</div>
+
 		<div v-if="data.activeCandleData" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
 			<div class="y-axis-price-line-price">{{ data.yAxisPriceLinePrice }}</div>
 		</div>
@@ -73,9 +72,9 @@
 			</div>
 		</div>
 	</div>
-	<EditKChartModal @hide-modal="onHideEditModal" :stock="data.stock" :editModalVisible="data.editModalVisible" />
-	<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :addPotentialModalVisible="data.addPotentialModalVisible" />
-	<RemovePotentialModal @hide-modal="onHideRemovePotentialModal" :stock="data.stock" :removePotentialModalVisible="data.removePotentialModalVisible" />
+	<EditKChartModal @hide-modal="onHideEditModal" :stock="data.stock" :modalVisible="data.editModalVisible" />
+	<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :modalVisible="data.addPotentialModalVisible" />
+	<RemovePotentialModal @hide-modal="onHideRemovePotentialModal" :stock="data.stock" :modalVisible="data.removePotentialModalVisible" />
 </template>
 
 <script setup>
@@ -171,14 +170,7 @@ const currentDownRate = computed(() => {
 })
 
 const stopRate = computed(() => {
-	if (data.value.stock && data.value.stock.stockName === '中控技术') {
-		console.log();
-
-	}
-	if (!data.value.stock || !(avgCost.value > 0) || !data.value.stock.stopPrice) {
-		if (data.value.stock && data.value.stock.stockName === '中控技术') {
-			console.log('avgCost', avgCost.value, 'stopPrice', data.value.stock.stopPrice);
-		}
+	if (!data.value.stock || !avgCost.value || !data.value.stock.stopPrice) {
 		return '';
 	}
 	let rate = (avgCost.value - data.value.stock.stopPrice) / avgCost.value * 100;
@@ -191,6 +183,11 @@ const allowMaxDownRate = computed(() => {
 	}
 	let rate = (data.value.stock.highPrice - data.value.stock.stopPrice) / data.value.stock.highPrice * 100;
 	return rate.toFixed(2) + '%'
+})
+
+const allowAddToPotential = computed(() => {
+	let arr = [ 'tradeTrackedStocks', 'tradeTrackedStocksByStrategy1' ];
+	return arr.indexOf(props.kChartLocalKey) >= 0;
 })
 
 function resetData(stock, start, end, count) {
@@ -441,7 +438,6 @@ async function requestYearK(stock, start, end, count) {
 		yearList.push(yearTmpList[i].data);
     }
 
-
 	let myKList = yearList;
 	
 	let dates = [];
@@ -586,7 +582,6 @@ function onStockNameMouseLeave() {
 
 function onShowEditModal() {
 	data.value.editModalVisible = true;
-	console.log('onShowEditModal', data.value.editModalVisible);
 }
 
 function onHideEditModal() {
@@ -595,22 +590,18 @@ function onHideEditModal() {
 
 function onShowPotentialModal() {
 	data.value.addPotentialModalVisible = true;
-	console.log('onShowPotentialModal', data.value.addPotentialModalVisible);
 }
 
 function onHidePotentialModal() {
 	data.value.addPotentialModalVisible = false;
-	console.log('onHidePotentialModal~~~');
 }
 
 function onShowRemovePotentialModal() {
 	data.value.removePotentialModalVisible = true;
-	console.log('onShowRemovePotentialModal~~~~', data.value.removePotentialModalVisible);
 }
 
 function onHideRemovePotentialModal() {
 	data.value.removePotentialModalVisible = false;
-	console.log('onHideRemovePotentialModal~~~');
 }
 
 defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });

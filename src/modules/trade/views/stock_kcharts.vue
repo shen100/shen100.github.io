@@ -115,9 +115,8 @@ function onLocalKeyChange() {
 }
 
 function onStockSearch(filterData) {
-    let page = 1
+    let page = 1;
     data.value.page = page;
-
     data.value.filterData = filterData;
     let stocks = getStocks();
     
@@ -149,10 +148,10 @@ function filterStocks(stocks) {
 }
 
 function onStocksUion() {
-    let page = 1
+    let page = 1;
     data.value.page = page;
-
     let stocks = getStocks();
+    
     let start = (page - 1) * data.value.pageSize;
     data.value.curStocks = stocks.slice(start, start + data.value.pageSize);
     window.scrollTo(0, 0);
