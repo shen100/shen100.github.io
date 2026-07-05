@@ -11,7 +11,8 @@
             @type-change="onTypeChange"
             @local-key-change="onLocalKeyChange"
             @stock-search="onStockSearch"
-            @stocks-union="onStocksUion"></KChartList>
+            @stocks-union="onStocksUion"
+            @stocks-remove-potential="onStocksRemovePotential"></KChartList>
         <div class="page-container">
             <Page @on-change="onPageChange" :modelValue="data.page" :page-size="data.pageSize" :total="data.total" simple />
             <div style="margin-left: 10px;">共 {{ data.total }} 条</div>
@@ -167,6 +168,17 @@ function saveSettings() {
         filterData: data.value.filterData
     });
     localStorage.setItem('tradeTrackedStockKChartSettings', jsonStr)
+}
+
+function onStocksRemovePotential() {
+	let page = 1;
+    data.value.page = 1;
+    let stocks = getStocks();
+    
+    let start = (page - 1) * data.value.pageSize;
+    data.value.curStocks = stocks.slice(start, start + data.value.pageSize);
+    window.scrollTo(0, 0);
+    saveSettings();
 }
 </script>
 

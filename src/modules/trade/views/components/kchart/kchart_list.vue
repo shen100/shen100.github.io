@@ -27,6 +27,7 @@
         </Card>
         <div v-if="data.kCharts && data.kCharts.length">
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" 
+                @stocks-remove-potential="onStocksRemovePotential" 
                 :kChartLocalKey="data.kChartLocalKey" />
         </div>
         <StocksUnionModal 
@@ -45,7 +46,15 @@ import { formatLocalYMD, parseLocalYMDString } from '../../../util/date';
 import { replaceAllSpace, trim } from '../../../util/str';
 import StocksUnionModal from './stocks_union_modal.vue';
 
-const emit = defineEmits(['start-change', 'end-change', 'type-change', 'local-key-change', 'stock-search', 'stocks-union']);
+const emit = defineEmits([
+    'start-change', 
+    'end-change', 
+    'type-change', 
+    'local-key-change', 
+    'stock-search', 
+    'stocks-union',
+    'stocks-remove-potential'
+]);
 
 const itemRefs = ref([]);
 
@@ -255,6 +264,10 @@ function onHideUnionStocks() {
 function onStocksUion() {
     data.value.unionModalVisible = false;
     emit('stocks-union');
+}
+
+function onStocksRemovePotential() {
+	emit('stocks-remove-potential');
 }
 </script>
 

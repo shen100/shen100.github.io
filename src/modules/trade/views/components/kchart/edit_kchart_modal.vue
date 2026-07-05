@@ -100,7 +100,7 @@ function onOK() {
         });
         return
     }
-    if (!(data.value.editModelData.stopPrice > 0)) {
+    if (!(data.value.editModelData.stopPrice >= 0)) {
         Message.error({
             duration: 10,
             content: '无效的止损'

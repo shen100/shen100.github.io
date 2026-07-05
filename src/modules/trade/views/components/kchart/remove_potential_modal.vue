@@ -14,7 +14,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
 
-const emit = defineEmits(['hide-modal']);
+const emit = defineEmits(['hide-modal', 'stocks-remove-potential']);
 
 const props = defineProps([
     'stock',
@@ -44,7 +44,8 @@ function onOK() {
     }
     let jsonStr = JSON.stringify(stocks);
     localStorage.setItem('tradePotentialStocks', jsonStr);
-    location.reload();
+    emit('stocks-remove-potential');
+    emit('hide-modal');
 }
 
 function onBeforeClose() {

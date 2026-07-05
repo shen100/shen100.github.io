@@ -74,7 +74,9 @@
 	</div>
 	<EditKChartModal @hide-modal="onHideEditModal" :stock="data.stock" :modalVisible="data.editModalVisible" />
 	<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :modalVisible="data.addPotentialModalVisible" />
-	<RemovePotentialModal @hide-modal="onHideRemovePotentialModal" :stock="data.stock" :modalVisible="data.removePotentialModalVisible" />
+	<RemovePotentialModal @hide-modal="onHideRemovePotentialModal"
+		@stocks-remove-potential="onStocksRemovePotential" 
+		:stock="data.stock" :modalVisible="data.removePotentialModalVisible" />
 </template>
 
 <script setup>
@@ -86,6 +88,8 @@ import StockInfoPopup from './stock_info_popup.vue';
 import EditKChartModal from './edit_kchart_modal.vue';
 import AddPotentialModal from './add_potential_modal.vue';
 import RemovePotentialModal from './remove_potential_modal.vue';
+
+const emit = defineEmits(['stocks-remove-potential']);
 
 const props = defineProps([
 	'kChartLocalKey'
@@ -602,6 +606,10 @@ function onShowRemovePotentialModal() {
 
 function onHideRemovePotentialModal() {
 	data.value.removePotentialModalVisible = false;
+}
+
+function onStocksRemovePotential() {
+	emit('stocks-remove-potential');
 }
 
 defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
