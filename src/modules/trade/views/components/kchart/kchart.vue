@@ -1,6 +1,8 @@
 <template>
     <div class="kchart-container">
 		<div class="stock-name" @mouseleave="onStockNameMouseLeave">
+			<div class="stock-name-left-box">left</div>
+			<div class="stock-name-space">space</div>
 			<div class="stock-name-txt" @mouseenter="onStockNameMouseEnter">
 				<a class="stock-name-link" :href="`https://xueqiu.com/S/${data.stock && data.stock.stockFullId}`" target="_blank">
 					{{ data.stockName }}
@@ -17,6 +19,10 @@
 					<Button v-if="allowAddToPotential" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
 					<Button v-if="props.kChartLocalKey === 'tradePotentialStocks'" @click="onShowRemovePotentialModal" type="primary" size="small" style="margin-left: 10px;">移出候选股</Button>
 				</template>
+			</div>
+			<div class="stock-name-space">space</div>
+			<div class="stock-name-right-box">
+				<Button @click="onShowAskAIModal" type="warning" size="small" style="margin-left: 10px;">问AI?</Button>
 			</div>
 		</div>
 		<div class="space"></div>
@@ -77,6 +83,8 @@
 	<RemovePotentialModal @hide-modal="onHideRemovePotentialModal"
 		@stocks-remove-potential="onStocksRemovePotential" 
 		:stock="data.stock" :modalVisible="data.removePotentialModalVisible" />
+	<AskAIModal @hide-modal="onHideAskAIModal"
+		:stock="data.stock" :modalVisible="data.askAIModalVisible" />
 </template>
 
 <script setup>
@@ -88,6 +96,7 @@ import StockInfoPopup from './stock_info_popup.vue';
 import EditKChartModal from './edit_kchart_modal.vue';
 import AddPotentialModal from './add_potential_modal.vue';
 import RemovePotentialModal from './remove_potential_modal.vue';
+import AskAIModal from './ask_ai_modal.vue';
 
 const emit = defineEmits(['stocks-remove-potential']);
 
@@ -132,7 +141,8 @@ let data = ref({
 	lastPriceUpColor: '',
 	editModalVisible: false,
 	addPotentialModalVisible: false,
-	removePotentialModalVisible: false
+	removePotentialModalVisible: false,
+	askAIModalVisible: false
 })
 
 onMounted(async () => {
@@ -612,6 +622,14 @@ function onStocksRemovePotential() {
 	emit('stocks-remove-potential');
 }
 
+function onShowAskAIModal() {
+	data.value.askAIModalVisible = true;
+}
+
+function onHideAskAIModal() {
+	data.value.askAIModalVisible = false;
+}
+
 defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 </script>
 
@@ -625,8 +643,21 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 }
 
 .stock-name {
-	text-align: center;
 	font-size: 0;
+	display: flex;
+    align-items: center;
+}
+
+.stock-name-space {
+	flex: 1;
+}
+
+.stock-name-left-box {
+	font-size: 12px;
+}
+
+.stock-name-right-box {
+	font-size: 12px;
 }
 
 .stock-name-link {
@@ -638,8 +669,8 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 }
 
 .stock-name-txt {
-	display: inline-block;
-	vertical-align: top;
+	display: flex;
+    align-items: center;
 	height: 30px;
 	line-height: 30px;
 	font-size: 22px;
@@ -781,4 +812,5 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	font-size: 14px;
 	padding-left: 20px;
 }
+
 </style>
