@@ -83,7 +83,7 @@
         </div>
 		<StockInfoPopup v-if="data.activeCandleData" :info="data.activeCandleData" />
     </div>
-	<Volume :maxVolume="data.maxVolume" :minVolume="data.minVolume"  :myKList="data.myKList" :activeCandleData="data.activeCandleData" 
+	<Volume :maxVolume="data.maxVolume" :minVolume="data.minVolume" :myKList="data.myKList" :activeCandleData="data.activeCandleData" 
 		@mouse-over="onVolumeMouseOver"
 		@mouse-out="onVolumeMouseOut" />
 	<EditKChartModal @hide-modal="onHideEditModal" :stock="data.stock" :modalVisible="data.editModalVisible" />

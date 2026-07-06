@@ -69,19 +69,14 @@ function onMouseMove(event) {
     if (event.target === event.currentTarget) {
         let kChartVolumeHeight = 100;
         let y = Math.min(event.offsetY, kChartVolumeHeight);
-        let dt = props.maxVolume - props.minVolume;
         let yAxisVolumeValue = ((1 - y / kChartVolumeHeight) * props.maxVolume);
-        console.log('y, 1- y / kChartVolumeHeight', y, 1 - y / kChartVolumeHeight);
-        data.value.yAxisVolumeValue = (yAxisVolumeValue / 10000).toFixed(2) + '万';
+        data.value.yAxisVolumeValue = (yAxisVolumeValue / 10000).toFixed(2) + '万手';
         data.value.yAxisVolumeLineY = y;
-        // emit('mouse-move', { price, y });
     }   
 }
-
 </script>
 
 <style scoped>
-
 .kchart-volume {
     position: relative;
 	margin-top: 0px;
@@ -142,7 +137,7 @@ function onMouseMove(event) {
 	font-size: 12px;
 	background-color: #e7e7e7;
     color: #222;
-    width: 50px;
+    width: 80px;
     text-align: center;
 }
 </style>
