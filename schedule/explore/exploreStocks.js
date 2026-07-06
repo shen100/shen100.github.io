@@ -72,15 +72,15 @@ let stocks = [];
     }, { concurrency: 20 });
 
     try {
-        let dayJSONMapStr = JSON.stringify(dayJSONMap, null, 2);
+        let dayJSONMapStr = JSON.stringify(dayJSONMap, null, 4);
         fs.writeFileSync(path.join(__dirname, 'json', 'stock_day.json'), dayJSONMapStr, 'utf-8');
         console.log('✅ stock_day.json 文件写入成功');
 
-        let stockDetailJSONMapStr = JSON.stringify(stockDetailJSONMap, null, 2);
+        let stockDetailJSONMapStr = JSON.stringify(stockDetailJSONMap, null, 4);
         fs.writeFileSync(path.join(__dirname, 'json', 'stock_detail.json'), stockDetailJSONMapStr, 'utf-8');
         console.log('✅ stock_detail.json 文件写入成功');
 
-        let stocksStr = JSON.stringify(stocks, null, 2);
+        let stocksStr = JSON.stringify(stocks, null, 4);
         fs.writeFileSync(path.join(__dirname, 'json', 'stocks_pool.json'), stocksStr, 'utf-8');
         console.log('✅ stocks_pool.json 文件写入成功');
     } catch (err) {
