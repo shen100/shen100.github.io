@@ -34,6 +34,10 @@ let data = ref({
             label: '候选股'
         },
         {
+            value: 'tradePhysicalAI',
+            label: '物理AI'
+        },
+        {
             value: 'tradeStocksByStrategy1',
             label: '到达最高价后回踩'
         },

@@ -58,11 +58,12 @@
 			<div class="y-axis-price-line-price avg-stop-price-line-price">{{ data.stock.stopPrice }}</div>
 		</div>
 
-		<div v-if="data.activeCandleData" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
+		<div v-if="data.activeCandleData && data.isMouseMoveOnCandle" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
 			<div class="y-axis-price-line-price">{{ data.yAxisPriceLinePrice }}</div>
 		</div>
         <div v-if="data.dataLoaded" class="candles-container">
 			<Candle
+				:ref="el => { if (el) candleRefs[i] = el }"
 				v-for="(item, i) in data.myKList" :key="i"
 				:candleType="data.type"
 				:date="item[0]"
@@ -71,6 +72,7 @@
 				:closePrice="item[2]"
 				:highPrice="item[3]"
 				:lowPrice="item[4]"
+				:volume="item[5]"
 				:lowPriceInAll="data.lowPriceInAll"
 				:highPriceInAll="data.highPriceInAll"
 				:candleMaxHeight="data.candleMaxHeight"
@@ -81,14 +83,9 @@
         </div>
 		<StockInfoPopup v-if="data.activeCandleData" :info="data.activeCandleData" />
     </div>
-	<div class="kchart-volume">
-		<div class="kchart-volume-list">
-			<div v-for="(item, i) in data.myKList" :key="i" class="kchart-volume-item-box">
-				<div class="kchart-volume-item" :style="{height: getVolumeItemHeight(item), 'background-color': getVolumeItemColor(item)}"></div>
-				<div v-if="data.activeCandleData && data.activeCandleData.date === item[0]" class="full-line"></div>
-			</div>
-		</div>
-	</div>
+	<Volume :maxVolume="data.maxVolume" :minVolume="data.minVolume"  :myKList="data.myKList" :activeCandleData="data.activeCandleData" 
+		@mouse-over="onVolumeMouseOver"
+		@mouse-out="onVolumeMouseOut" />
 	<EditKChartModal @hide-modal="onHideEditModal" :stock="data.stock" :modalVisible="data.editModalVisible" />
 	<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :modalVisible="data.addPotentialModalVisible" />
 	<RemovePotentialModal @hide-modal="onHideRemovePotentialModal"
@@ -103,6 +100,7 @@ import axios from 'axios';
 import { onMounted, ref, computed } from 'vue'
 import { findFromRight } from '../../../util/str';
 import Candle from './candle.vue';
+import Volume from './volume.vue';
 import StockInfoPopup from './stock_info_popup.vue';
 import EditKChartModal from './edit_kchart_modal.vue';
 import AddPotentialModal from './add_potential_modal.vue';
@@ -131,6 +129,7 @@ let data = ref({
     end: '',
     myKList: [],
 	maxVolume: 0,
+	minVolume: 0,
 	yAxis1: 0,
     yAxis2: 0,
     yAxis3: 0,
@@ -138,6 +137,7 @@ let data = ref({
     yAxis5: 0,
 	yAxisPriceLine: 0,
 	yAxisPriceLinePrice: 0,
+	isMouseMoveOnCandle: false,
     yAxisText1: '',
     yAxisText2: '',
     yAxisText3: '',
@@ -154,7 +154,9 @@ let data = ref({
 	addPotentialModalVisible: false,
 	removePotentialModalVisible: false,
 	askAIModalVisible: false
-})
+});
+
+const candleRefs = ref([]);
 
 onMounted(async () => {
 
@@ -528,6 +530,7 @@ async function requestYearK(stock, start, end, count) {
 
 function convertKListToNumbers(myKList) {
 	data.value.maxVolume = 0;
+	data.value.minVolume = -1;
 	for (let i = 0; i < myKList.length; i++) {
 		myKList[i][1] = Number(myKList[i][1]); // 开盘价
 		myKList[i][2] = Number(myKList[i][2]); // 收盘价
@@ -538,25 +541,11 @@ function convertKListToNumbers(myKList) {
 		if (myKList[i][5] > data.value.maxVolume) {
 			data.value.maxVolume = myKList[i][5];
 		}
+		if (myKList[i][5] < data.value.minVolume || data.value.minVolume === -1) {
+			data.value.minVolume = myKList[i][5];
+		}
 	}
 	data.value.myKList = myKList;
-}
-
-function getVolumeItemHeight(item) {
-	let volume = item[5];
-	return (volume / data.value.maxVolume) * 100 + '%'
-}
-
-function getVolumeItemColor(item) {
-	let openPrice = item[1];
-	let closePrice = item[2];
-	if (closePrice > openPrice) {
-        return '#ee2500';
-    } else if (closePrice === openPrice) {
-        return '#868686';
-    } else {
-        return '#02b33d';
-    }
 }
 
 function updateChart(type) {
@@ -643,11 +632,32 @@ function onCandleMouseOver(i, candleData) {
 
 function onCandleMouseOut(i) {
 	data.value.activeCandleData = null;
+	data.value.isMouseMoveOnCandle = false;
 }
 
 function onCandleMouseMove(i, candleData) {
 	data.value.yAxisPriceLine = candleData.y + 55;
 	data.value.yAxisPriceLinePrice = candleData.price;
+	data.value.isMouseMoveOnCandle = true;
+}
+
+function onVolumeMouseOver(i) {
+	candleRefs.value.forEach((el, index) => {
+		if (index === i) {
+			el.setMouseOver();
+			let candleData = el.getCandleData();
+			onCandleMouseOver(i, candleData);
+		}
+	});
+}
+
+function onVolumeMouseOut(i) {
+	candleRefs.value.forEach((el, index) => {
+		if (index === i) {
+			el.setMouseOut();
+			data.value.activeCandleData = null;
+		}
+	});
 }
 
 function onStockNameMouseEnter() {
@@ -794,38 +804,6 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	vertical-align: top;
 	margin-left: 20px;
 	text-align: left;
-}
-
-.kchart-volume {
-	margin-top: 0px;
-	margin-bottom: 20px;
-	padding: 0px 20px 15px 20px;
-	background-color: #fff;
-}
-
-.kchart-volume-list {
-	border-top: 1px #eee dashed;
-	display: flex;
-	gap: 2px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    width: calc(100vw - 320px);
-	/* background-color: #eee; */
-}
-
-.kchart-volume-item-box {
-	width: 7px;
-	height: 100px;
-	/* background-color: #eee; */
-	position: relative;
-}
-
-.kchart-volume-item {
-	width: 7px;
-	background-color: #f00;
-	position: absolute;
-	left: 0;
-	bottom: 0;
 }
 
 .full-line {

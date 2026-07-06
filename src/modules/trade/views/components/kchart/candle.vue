@@ -29,6 +29,7 @@ const props = defineProps([
     'highPrice',
     'openPrice',
     'closePrice',
+    'volume',
     'lowPriceInAll',
     'highPriceInAll',
     'candleMaxHeight',
@@ -190,9 +191,8 @@ onMounted(async () => {
     data.value.lineX = (data.value.boxWidth - data.value.lineWidth) / 2;
 });
 
-function onMouseOver() {
-    data.value.isMouseOver = true;
-    emit('mouse-over', {
+function getCandleData() {
+    return {
         stockId: props.stockId,
         candleType: props.candleType,
         date: props.date,
@@ -200,8 +200,22 @@ function onMouseOver() {
         highPrice: props.highPrice,
         openPrice: props.openPrice,
         closePrice: props.closePrice,
+        volume: props.volume,
         tradeAction
-    });
+    }
+}
+
+function setMouseOver() {
+    data.value.isMouseOver = true;
+}
+
+function onMouseOver() {
+    data.value.isMouseOver = true;
+    emit('mouse-over', getCandleData());
+}
+
+function setMouseOut() {
+    data.value.isMouseOver = false;
 }
 
 function onMouseOut() {
@@ -230,6 +244,8 @@ async function onClick() {
         console.error('复制失败:', err);
     }
 }
+
+defineExpose({ getCandleData, setMouseOver, setMouseOut });
 </script>
 
 <style scoped>

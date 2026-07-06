@@ -6,18 +6,39 @@ import { getAllStocks } from './allStocks.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-let str = `中控技术
-天孚通信
-长飞光纤
-铜冠铜箔
-麦格米特
-中天科技
-呈和科技
-东材科技
-江南新材
-合锻智能
-强瑞技术
-电连技术`;
+let str = `西部矿业
+三祥新材
+宝武镁业
+拓斯达
+汇川技术
+凌云光
+能科科技
+雷赛智能
+长盈精密
+汉威科技
+浙江荣泰
+智微智能
+中控技术
+兆威机电
+中大力德
+蓝思科技
+柯力传感
+奥比中光-W
+大族激光
+五洲新春
+拓普集团
+绿的谐波
+双环传动
+机器人
+石头科技
+昊志机电
+盈峰环境
+埃斯顿
+震裕科技
+科沃斯
+三花智控
+鸣志电器
+福临精工`;
 
 let allStocks = getAllStocks();
 let stocks = str.split('\n');

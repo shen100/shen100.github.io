@@ -19,7 +19,7 @@
                     <Button @click="onTypeChange('month')" :type="data.type === 'month' ? 'primary' : 'default'">月</Button>
                     <Button @click="onTypeChange('year')" :type="data.type === 'year' ? 'primary' : 'default'">年</Button>
                 </ButtonGroup>
-                <Input v-model="data.stockInput" placeholder="股票" style="width: 200px; margin-left: 15px" />
+                <Input v-model="data.stockInput" @on-clear="onClearStockInput" clearable placeholder="股票" style="width: 200px; margin-left: 15px" />
                 <Button type="primary" @click="onSearch" icon="ios-search" style="margin-left: 15px">搜素</Button>
                 <div class="space-all"></div>
                 <Button v-if="ifAllowUnion" type="success" @click="onShowUnionStocks" icon="md-sync" style="margin-left: 15px">更新数据</Button>
@@ -80,6 +80,10 @@ let data = ref({
         {
             value: 'tradePotentialStocks',
             label: '候选股'
+        },
+        {
+            value: 'tradePhysicalAI',
+            label: '物理AI'
         },
         {
             value: 'tradeStocksByStrategy1',
@@ -250,6 +254,10 @@ function onSearch() {
         }
     }
     emit('stock-search', filterData);
+}
+
+function onClearStockInput() {
+    emit('stock-search', null);
 }
 
 function onShowUnionStocks() {

@@ -30,6 +30,11 @@
             <div class="space"></div>
             <div>{{ upDownRate }}</div>
         </div>
+        <div class="stock-info-popup-txt-box">
+            <div>成交量</div>
+            <div class="space"></div>
+            <div>{{ (props.info.volume / 10000).toFixed(2) + '万手' }}</div>
+        </div>
     </div>
 </template>
 
