@@ -1,5 +1,5 @@
 <template>
-    <div class="audit-trail-popup" :style="{border: data.popupVisible ? '1px solid #eee' : 'none'}">
+    <div class="audit-trail-popup" :style="{border: data.popupVisible ? '1px solid #eee' : 'none', width: data.popupVisible ? '400px' : '75px'}">
         <div v-if="!data.popupVisible" @click="onSwitchVisible" class="audit-trail-popup-close">检查与回溯</div>
         <template v-else>
             <div @click="onSwitchVisible" class="audit-trail-popup-close">关闭</div>
@@ -79,6 +79,7 @@ function onSwitchVisible() {
     top: 55px;
     padding: 8px 10px;
     width: 400px;
+    min-height: 20px;
     z-index: 2;
     background-color: #fff;
 }
