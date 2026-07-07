@@ -64,7 +64,6 @@ onMounted(async () => {
         left -= 162;
     }
     data.value.left = left + 'px';
-    console.log(data.value.left);
 });
 
 </script>

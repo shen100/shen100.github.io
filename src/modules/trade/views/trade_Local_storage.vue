@@ -30,6 +30,10 @@ let data = ref({
             label: '当前持仓'
         },
         {
+            value: 'tradeTrail',
+            label: '交易回溯'
+        },
+        {
             value: 'tradePotentialStocks',
             label: '候选股'
         },

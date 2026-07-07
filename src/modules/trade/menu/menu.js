@@ -19,6 +19,10 @@ export default {
             path: '/trade/tracked_kcharts'
         },
         {
+            title: '交易回溯',
+            path: '/trade/trail'
+        },
+        {
             title: '买点计算器',
             path: '/trade/buy_point_calculator'
         },

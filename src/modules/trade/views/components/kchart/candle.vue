@@ -13,7 +13,7 @@
         <div v-if="isBuyOrSell" class="candle-line candle-trade-line" :style="candleTradelineStyle"></div>
         <div v-if="isBuyOrSell" class="candle-box candle-trade-small-box" :style="candleTradeSmallBoxStyle"></div>
         <div v-if="isBuyOrSell" class="candle-box candle-trade-box" :style="candleTradeBoxStyle">
-            <div class="candle-trade-box-txt">{{ tradeAction.type === 'buy' ? 'B' : 'S' }}</div>
+            <div class="candle-trade-box-txt">{{ props.tradeAction.type === 'buy' ? 'B' : 'S' }}</div>
         </div>
     </div>
 </template>
@@ -33,7 +33,7 @@ const props = defineProps([
     'lowPriceInAll',
     'highPriceInAll',
     'candleMaxHeight',
-    'tradeActions',
+    'tradeAction',
 ]);
 
 const emit = defineEmits(['mouse-over', 'mouse-out', 'mouse-move']);
@@ -106,7 +106,7 @@ const candleTradelineStyle = computed(() => {
         theY = data.value.lineY + data.value.lineHeight + 5;
     }
     let borderLeft = '1px #ee2500 dashed';
-    if (tradeAction.value.type === 'sell') {
+    if (props.tradeAction.type === 'sell') {
         borderLeft = '1px #5287ee dashed';
     }
     return {
@@ -124,7 +124,7 @@ const candleTradeSmallBoxStyle = computed(() => {
         theY = data.value.lineY + data.value.lineHeight + 5;
     }
     let backgroundColor = '#ee2500';
-    if (tradeAction.value.type === 'sell') {
+    if (props.tradeAction.type === 'sell') {
         backgroundColor = '#5287ee';
     }
     return {
@@ -143,7 +143,7 @@ const candleTradeBoxStyle = computed(() => {
         theY = data.value.lineY + data.value.lineHeight + 35;
     }
     let backgroundColor = '#ee2500';
-    if (tradeAction.value.type === 'sell') {
+    if (props.tradeAction.type === 'sell') {
         backgroundColor = '#5287ee';
     }
     return {
@@ -156,22 +156,11 @@ const candleTradeBoxStyle = computed(() => {
     }
 });
 
-const tradeAction = computed(() => {
-    if (props.tradeActions && props.tradeActions.length) {
-        for (let i = 0 ; i < props.tradeActions.length; i++) {
-            if (props.tradeActions[i].date === props.date) {
-                return props.tradeActions[i]
-            }
-        }
-    }
-    return null;
-});
-
 const isBuyOrSell = computed(() => {
-    if (!tradeAction || !tradeAction.value) {
+    if (!props.tradeAction) {
         return false;
     }
-    return [ 'buy', 'sell' ].indexOf(tradeAction.value.type) >= 0;
+    return [ 'buy', 'sell' ].indexOf(props.tradeAction.type) >= 0;
 });
 
 onMounted(async () => {
@@ -201,7 +190,7 @@ function getCandleData() {
         openPrice: props.openPrice,
         closePrice: props.closePrice,
         volume: props.volume,
-        tradeAction
+        tradeAction: props.tradeAction,
     }
 }
 

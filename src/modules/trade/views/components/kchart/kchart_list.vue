@@ -78,6 +78,10 @@ let data = ref({
             label: '当前持仓'
         },
         {
+            value: 'tradeTrail',
+            label: '交易回溯'
+        },
+        {
             value: 'tradePotentialStocks',
             label: '候选股'
         },
@@ -111,6 +115,12 @@ function onLocalKeyChange(key) {
 }
 
 onMounted(async () => {
+    for (let i = data.value.localKeys.length - 1; i >= 0; i--) {
+        if (data.value.localKeys[i].value === 'tradeTrail') {
+            data.value.localKeys.splice(i, 1);
+            break;
+        }
+    }
     nextTick(() => {
         data.value.kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
         data.value.type = props.type || data.value.type;

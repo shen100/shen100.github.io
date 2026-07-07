@@ -68,7 +68,7 @@
 				:stockId="data.stock.stockId"
 				:candleType="data.type"
 				:date="item[0]"
-				:tradeActions="data.stock.tradeActions"
+				:tradeAction="getTradeAction(item[0])"
 				:openPrice="item[1]"
 				:closePrice="item[2]"
 				:highPrice="item[3]"
@@ -162,6 +162,22 @@ const candleRefs = ref([]);
 onMounted(async () => {
 
 });
+
+function getTradeAction(date) {
+	if (!data.value.stock) {
+        return null;
+    }
+	const tradeActions = data.value.stock.tradeActions;
+	if (!tradeActions) {
+        return null;
+    }
+	for (let i = 0 ; i < tradeActions.length; i++) {
+		if (tradeActions[i].date === date) {
+			return tradeActions[i]
+		}
+	}
+	return null;
+}
 
 const zongShiZhi = computed(() => {
 	if (data.value.stockData && data.value.stockData.zongShiZhi > 10000) {

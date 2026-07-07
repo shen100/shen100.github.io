@@ -4,6 +4,7 @@ import Profit from '../views/profit.vue';
 import My from '../views/my.vue';
 import TradeLocalStorage from '../views/trade_Local_storage.vue';
 import StockCharts from '../views/stock_kcharts.vue';
+import TradeTrail from '../views/trade_trail.vue';
 import BuyPointCalculator from '../views/buy_point_calculator.vue';
 import BuyPointCalculatorDetail from '../views/buy_point_calculator_detail.vue';
 
@@ -12,6 +13,11 @@ const routeList = [
         path: '/trade/dashboard',
         name: 'tradeDashboard',
         component: Dashboard,
+    },
+    {
+        path: '/trade/trail',
+        name: 'tradeTrail',
+        component: TradeTrail,
     },
     {
         path: '/trade/all_kcharts',
