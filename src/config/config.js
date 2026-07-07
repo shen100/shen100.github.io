@@ -1,7 +1,7 @@
 import EnvUtil from '../utils/EnvUtil'
 
 const config = {
-    appName: '词汇记忆',
+    appName: 'shen100',
     serverPort: 9999,
 }
 

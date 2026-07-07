@@ -12,10 +12,12 @@
 				<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(2) : ''}}</span>
 				<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
 				<template v-if="props.kChartLocalKey !== 'tradeAllFullIdStocks'">
-					<span v-if="data.stock && currentDownRate" class="stop-rate-label">当前跌幅 {{ currentDownRate }}</span>
+					<span v-if="data.stock && currentDownRate" class="stop-rate-label">参考跌幅 {{ currentDownRate }}</span>
 					<span v-if="data.stock && allowMaxDownRate" class="stop-rate-label">最多可跌 {{  allowMaxDownRate }}</span>
 					<span v-if="data.stock && stopRate" class="stop-rate-label">止损 {{ stopRate }}</span>
 					<span v-if="data.stock && chiCangShiZhi" class="stop-rate-label">持仓市值 {{ chiCangShiZhi.toLocaleString() }}</span>
+					<span v-if="data.stock && props.kChartLocalKey === 'tradeTrail'" class="stop-rate-label">买入金额 {{ maiRuJinE.toLocaleString() }}</span>
+					<span v-if="data.stock && isSoldOut" class="stop-rate-label">卖出价格 {{  sellPrice.toLocaleString() }}</span>
 					<span v-if="data.stock && profitRate" class="stop-rate-label">利润 <span :style="{color: profitRateColor}">{{ profitRate }}</span></span>
 					<Button @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
 				</template>
@@ -83,11 +85,12 @@
 			/>
         </div>
 		<StockInfoPopup v-if="data.activeCandleData" :info="data.activeCandleData" />
+		<AuditTrail :trailData="data.stock?.trailData"/>
     </div>
 	<Volume :maxVolume="data.maxVolume" :minVolume="data.minVolume" :myKList="data.myKList" :activeCandleData="data.activeCandleData" 
 		@mouse-over="onVolumeMouseOver"
 		@mouse-out="onVolumeMouseOut" />
-	<EditKChartModal @hide-modal="onHideEditModal" :stock="data.stock" :modalVisible="data.editModalVisible" />
+	<EditKChartModal :kChartLocalKey="props.kChartLocalKey" @hide-modal="onHideEditModal" :stock="data.stock" :modalVisible="data.editModalVisible" />
 	<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :modalVisible="data.addPotentialModalVisible" />
 	<RemovePotentialModal @hide-modal="onHideRemovePotentialModal"
 		@stocks-remove-potential="onStocksRemovePotential" 
@@ -107,6 +110,7 @@ import EditKChartModal from './edit_kchart_modal.vue';
 import AddPotentialModal from './add_potential_modal.vue';
 import RemovePotentialModal from './remove_potential_modal.vue';
 import AskAIModal from './ask_ai_modal.vue';
+import AuditTrail from './audit_trail.vue';
 
 const emit = defineEmits(['stocks-remove-potential']);
 
@@ -160,7 +164,6 @@ let data = ref({
 const candleRefs = ref([]);
 
 onMounted(async () => {
-
 });
 
 function getTradeAction(date) {
@@ -243,6 +246,20 @@ const chiCangShiZhi = computed(() => {
 	return '';
 });
 
+const maiRuJinE = computed(() => {
+	if (!(data.value.stock && data.value.stock.tradeActions && data.value.stock.tradeActions.length)) {
+		return 0;
+	}
+	let buyAmount = 0;
+	for (let i = 0; i < data.value.stock.tradeActions.length; i++) {
+		let action = data.value.stock.tradeActions[i];
+		if (action.type === 'buy') {
+			buyAmount += (action.price * action.count);
+		}
+	}
+	return buyAmount;
+});
+
 const profitRate = computed(() => {
 	if (!(data.value.stock && data.value.stock.tradeActions && data.value.stock.tradeActions.length)) {
 		return '';
@@ -273,6 +290,42 @@ const profitRateColor = computed(() => {
 	}
 	return '#ee2500';
 });
+
+const isSoldOut = computed(() => {
+	if (!(data.value.stock && data.value.stock.tradeActions && data.value.stock.tradeActions.length)) {
+		return false;
+	}
+	let buyCount = 0;
+	let sellCount = 0;
+	for (let i = 0; i < data.value.stock.tradeActions.length; i++) {
+		let action = data.value.stock.tradeActions[i];
+		if (action.type === 'buy') {
+			buyCount += action.count;
+		} else if (action.type === 'sell') {
+			sellCount += action.count;
+		}
+	}
+	if (buyCount > 0 && buyCount === sellCount) {
+		return true;
+	}
+	return false;
+});
+
+const sellPrice = computed(() => {
+	if (!(data.value.stock && data.value.stock.tradeActions && data.value.stock.tradeActions.length)) {
+		return '';
+	}
+	let sellAmount = 0;
+	let sellCount = 0;
+	for (let i = 0; i < data.value.stock.tradeActions.length; i++) {
+		let action = data.value.stock.tradeActions[i];
+		if (action.type === 'sell') {
+			sellAmount += (action.price * action.count);
+			sellCount += action.count;
+		}
+	}
+	return sellAmount / sellCount;
+})
 
 const allowMaxDownRate = computed(() => {
 	if (!data.value.stock || !data.value.stock.stopPrice || !data.value.stock.highPrice) {

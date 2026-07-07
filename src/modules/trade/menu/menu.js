@@ -15,7 +15,7 @@ export default {
         //     path: '/trade/etf_kcharts'
         // },
         {
-            title: 'K线',
+            title: '交易策略',
             path: '/trade/tracked_kcharts'
         },
         {

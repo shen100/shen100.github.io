@@ -59,7 +59,8 @@ const emit = defineEmits(['hide-modal']);
 
 const props = defineProps([
     'stock',
-    'modalVisible'
+    'modalVisible',
+    'kChartLocalKey'
 ]);
 
 let data = ref({
@@ -133,7 +134,7 @@ function onOK() {
         return
     }
 
-    let kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
+    let kChartLocalKey = props.kChartLocalKey;
     let stocks = JSON.parse(localStorage.getItem(kChartLocalKey) || '[]');
 
 	for (let i = 0; i < stocks.length; i++) {

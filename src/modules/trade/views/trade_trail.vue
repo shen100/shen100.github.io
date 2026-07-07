@@ -140,7 +140,7 @@ async function onRequest(type, stocks) {
     } else if (type === "year") {
 		count = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
     }
-    
+        
     stocks.forEach(stock => {
         data.value.kCharts.push({
             stockId: stock.stockId,
@@ -149,6 +149,7 @@ async function onRequest(type, stocks) {
             highPrice: stock.highPrice,
             stopPrice: stock.stopPrice,
             isStar: !!stock.isStar,
+            trailData: stock.trailData,
             tradeActions: stock.tradeActions,
         });
     });
