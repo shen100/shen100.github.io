@@ -1,5 +1,5 @@
 <template>
-    <div class="stock-info-popup">
+    <div class="stock-info-popup" :style="{ left: data.left }">
         <div class="stock-info-popup-txt-box">
             <div>日期</div>
             <div class="space"></div>
@@ -39,12 +39,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 const props = defineProps(['info']);
+
+let data = ref({
+    left: '0px',
+});
 
 const upDownRate = computed({
     get() {
-        if (typeof props.info.prevClosePrice !== 'undefined') {
+        if (props.info && typeof props.info.prevClosePrice !== 'undefined') {
             let rateValue = (props.info.closePrice - props.info.prevClosePrice) / props.info.prevClosePrice;
             return (100 * rateValue).toFixed(2) + '%';
         }
@@ -52,13 +56,24 @@ const upDownRate = computed({
     }
 })
 
+onMounted(async () => {
+    let left = props.info.index * 9;
+    if (2 * props.info.index < props.info.candleCount) {
+        left += 60;
+    } else {
+        left -= 162;
+    }
+    data.value.left = left + 'px';
+    console.log(data.value.left);
+});
+
 </script>
 
 <style scoped>
 .stock-info-popup {
 	position: absolute;
-    left: 500px;
-    top: 0;
+    left: 0px;
+    top: 55px;
     border: 1px solid #eee;
     padding: 5px 10px;
     width: 150px;

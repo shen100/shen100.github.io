@@ -65,6 +65,7 @@
 			<Candle
 				:ref="el => { if (el) candleRefs[i] = el }"
 				v-for="(item, i) in data.myKList" :key="i"
+				:stockId="data.stock.stockId"
 				:candleType="data.type"
 				:date="item[0]"
 				:tradeActions="data.stock.tradeActions"
@@ -623,6 +624,8 @@ function updateChart(type) {
 function onCandleMouseOver(i, candleData) {
 	let theData = {
 		...candleData,
+		index: i,
+		candleCount: data.value.myKList.length
 	};
 	if (data.value.myKList && data.value.myKList[i - 1]) {
 		theData.prevClosePrice = data.value.myKList[i - 1][2]
