@@ -64,7 +64,7 @@ let stocks = [];
         let stockDetail = await requestStockDetail(stockDetailJSONMap, theStock);
         stockDetailJSONMap[stockData.stockFullId] = stockDetail;
 
-        if (!strategy2.detectTrend(kListData, stockDetail).ok) {
+        if (!strategy1.detectTrend(kListData, stockDetail).ok) {
             return;
         }
 

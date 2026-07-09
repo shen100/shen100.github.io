@@ -229,6 +229,7 @@ async function onRequest(type) {
             stopPrice: stock.stopPrice,
             isStar: !!stock.isStar,
             tradeActions: stock.tradeActions,
+            trailData: stock.trailData
         });
     });
 

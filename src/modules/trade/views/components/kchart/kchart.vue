@@ -68,6 +68,7 @@
 				:ref="el => { if (el) candleRefs[i] = el }"
 				v-for="(item, i) in data.myKList" :key="i"
 				:stockId="data.stock.stockId"
+				:stockHighPrice="data.stock.highPrice"
 				:candleType="data.type"
 				:date="item[0]"
 				:tradeAction="getTradeAction(item[0])"

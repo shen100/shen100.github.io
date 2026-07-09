@@ -20,9 +20,11 @@
 
 <script setup>
 import { onMounted, ref, computed } from 'vue';
+import { Message } from 'view-ui-plus'
 
 const props = defineProps([
     'stockId',
+    'stockHighPrice',
     'candleType', // day, week, month, year
     'date',
     'lowPrice',
@@ -229,6 +231,14 @@ async function onClick() {
     }
     try {
         await navigator.clipboard.writeText('' + props.closePrice);
+        if (props.stockHighPrice) {
+            let rate = 100 * (props.stockHighPrice - props.lowPrice) / props.stockHighPrice;
+            let str = rate.toFixed(2);
+            Message.success({
+                duration: 10,
+                content: `${props.date} 的最低价相对于最高参考价的跌幅为${str}%`
+            });
+        }
     } catch (err) {
         console.error('复制失败:', err);
     }

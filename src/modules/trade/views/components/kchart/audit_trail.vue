@@ -17,8 +17,14 @@
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.zhuXian }}</span>
                 </div>
                 <div class="audit-trail-popup-item">
-                    <span class="audit-trail-popup-item-label">板块概念</span>
+                    <span class="audit-trail-popup-item-label">板块/概念</span>
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.banKuai }}</span>
+                </div>
+                <div class="audit-trail-popup-item">
+                    <span class="audit-trail-popup-item-label">公司调研</span>
+                    <span class="audit-trail-popup-item-text">
+                        <a v-if="props.trailData?.diaoYan" :href="props.trailData?.diaoYan" target="_blank">查看</a>
+                    </span>
                 </div>
                 <div class="audit-trail-popup-item">
                     <span class="audit-trail-popup-item-label">买入逻辑</span>
@@ -60,8 +66,11 @@
                             <Option v-for="item in data.zhuXianList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                         </Select>
                     </FormItem>
-                    <FormItem label="板块">
+                    <FormItem label="板块/概念">
                         <Input v-model="data.formItem.banKuai" placeholder=""></Input>
+                    </FormItem>
+                    <FormItem label="公司调研">
+                        <Input v-model="data.formItem.diaoYan" placeholder=""></Input>
                     </FormItem>
                     <FormItem label="买入逻辑">
                         <Select v-model="data.formItem.luoJi">
@@ -121,6 +130,7 @@ let data = ref({
     formItem: {
         zhuXian: '', // 是否主线: 是、否
         banKuai: '', // 板块: 光模块、PCB、物理AI
+        diaoYan: '', // 公司调研
         luoJi: '', // 买入逻辑: 高成长、困境反转、瞎买
         cuiHuaJi: '', // 催化剂: 现在有、未来有、不清楚
         zouShi: '', // 走势: 上升、下降、区间震荡
@@ -177,17 +187,19 @@ function onSwitchVisibleFalse() {
 }
 
 function onEdit() {
+    console.log('onEdit', props.trailData);
     data.value.isEdit = true;
-    data.value.formItem.zhuXian = props.trailData.zhuXian || '';
-    data.value.formItem.banKuai = trim(props.trailData.banKuai || '');
-    data.value.formItem.luoJi = props.trailData.luoJi || '';
-    data.value.formItem.cuiHuaJi = props.trailData.cuiHuaJi || '';
-    data.value.formItem.zouShi = props.trailData.zouShi || '';
-    data.value.formItem.maiDian = props.trailData.maiDian || '';
-    data.value.formItem.cangWei = trim(props.trailData.cangWei || '');
-    data.value.formItem.zhiSun = trim(props.trailData.zhiSun || '');
-    data.value.formItem.maiDian2 = props.trailData.maiDian2 || '';
-    data.value.formItem.zongJie = trim(props.trailData.zongJie || '');
+    data.value.formItem.zhuXian = trim(props.trailData?.zhuXian || '');
+    data.value.formItem.banKuai = trim(props.trailData?.banKuai || '');
+    data.value.formItem.diaoYan = trim(props.trailData?.diaoYan || '');
+    data.value.formItem.luoJi = trim(props.trailData?.luoJi || '');
+    data.value.formItem.cuiHuaJi = trim(props.trailData?.cuiHuaJi || '');
+    data.value.formItem.zouShi = trim(props.trailData?.zouShi || '');
+    data.value.formItem.maiDian = trim(props.trailData?.maiDian || '');
+    data.value.formItem.cangWei = trim(props.trailData?.cangWei || '');
+    data.value.formItem.zhiSun = trim(props.trailData?.zhiSun || '');
+    data.value.formItem.maiDian2 = trim(props.trailData?.maiDian2 || '');
+    data.value.formItem.zongJie = trim(props.trailData?.zongJie || '');
 }
 
 function onEditOK() {
@@ -252,7 +264,7 @@ function onEditOK() {
     display: inline-block;
     vertical-align: top;
     margin-right: 5px;
-    width: 60px;
+    width: 70px;
     text-align: right;
     color: rgb(81, 90, 110);
 }

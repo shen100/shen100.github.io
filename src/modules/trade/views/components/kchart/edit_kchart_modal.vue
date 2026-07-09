@@ -7,7 +7,7 @@
             <FormItem label="标星">
                 <Radio v-model="data.editModelData.isStar">⭐️</Radio>
 			</FormItem>
-			<FormItem label="最高价">
+			<FormItem label="最高参考价">
 				<InputNumber :max="100000000" :min="-100000000" :step="0.0001" v-model="data.editModelData.highPrice" style="width: 100px"/>
 			</FormItem>
 			<FormItem label="止损">
