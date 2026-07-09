@@ -12,6 +12,7 @@
             <li><a href="/docs/7/chapter/1781969394977">量价原理</a></li>
             <li><a href="/docs/8/chapter/1782314613455">3L交易体系构建</a></li>
             <li><a href="/docs/9/chapter/1782467234074">交易思维模式构建</a></li>
+            <li><a href="/docs/10/chapter/1783593508323">公司调研</a></li>
         </ul>
     </div>
 </template>
