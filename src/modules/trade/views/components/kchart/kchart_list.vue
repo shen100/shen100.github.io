@@ -289,9 +289,8 @@ function onStocksRemovePotential() {
 }
 
 function onAuditTrailChange(stockId, trailData) {
-    console.log('kkkkkk', stockId, trailData);
-    return;
-    let stocks = localStorage.getItem(data.value.kChartLocalKey);
+    let str = localStorage.getItem(data.value.kChartLocalKey) || '[]';
+    let stocks = JSON.parse(str);
     for (let i = 0; i < stocks.length; i++) {
         if (stocks[i].stockId === stockId) {
             stocks[i].trailData = trailData;

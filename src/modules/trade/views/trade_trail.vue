@@ -23,7 +23,8 @@
         </Card>
         <div v-if="data.kCharts && data.kCharts.length">
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" 
-                :kChartLocalKey="data.kChartLocalKey" />
+                :kChartLocalKey="data.kChartLocalKey"
+                @audit-trail-change="onAuditTrailChange" />
         </div>
 
         <div class="page-container">
@@ -202,8 +203,20 @@ function onSearch() {
 function onClearStockInput() {
     data.value.stockInput = '';
 }
-</script>
 
+function onAuditTrailChange(stockId, trailData) {
+    let str = localStorage.getItem(data.value.kChartLocalKey) || '[]';
+    let stocks = JSON.parse(str);
+    for (let i = 0; i < stocks.length; i++) {
+        if (stocks[i].stockId === stockId) {
+            stocks[i].trailData = trailData;
+            localStorage.setItem(data.value.kChartLocalKey, JSON.stringify(stocks, null, 4));
+            location.reload();
+            break;
+        }
+    }
+}
+</script>
 
 <style scoped>
 .kcharts-type-card {

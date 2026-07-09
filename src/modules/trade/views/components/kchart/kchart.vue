@@ -777,12 +777,9 @@ function onHideAskAIModal() {
 }
 
 function onAuditTrailChange(trailData) {
-	console.log('~~~~ 2222a	');
-	// emit('audit-trail-change', data.value.stock.stockId, {
-	// 	...trailData,
-	// });
-
-	emit('audit-trail-change');
+	emit('audit-trail-change', data.value.stock.stockId, {
+		...trailData,
+	});
 }
 
 defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });

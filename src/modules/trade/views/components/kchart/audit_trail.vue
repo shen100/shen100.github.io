@@ -17,7 +17,7 @@
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.zhuXian }}</span>
                 </div>
                 <div class="audit-trail-popup-item">
-                    <span class="audit-trail-popup-item-label">板块</span>
+                    <span class="audit-trail-popup-item-label">板块概念</span>
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.banKuai }}</span>
                 </div>
                 <div class="audit-trail-popup-item">
@@ -39,6 +39,10 @@
                 <div class="audit-trail-popup-item">
                     <span class="audit-trail-popup-item-label">仓位</span>
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.cangWei }}</span>
+                </div>
+                <div class="audit-trail-popup-item">
+                    <span class="audit-trail-popup-item-label">止损</span>
+                    <span class="audit-trail-popup-item-text">{{ props.trailData?.zhiSun }}</span>
                 </div>
                 <div class="audit-trail-popup-item">
                     <span class="audit-trail-popup-item-label">卖点</span>
@@ -82,6 +86,9 @@
                     <FormItem label="仓位">
                         <Input v-model="data.formItem.cangWei" placeholder=""></Input>
                     </FormItem>
+                    <FormItem label="止损">
+                        <Input v-model="data.formItem.zhiSun" placeholder=""></Input>
+                    </FormItem>
                     <FormItem label="卖点">
                         <Select v-model="data.formItem.maiDian2">
                             <Option v-for="item in data.maiDian2List" :value="item.value" :key="item.value">{{ item.label }}</Option>
@@ -119,6 +126,7 @@ let data = ref({
         zouShi: '', // 走势: 上升、下降、区间震荡
         maiDian: '', // 买点: 突破、中继、反转、恐慌
         cangWei: '', // 买入仓位: 1%、10%、50%
+        zhiSun: '', // 止损: 1%、5%、10%
         maiDian2: '', // 卖点: 自动止损、手动止损、加速
         zongJie: '' // 总结
     },
@@ -170,15 +178,16 @@ function onSwitchVisibleFalse() {
 
 function onEdit() {
     data.value.isEdit = true;
-    data.value.formItem.zhuXian = props.trailData.zhuXian;
-    data.value.formItem.banKuai = trim(props.trailData.banKuai);
-    data.value.formItem.luoJi = props.trailData.luoJi;
-    data.value.formItem.cuiHuaJi = props.trailData.cuiHuaJi;
-    data.value.formItem.zouShi = props.trailData.zouShi;
-    data.value.formItem.maiDian = props.trailData.maiDian;
-    data.value.formItem.cangWei = trim(props.trailData.cangWei);
-    data.value.formItem.maiDian2 = props.trailData.maiDian2;
-    data.value.formItem.zongJie = trim(props.trailData.zongJie);
+    data.value.formItem.zhuXian = props.trailData.zhuXian || '';
+    data.value.formItem.banKuai = trim(props.trailData.banKuai || '');
+    data.value.formItem.luoJi = props.trailData.luoJi || '';
+    data.value.formItem.cuiHuaJi = props.trailData.cuiHuaJi || '';
+    data.value.formItem.zouShi = props.trailData.zouShi || '';
+    data.value.formItem.maiDian = props.trailData.maiDian || '';
+    data.value.formItem.cangWei = trim(props.trailData.cangWei || '');
+    data.value.formItem.zhiSun = trim(props.trailData.zhiSun || '');
+    data.value.formItem.maiDian2 = props.trailData.maiDian2 || '';
+    data.value.formItem.zongJie = trim(props.trailData.zongJie || '');
 }
 
 function onEditOK() {

@@ -13,6 +13,12 @@
             </div>
             <div class="ask-item">
                 <span class="ask-stock-name">{{props.stock?.stockName}}</span>
+                <span style="margin-left: 5px;">属于哪些板块与概念?</span>
+                <div class="ask-item-space"></div>
+                <Button type="primary" size="small" @click="onCopy(`${props.stock?.stockName} 属于哪些板块与概念?有具体的产品吗?还是纯炒作?`)">复制</Button>
+            </div>
+            <div class="ask-item">
+                <span class="ask-stock-name">{{props.stock?.stockName}}</span>
                 <span style="margin-left: 5px;">最近有什么利空吗?</span>
                 <div class="ask-item-space"></div>
                 <Button type="primary" size="small" @click="onCopy(`${props.stock?.stockName} 最近有什么利空吗?`)">复制</Button>
