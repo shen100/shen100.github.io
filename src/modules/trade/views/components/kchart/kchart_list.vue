@@ -28,6 +28,7 @@
         <div v-if="data.kCharts && data.kCharts.length">
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" 
                 @stocks-remove-potential="onStocksRemovePotential" 
+                @audit-trail-change="onAuditTrailChange"
                 :kChartLocalKey="data.kChartLocalKey" />
         </div>
         <StocksUnionModal 
@@ -285,6 +286,20 @@ function onStocksUion() {
 
 function onStocksRemovePotential() {
 	emit('stocks-remove-potential');
+}
+
+function onAuditTrailChange(stockId, trailData) {
+    console.log('kkkkkk', stockId, trailData);
+    return;
+    let stocks = localStorage.getItem(data.value.kChartLocalKey);
+    for (let i = 0; i < stocks.length; i++) {
+        if (stocks[i].stockId === stockId) {
+            stocks[i].trailData = trailData;
+            localStorage.setItem(data.value.kChartLocalKey, JSON.stringify(stocks, null, 4));
+            location.reload();
+            break;
+        }
+    }
 }
 </script>
 

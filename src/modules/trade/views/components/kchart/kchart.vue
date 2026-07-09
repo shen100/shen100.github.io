@@ -17,7 +17,7 @@
 					<span v-if="data.stock && stopRate" class="stop-rate-label">止损 {{ stopRate }}</span>
 					<span v-if="data.stock && chiCangShiZhi" class="stop-rate-label">持仓市值 {{ chiCangShiZhi.toLocaleString() }}</span>
 					<span v-if="data.stock && props.kChartLocalKey === 'tradeTrail'" class="stop-rate-label">买入金额 {{ maiRuJinE.toLocaleString() }}</span>
-					<span v-if="data.stock && isSoldOut" class="stop-rate-label">卖出价格 {{  sellPrice.toLocaleString() }}</span>
+					<span v-if="data.stock && isSoldOut" class="stop-rate-label">卖出价格 {{  sellPrice.toFixed(4) }}</span>
 					<span v-if="data.stock && profitRate" class="stop-rate-label">利润 <span :style="{color: profitRateColor}">{{ profitRate }}</span></span>
 					<Button @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
 				</template>
@@ -54,7 +54,7 @@
 			<div class="y-axis-price-line-price avg-high-line-price">{{ data.stock.highPrice }}</div>
 		</div>
 		<div v-if="avgCost > 0" class="y-axis-price-line avg-cost-line" :style="{top: `${data.avgCostY}px`}">
-			<div class="y-axis-price-line-price avg-cost-line-price">{{ avgCost.toFixed(3) }}</div>
+			<div class="y-axis-price-line-price avg-cost-line-price">{{ avgCost.toFixed(4) }}</div>
 		</div>
 		<div v-if="data.stock && data.stock.stopPrice > 0" class="y-axis-price-line avg-stop-price-line" :style="{top: `${data.stopPriceY}px`}">
 			<div class="y-axis-price-line-price avg-stop-price-line-price">{{ data.stock.stopPrice }}</div>
@@ -85,7 +85,7 @@
 			/>
         </div>
 		<StockInfoPopup v-if="data.activeCandleData" :info="data.activeCandleData" />
-		<AuditTrail :trailData="data.stock?.trailData"/>
+		<AuditTrail @audit-trail-change="onAuditTrailChange" :trailData="data.stock?.trailData"/>
     </div>
 	<Volume :maxVolume="data.maxVolume" :minVolume="data.minVolume" :myKList="data.myKList" :activeCandleData="data.activeCandleData" 
 		@mouse-over="onVolumeMouseOver"
@@ -112,7 +112,7 @@ import RemovePotentialModal from './remove_potential_modal.vue';
 import AskAIModal from './ask_ai_modal.vue';
 import AuditTrail from './audit_trail.vue';
 
-const emit = defineEmits(['stocks-remove-potential']);
+const emit = defineEmits(['stocks-remove-potential', 'audit-trail-change']);
 
 const props = defineProps([
 	'kChartLocalKey'
@@ -776,6 +776,15 @@ function onHideAskAIModal() {
 	data.value.askAIModalVisible = false;
 }
 
+function onAuditTrailChange(trailData) {
+	console.log('~~~~ 2222a	');
+	// emit('audit-trail-change', data.value.stock.stockId, {
+	// 	...trailData,
+	// });
+
+	emit('audit-trail-change');
+}
+
 defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 </script>
 
@@ -856,7 +865,7 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
 	font-size: 12px;
 	background-color: #e7e7e7;
     color: #222;
-    width: 46px;
+    width: 55px;
     text-align: center;
 }
 

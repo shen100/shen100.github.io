@@ -195,6 +195,8 @@ function onSearch() {
     let start = (page - 1) * data.value.pageSize;
     data.value.stocks = stocks.slice(start, start + data.value.pageSize);
     window.scrollTo(0, 0);
+
+    onRequest(data.value.type, data.value.stocks);
 }
 
 function onClearStockInput() {
