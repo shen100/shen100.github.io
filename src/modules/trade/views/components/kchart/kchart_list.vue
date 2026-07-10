@@ -21,6 +21,9 @@
                 </ButtonGroup>
                 <Input v-model="data.stockInput" @on-clear="onClearStockInput" clearable placeholder="股票" style="width: 200px; margin-left: 15px" />
                 <Button type="primary" @click="onSearch" icon="ios-search" style="margin-left: 15px">搜素</Button>
+                <div class="new-price-box">
+                    <Checkbox v-model="data.isNewPriceMode" @on-change="isNewPriceModeChange">只看最新涨幅</Checkbox>
+                </div>
                 <div class="space-all"></div>
                 <Button v-if="ifAllowUnion" type="success" @click="onShowUnionStocks" icon="md-sync" style="margin-left: 15px">更新数据</Button>
             </div>
@@ -29,7 +32,8 @@
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" 
                 @stocks-remove-potential="onStocksRemovePotential" 
                 @audit-trail-change="onAuditTrailChange"
-                :kChartLocalKey="data.kChartLocalKey" />
+                :kChartLocalKey="data.kChartLocalKey"
+                :isNewPriceMode="data.isNewPriceMode" />
         </div>
         <StocksUnionModal 
             :kChartLocalKeyLabel="kChartLocalKeyLabel"
@@ -87,7 +91,11 @@ let data = ref({
             label: '候选股'
         },
         {
-            value: 'tradePhysicalAI',
+            value: 'tradeMemoryStocks',
+            label: '存储'
+        },
+        {
+            value: 'tradePhysicalAIStocks',
             label: '物理AI'
         },
         {
@@ -107,7 +115,8 @@ let data = ref({
     stockFullId: '',
     stockName: '',
     stockInput: '',
-    unionModalVisible: false
+    unionModalVisible: false,
+    isNewPriceMode: false
 })
 
 function onLocalKeyChange(key) {
@@ -127,7 +136,7 @@ onMounted(async () => {
         data.value.type = props.type || data.value.type;
         data.value.start = props.start || data.value.start;
         data.value.end = props.end || data.value.end;
-        onRequest(props.type);
+        onRequest(props.type, props.stocks);
     })
 });
 
@@ -148,7 +157,7 @@ const kChartLocalKeyLabel = computed(() => {
 watch(
     () => props.stocks,
     (newValue, oldValue) => {
-        onRequest(data.value.type);
+        onRequest(data.value.type, newValue);
     }
 )
 
@@ -179,27 +188,27 @@ watch(() => props.filterData?.stockInput, (newVal) => {
 
 function onStartDateChange(dateStr, dateType, type) {
     data.value.start = dateStr;
-    onRequest(type);
+    onRequest(type, props.stocks);
     emit('start-change', dateStr);
 }
 
 function onEndDateChange(dateStr, dateType, type) {
     data.value.end = dateStr;
-    onRequest(type);
+    onRequest(type, props.stocks);
     emit('end-change', dateStr);
 }
 
 function onTypeChange(type) {
     data.value.type = type;
-    onRequest(type);
+    onRequest(type, props.stocks);
     emit('type-change', type);
 }
 
-async function onRequest(type) {
+async function onRequest(type, stocks) {
     data.value.type = type;
     data.value.kCharts = [];
 
-    if (!(props.stocks && props.stocks.length > 0)) {
+    if (!(stocks && stocks.length > 0)) {
         return;
     }
 
@@ -220,7 +229,7 @@ async function onRequest(type) {
 		count = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
     }
     
-    props.stocks.forEach(stock => {
+    stocks.forEach(stock => {
         data.value.kCharts.push({
             stockId: stock.stockId,
             stockFullId: stock.stockFullId,
@@ -301,6 +310,28 @@ function onAuditTrailChange(stockId, trailData) {
         }
     }
 }
+
+async function isNewPriceModeChange(value) {
+    let stocks = props.stocks.slice();
+    if (value) {
+        let dtRateMap = {};
+        itemRefs.value.forEach((el, index) => {
+            if (el) {
+                let stock = data.value.kCharts[index];
+                if (!stock) {
+                    return;
+                }
+                dtRateMap[stock.stockId] = {
+                    dtRate: el.getDtRate()
+                };
+            }
+        });
+        stocks.sort((a, b) => {
+            return dtRateMap[a.stockId].dtRate > dtRateMap[b.stockId].dtRate ? -1 : 1;
+        });
+    }
+    onRequest(data.value.type, stocks);
+}
 </script>
 
 <style scoped>
@@ -323,5 +354,12 @@ function onAuditTrailChange(stockId, trailData) {
 
 .space-all {
     flex: 1;
+}
+
+.new-price-box {
+    display: inline-block;
+    vertical-align: top;
+    line-height: 32px;
+    margin-left: 10px;
 }
 </style>

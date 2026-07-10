@@ -38,7 +38,11 @@ let data = ref({
             label: '候选股'
         },
         {
-            value: 'tradePhysicalAI',
+            value: 'tradeMemoryStocks',
+            label: '存储'
+        },
+        {
+            value: 'tradePhysicalAIStocks',
             label: '物理AI'
         },
         {

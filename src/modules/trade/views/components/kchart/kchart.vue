@@ -1,109 +1,121 @@
 <template>
-    <div class="kchart-container">
-		<div class="stock-name" @mouseleave="onStockNameMouseLeave">
-			<div class="stock-name-left-box"></div>
-			<div class="stock-name-space"></div>
-			<div class="stock-name-txt" @mouseenter="onStockNameMouseEnter">
-				<a class="stock-name-link" :href="`https://xueqiu.com/S/${data.stock && data.stock.stockFullId}`" target="_blank">
-					{{ data.stockName }}
-				</a>
-				{{ data.stockData ? `&nbsp;(总市值&nbsp;${zongShiZhi})` : '' }}
-				<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice }}</span>
-				<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(2) : ''}}</span>
-				<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
-				<template v-if="props.kChartLocalKey !== 'tradeAllFullIdStocks'">
-					<span v-if="data.stock && currentDownRate" class="stop-rate-label">参考跌幅 {{ currentDownRate }}</span>
-					<span v-if="data.stock && allowMaxDownRate" class="stop-rate-label">最多可跌 {{  allowMaxDownRate }}</span>
-					<span v-if="data.stock && stopRate" class="stop-rate-label">止损 {{ stopRate }}</span>
-					<span v-if="data.stock && chiCangShiZhi" class="stop-rate-label">持仓市值 {{ chiCangShiZhi.toLocaleString() }}</span>
-					<span v-if="data.stock && props.kChartLocalKey === 'tradeTrail'" class="stop-rate-label">买入金额 {{ maiRuJinE.toLocaleString() }}</span>
-					<span v-if="data.stock && isSoldOut" class="stop-rate-label">卖出价格 {{  sellPrice.toFixed(4) }}</span>
-					<span v-if="data.stock && profitRate" class="stop-rate-label">利润 <span :style="{color: profitRateColor}">{{ profitRate }}</span></span>
-					<Button @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
-				</template>
-				<Button v-if="allowAddToPotential" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
-				<Button v-if="props.kChartLocalKey === 'tradePotentialStocks'" @click="onShowRemovePotentialModal" type="primary" size="small" style="margin-left: 10px;">移出候选股</Button>
+	<template v-if="!props.isNewPriceMode">
+		<div class="kchart-container">
+			<div class="stock-name" @mouseleave="onStockNameMouseLeave">
+				<div class="stock-name-left-box"></div>
+				<div class="stock-name-space"></div>
+				<div class="stock-name-txt" @mouseenter="onStockNameMouseEnter">
+					<a class="stock-name-link" :href="`https://xueqiu.com/S/${data.stock && data.stock.stockFullId}`" target="_blank">
+						{{ data.stockName }}
+					</a>
+					{{ data.stockData ? `&nbsp;(总市值&nbsp;${zongShiZhi})` : '' }}
+					<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice }}</span>
+					<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(2) : ''}}</span>
+					<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
+					<template v-if="props.kChartLocalKey !== 'tradeAllFullIdStocks'">
+						<span v-if="data.stock && currentDownRate" class="stop-rate-label">参考跌幅 {{ currentDownRate }}</span>
+						<span v-if="data.stock && allowMaxDownRate" class="stop-rate-label">最多可跌 {{  allowMaxDownRate }}</span>
+						<span v-if="data.stock && stopRate" class="stop-rate-label">止损 {{ stopRate }}</span>
+						<span v-if="data.stock && chiCangShiZhi" class="stop-rate-label">持仓市值 {{ chiCangShiZhi.toLocaleString() }}</span>
+						<span v-if="data.stock && props.kChartLocalKey === 'tradeTrail'" class="stop-rate-label">买入金额 {{ maiRuJinE.toLocaleString() }}</span>
+						<span v-if="data.stock && isSoldOut" class="stop-rate-label">卖出价格 {{  sellPrice.toFixed(4) }}</span>
+						<span v-if="data.stock && profitRate" class="stop-rate-label">利润 <span :style="{color: profitRateColor}">{{ profitRate }}</span></span>
+						<Button @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
+					</template>
+					<Button v-if="allowAddToPotential" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
+					<Button v-if="props.kChartLocalKey === 'tradePotentialStocks'" @click="onShowRemovePotentialModal" type="primary" size="small" style="margin-left: 10px;">移出候选股</Button>
+				</div>
+				<div class="stock-name-space"></div>
+				<div class="stock-name-right-box">
+					<Button @click="onShowAskAIModal" type="warning" size="small" style="margin-left: 10px;">问AI?</Button>
+				</div>
 			</div>
-			<div class="stock-name-space"></div>
-			<div class="stock-name-right-box">
-				<Button @click="onShowAskAIModal" type="warning" size="small" style="margin-left: 10px;">问AI?</Button>
-			</div>
-		</div>
-		<div class="space"></div>
-		<div class="y-axis" :style="{top: `${data.yAxis1}px`}"></div>
-		<div class="y-axis-txt" :style="{top: `${data.yAxis1}px`}">{{ data.yAxisText1 }}</div>
-		<div class="y-axis" :style="{top: `${data.yAxis2}px`}"></div>
-		<div class="y-axis-txt" :style="{top: `${data.yAxis2}px`}">{{ data.yAxisText2 }}</div>
-		<div class="y-axis" :style="{top: `${data.yAxis3}px`}"></div>
-		<div class="y-axis-txt" :style="{top: `${data.yAxis3}px`}">{{ data.yAxisText3 }}</div>
-		<div class="y-axis" :style="{top: `${data.yAxis4}px`}"></div>
-		<div class="y-axis-txt" :style="{top: `${data.yAxis4}px`}">{{ data.yAxisText4 }}</div>
-		<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
-		<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
-		
-		<template v-if="data.activeCandleData && data.activeCandleData.tradeAction">
-			<div v-if="data.activeCandleData.tradeAction.type === 'buy'" class="kchart-trade-buy-or-sell">
-				买入 {{data.activeCandleData.tradeAction.price}} X {{data.activeCandleData.tradeAction.count}} 股
-			</div>
-			<div v-else-if="data.activeCandleData.tradeAction.type === 'sell'" class="kchart-trade-buy-or-sell" style="background-color: #5287ee;">
-				卖出 {{data.activeCandleData.tradeAction.price}} X {{data.activeCandleData.tradeAction.count}} 股
-			</div>
-		</template>
+			<div class="space"></div>
+			<div class="y-axis" :style="{top: `${data.yAxis1}px`}"></div>
+			<div class="y-axis-txt" :style="{top: `${data.yAxis1}px`}">{{ data.yAxisText1 }}</div>
+			<div class="y-axis" :style="{top: `${data.yAxis2}px`}"></div>
+			<div class="y-axis-txt" :style="{top: `${data.yAxis2}px`}">{{ data.yAxisText2 }}</div>
+			<div class="y-axis" :style="{top: `${data.yAxis3}px`}"></div>
+			<div class="y-axis-txt" :style="{top: `${data.yAxis3}px`}">{{ data.yAxisText3 }}</div>
+			<div class="y-axis" :style="{top: `${data.yAxis4}px`}"></div>
+			<div class="y-axis-txt" :style="{top: `${data.yAxis4}px`}">{{ data.yAxisText4 }}</div>
+			<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
+			<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
+			
+			<template v-if="data.activeCandleData && data.activeCandleData.tradeAction">
+				<div v-if="data.activeCandleData.tradeAction.type === 'buy'" class="kchart-trade-buy-or-sell">
+					买入 {{data.activeCandleData.tradeAction.price}} X {{data.activeCandleData.tradeAction.count}} 股
+				</div>
+				<div v-else-if="data.activeCandleData.tradeAction.type === 'sell'" class="kchart-trade-buy-or-sell" style="background-color: #5287ee;">
+					卖出 {{data.activeCandleData.tradeAction.price}} X {{data.activeCandleData.tradeAction.count}} 股
+				</div>
+			</template>
 
-		<div v-if="data.stock && data.stock.highPrice > 0" class="y-axis-price-line avg-high-line" :style="{top: `${data.highPriceY}px`}">
-			<div class="y-axis-price-line-price avg-high-line-price">{{ data.stock.highPrice }}</div>
-		</div>
-		<div v-if="avgCost > 0" class="y-axis-price-line avg-cost-line" :style="{top: `${data.avgCostY}px`}">
-			<div class="y-axis-price-line-price avg-cost-line-price">{{ avgCost.toFixed(4) }}</div>
-		</div>
-		<div v-if="data.stock && data.stock.stopPrice > 0" class="y-axis-price-line avg-stop-price-line" :style="{top: `${data.stopPriceY}px`}">
-			<div class="y-axis-price-line-price avg-stop-price-line-price">{{ data.stock.stopPrice }}</div>
-		</div>
+			<div v-if="data.stock && data.stock.highPrice > 0" class="y-axis-price-line avg-high-line" :style="{top: `${data.highPriceY}px`}">
+				<div class="y-axis-price-line-price avg-high-line-price">{{ data.stock.highPrice }}</div>
+			</div>
+			<div v-if="avgCost > 0" class="y-axis-price-line avg-cost-line" :style="{top: `${data.avgCostY}px`}">
+				<div class="y-axis-price-line-price avg-cost-line-price">{{ avgCost.toFixed(4) }}</div>
+			</div>
+			<div v-if="data.stock && data.stock.stopPrice > 0" class="y-axis-price-line avg-stop-price-line" :style="{top: `${data.stopPriceY}px`}">
+				<div class="y-axis-price-line-price avg-stop-price-line-price">{{ data.stock.stopPrice }}</div>
+			</div>
 
-		<div v-if="data.activeCandleData && data.isMouseMoveOnCandle" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
-			<div class="y-axis-price-line-price">{{ data.yAxisPriceLinePrice }}</div>
+			<div v-if="data.activeCandleData && data.isMouseMoveOnCandle" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
+				<div class="y-axis-price-line-price">{{ data.yAxisPriceLinePrice }}</div>
+			</div>
+			<div v-if="data.dataLoaded" class="candles-container">
+				<Candle
+					:ref="el => { if (el) candleRefs[i] = el }"
+					v-for="(item, i) in data.myKList" :key="i"
+					:stockId="data.stock.stockId"
+					:stockHighPrice="data.stock.highPrice"
+					:candleType="data.type"
+					:date="item[0]"
+					:tradeAction="getTradeAction(item[0])"
+					:openPrice="item[1]"
+					:closePrice="item[2]"
+					:highPrice="item[3]"
+					:lowPrice="item[4]"
+					:volume="item[5]"
+					:lowPriceInAll="data.lowPriceInAll"
+					:highPriceInAll="data.highPriceInAll"
+					:candleMaxHeight="data.candleMaxHeight"
+					@mouse-over="(candleData) => onCandleMouseOver(i, candleData)"
+					@mouse-out="() => onCandleMouseOut(i)"
+					@mouse-move="(candleData) => onCandleMouseMove(i, candleData)"
+				/>
+			</div>
+			<StockInfoPopup v-if="data.activeCandleData" :info="data.activeCandleData" />
+			<AuditTrail @audit-trail-change="onAuditTrailChange" :trailData="data.stock?.trailData"/>
 		</div>
-        <div v-if="data.dataLoaded" class="candles-container">
-			<Candle
-				:ref="el => { if (el) candleRefs[i] = el }"
-				v-for="(item, i) in data.myKList" :key="i"
-				:stockId="data.stock.stockId"
-				:stockHighPrice="data.stock.highPrice"
-				:candleType="data.type"
-				:date="item[0]"
-				:tradeAction="getTradeAction(item[0])"
-				:openPrice="item[1]"
-				:closePrice="item[2]"
-				:highPrice="item[3]"
-				:lowPrice="item[4]"
-				:volume="item[5]"
-				:lowPriceInAll="data.lowPriceInAll"
-				:highPriceInAll="data.highPriceInAll"
-				:candleMaxHeight="data.candleMaxHeight"
-				@mouse-over="(candleData) => onCandleMouseOver(i, candleData)"
-				@mouse-out="() => onCandleMouseOut(i)"
-				@mouse-move="(candleData) => onCandleMouseMove(i, candleData)"
-			/>
-        </div>
-		<StockInfoPopup v-if="data.activeCandleData" :info="data.activeCandleData" />
-		<AuditTrail @audit-trail-change="onAuditTrailChange" :trailData="data.stock?.trailData"/>
-    </div>
-	<Volume :maxVolume="data.maxVolume" :minVolume="data.minVolume" :myKList="data.myKList" :activeCandleData="data.activeCandleData" 
-		@mouse-over="onVolumeMouseOver"
-		@mouse-out="onVolumeMouseOut" />
-	<EditKChartModal :kChartLocalKey="props.kChartLocalKey" @hide-modal="onHideEditModal" :stock="data.stock" :modalVisible="data.editModalVisible" />
-	<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :modalVisible="data.addPotentialModalVisible" />
-	<RemovePotentialModal @hide-modal="onHideRemovePotentialModal"
-		@stocks-remove-potential="onStocksRemovePotential" 
-		:stock="data.stock" :modalVisible="data.removePotentialModalVisible" />
-	<AskAIModal @hide-modal="onHideAskAIModal"
-		:stock="data.stock" :modalVisible="data.askAIModalVisible" />
+		<Volume :maxVolume="data.maxVolume" :minVolume="data.minVolume" :myKList="data.myKList" :activeCandleData="data.activeCandleData" 
+			@mouse-over="onVolumeMouseOver"
+			@mouse-out="onVolumeMouseOut" />
+		<EditKChartModal :kChartLocalKey="props.kChartLocalKey" @hide-modal="onHideEditModal" :stock="data.stock" :modalVisible="data.editModalVisible" />
+		<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :modalVisible="data.addPotentialModalVisible" />
+		<RemovePotentialModal @hide-modal="onHideRemovePotentialModal"
+			@stocks-remove-potential="onStocksRemovePotential" 
+			:stock="data.stock" :modalVisible="data.removePotentialModalVisible" />
+		<AskAIModal @hide-modal="onHideAskAIModal"
+			:stock="data.stock" :modalVisible="data.askAIModalVisible" />
+	</template>
+	<template v-else>
+		<StockNewPrice :stockName="data.stockName"
+		:stockFullId="data.stock?.stockFullId"
+		:lastPriceUpColor="data.lastPriceUpColor"
+		:curPrice="data.curPrice"
+		:dtPrice="data.dtPrice"
+		:dtRate="data.dtRate"
+		:dtPriceUpdated="data.dtPriceUpdated" />
+	</template>
 </template>
 
 <script setup>
 import axios from 'axios';
 import { onMounted, ref, computed } from 'vue'
 import { findFromRight } from '../../../util/str';
+import StockNewPrice from '../stock_new_price.vue';
 import Candle from './candle.vue';
 import Volume from './volume.vue';
 import StockInfoPopup from './stock_info_popup.vue';
@@ -116,7 +128,8 @@ import AuditTrail from './audit_trail.vue';
 const emit = defineEmits(['stocks-remove-potential', 'audit-trail-change']);
 
 const props = defineProps([
-	'kChartLocalKey'
+	'kChartLocalKey',
+	'isNewPriceMode'
 ]);
 
 let data = ref({
@@ -619,6 +632,10 @@ function convertKListToNumbers(myKList) {
 	data.value.myKList = myKList;
 }
 
+function getDtRate() {
+	return data.value.dtRate;
+}
+
 function updateChart(type) {
 	let lowPriceInAll = 10000000;
 	let highPriceInAll = -10000000;
@@ -783,7 +800,7 @@ function onAuditTrailChange(trailData) {
 	});
 }
 
-defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK });
+defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK, getDtRate });
 </script>
 
 <style scoped>
