@@ -37,7 +37,8 @@ export async function requestDayK(dayJSONMap, stock, start, end, count) {
     let key = `${stock.stockFullId}-${start}-${end}-${count}`;
 
     if (dayJSONMap && dayJSONMap[key]) {
-        return dayJSONMap[key];
+		convertKListToNumbers(dayJSONMap[key]);
+		return dayJSONMap[key];
     }
     let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
 	url += (stock.stockFullId + ",day," + start + "," + end + "," + count + ",qfq");

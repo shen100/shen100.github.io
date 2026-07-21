@@ -59,9 +59,9 @@ const upDownRate = computed({
 onMounted(async () => {
     let left = props.info.index * 9;
     if (2 * props.info.index < props.info.candleCount) {
-        left += 60;
+        left += 160;
     } else {
-        left -= 162;
+        left -= 262;
     }
     data.value.left = left + 'px';
 });
