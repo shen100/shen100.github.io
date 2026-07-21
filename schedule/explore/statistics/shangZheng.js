@@ -5,6 +5,9 @@ import { data2026 } from './data/shang_zheng/2026.js';
 
 // https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000001,day,2025-01-01,2026-01-01,400,qfq
 
+
+let rate2List = [];
+
 async function analyzePriceChange(stockFullId, startStr, endStr, count, dataInYear) {
     const stockData = {
         stockFullId
@@ -26,13 +29,6 @@ async function analyzePriceChange(stockFullId, startStr, endStr, count, dataInYe
     */
     let upCount = 0;
     let downCount = 0;
-
-    let up2RateCount = 0;
-    let down2RateCount = 0;
-    let up2RateList = [];
-    let down2RateList = [];
-    let up2DateList = [];
-    let down2DateList = [];
 
     let up3RateCount = 0;
     let down3RateCount = 0;
@@ -66,26 +62,23 @@ async function analyzePriceChange(stockFullId, startStr, endStr, count, dataInYe
             down3DateList.push(date.substring(5));
         }
 
-        if (rate >= 0.02 && rate < 0.03) {
-            up2RateCount++;
-            up2RateList.push((rate * 100).toFixed(2) + '%');
-            up2DateList.push(date.substring(5));
-        }
-        if (rate <= -0.02 && rate > -0.03) {
-            down2RateCount++;
-            down2RateList.push((rate * 100).toFixed(2) + '%');
-            down2DateList.push(date.substring(5));
+        if (rate <= -0.02 && i + 1 < myKList.length) {
+            let price3 = myKList[i + 1][2];
+            let rate2 = (price3 - price2) / price2;
+            rate2List.push({
+                date,
+                rate: (rate * 100).toFixed(2) + '%',
+                rate22: (rate2 * 100).toFixed(2) + '%',
+                rate2
+            });
         }
     }
     console.log(`${startStr} ${endStr}`);
     console.log(`上涨天数`, upCount);
     console.log(`下跌天数`, downCount);
-    console.log(`涨幅 >= 2% and < %3 的天数`, up2RateCount, up2DateList, up2RateList);
-    console.log(`跌幅 >= 2% and < 3% 的天数`, down2RateCount, down2DateList, down2RateList);
 
     console.log(`涨幅 >= 3% 的天数`, up3RateCount, up3DateList, up3RateList);
     console.log(`跌幅 >= 3% 的天数`, down3RateCount, down3DateList, down3RateList);
-    console.log();
 }
 
 
@@ -93,6 +86,19 @@ async function analyzePriceChange(stockFullId, startStr, endStr, count, dataInYe
     await analyzePriceChange('sh000001', '2024-01-01', '2025-01-01', 366, data2024);
     await analyzePriceChange('sh000001', '2025-01-01', '2026-01-01', 366, data2025);
     await analyzePriceChange('sh000001', '2026-01-01', '2027-01-01', 366, data2026);
+
+    let str = `|   日期  |  跌幅 | 下一交易日涨幅(%) | 下一交易日涨幅 |
+| ---------- | --------- | --------- | --------- |\n`;
+    for (let i = 0; i < rate2List.length; i++) {
+        str = str + `| ${rate2List[i].date}  | ${rate2List[i].rate}   |  ${rate2List[i].rate22} | ${rate2List[i].rate2}   |\n`;
+    }
+    console.log('上证指数跌幅超过 2%');
+    console.log(JSON.stringify(rate2List));
+    console.log();
+    console.log(str);
+    console.log();
+    console.log('done');
+    console.log();
 }());
 
 

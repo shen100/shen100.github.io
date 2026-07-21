@@ -10,5 +10,9 @@ export default {
             title: '加密解密',
             path: '/webtool/encryption'
         },
+        {
+            title: '复利计算器',
+            path: '/webtool/compintcalc'
+        },
     ]
 }

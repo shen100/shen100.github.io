@@ -1,5 +1,6 @@
 import Mergely from '../views/mergely.vue';
 import Encryption from '../views/encryption.vue';
+import CompIntCalc from '../views/compintcalc.vue';
 
 const routeList = [
     {
@@ -11,6 +12,11 @@ const routeList = [
         path: '/webtool/encryption',
         name: 'webToolEncryption',
         component: Encryption,
+    },
+    {
+        path: '/webtool/compintcalc',
+        name: 'webToolCompIntCalc',
+        component: CompIntCalc,
     }
 ];
 
