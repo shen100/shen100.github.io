@@ -38,6 +38,10 @@ let data = ref({
             label: '候选股'
         },
         {
+            value: 'tradePaperStocks',
+            label: '模拟交易'
+        },
+        {
             value: 'tradeMemoryStocks',
             label: '存储'
         },

@@ -23,6 +23,10 @@ export default {
             path: '/trade/trail'
         },
         {
+            title: '交易模拟',
+            path: '/trade/paper'
+        },
+        {
             title: '买点计算器',
             path: '/trade/buy_point_calculator'
         },

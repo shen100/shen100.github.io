@@ -1,6 +1,6 @@
 <template>
-    <div class="kchart-volume">
-		<div class="kchart-volume-list">
+	<div class="kchart-volume">
+		<div ref="kchartVolumeListRef" @scroll="onScroll" class="kchart-volume-list">
 			<div v-for="(item, i) in props.myKList" :key="i" class="kchart-volume-item-box"
                 @mouseenter="onMouseOver(i)"
                 @mouseleave="onMouseOut(i)"
@@ -25,7 +25,9 @@ const props = defineProps([
     'activeCandleData'
 ]);
 
-const emit = defineEmits(['mouse-over', 'mouse-out', 'mouse-move']);
+const emit = defineEmits(['mouse-over', 'mouse-out', 'mouse-move', 'scroll']);
+
+let kchartVolumeListRef = ref(null);
 
 let data = ref({
     isMouseOver: false,
@@ -74,6 +76,16 @@ function onMouseMove(event) {
         data.value.yAxisVolumeLineY = y;
     }   
 }
+
+function onScroll(event) {
+	emit('scroll', event.target.scrollLeft);
+}
+
+function setScrollLeft(scrollLeft) {
+	kchartVolumeListRef.value.scrollLeft = scrollLeft;
+}
+
+defineExpose({ setScrollLeft });
 </script>
 
 <style scoped>
@@ -92,11 +104,10 @@ function onMouseMove(event) {
     flex-wrap: nowrap;
     overflow-x: auto;
     width: calc(100vw - 320px);
-	/* background-color: #eee; */
 }
 
 .kchart-volume-item-box {
-	width: 9px;
+	min-width: 9px;
 	height: 100px;
 	/* background-color: #eee; */
 	position: relative;

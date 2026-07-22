@@ -57,8 +57,11 @@ const upDownRate = computed({
 })
 
 onMounted(async () => {
-    let left = props.info.index * 9;
-    if (2 * props.info.index < props.info.candleCount) {
+    // let left = props.info.index * 9;
+    // console.log('props.info.scrollLeft', props.info.scrollLeft);
+    let left = props.info.index * 9 - props.info.scrollLeft;
+    // let d2 = props.info.candleCount * 9 - props.info.scrollLeft;
+    if (left < props.info.containerWidth / 2) {
         left += 160;
     } else {
         left -= 262;

@@ -20,6 +20,11 @@ const routeList = [
         component: TradeTrail,
     },
     {
+        path: '/trade/paper',
+        name: 'tradePaper',
+        component: TradeTrail,
+    },
+    {
         path: '/trade/all_kcharts',
         name: 'allKCharts',
         component: StockCharts,

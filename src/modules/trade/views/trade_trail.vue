@@ -24,6 +24,7 @@
         <div v-if="data.kCharts && data.kCharts.length">
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" 
                 :kChartLocalKey="data.kChartLocalKey"
+                :auditTrailVisible="data.auditTrailVisible"
                 @audit-trail-change="onAuditTrailChange" />
         </div>
 
@@ -37,13 +38,17 @@
 
 <script setup>
 import { nextTick, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import KChart from './components/kchart/kchart.vue';
 import { formatLocalYMD, parseLocalYMDString } from '../util/date';
 import { trim } from '../util/str';
 
+const route = useRoute()
+
 const itemRefs = ref([]);
 
 let data = ref({
+    auditTrailVisible: true,
     kChartLocalKey: 'tradeTrail',
     type: 'day',
     stocks: [],
@@ -57,6 +62,13 @@ let data = ref({
 })
 
 onMounted(async () => {
+    if (route.path === '/trade/paper') {
+        data.value.auditTrailVisible = false;
+        data.value.kChartLocalKey = 'tradePaperStocks';
+        data.value.start = '2025-01-01';
+        data.value.end = '2026-01-01';
+    }
+
     let stocks = getStocks();
     data.value.total = stocks.length;
     let start = (data.value.page - 1) * data.value.pageSize;
@@ -184,8 +196,11 @@ function onPageChange(page) {
 
     let stocks = getStocks();
     let start = (page - 1) * data.value.pageSize;
+    console.log(page, start);
     data.value.stocks = stocks.slice(start, start + data.value.pageSize);
     window.scrollTo(0, 0);
+
+    onRequest(data.value.type, data.value.stocks);
 }
 
 function onSearch() {

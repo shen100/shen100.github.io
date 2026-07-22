@@ -64,7 +64,8 @@
 			<div v-if="data.activeCandleData && data.isMouseMoveOnCandle" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
 				<div class="y-axis-price-line-price">{{ data.yAxisPriceLinePrice }}</div>
 			</div>
-			<div v-if="data.dataLoaded" class="candles-container">
+			<div v-if="data.dataLoaded" ref="candlesContainerRef" :id="`candles-container-${data.stock?.stockId}`"
+				@scroll="onCandlesContainerScroll" class="candles-container">
 				<Candle
 					:ref="el => { if (el) candleRefs[i] = el }"
 					v-for="(item, i) in data.myKList" :key="i"
@@ -87,11 +88,12 @@
 				/>
 			</div>
 			<StockInfoPopup v-if="data.activeCandleData" :info="data.activeCandleData" />
-			<AuditTrail @audit-trail-change="onAuditTrailChange" :trailData="data.stock?.trailData"/>
+			<AuditTrail v-if="props.auditTrailVisible" @audit-trail-change="onAuditTrailChange" :trailData="data.stock?.trailData"/>
 		</div>
-		<Volume :maxVolume="data.maxVolume" :minVolume="data.minVolume" :myKList="data.myKList" :activeCandleData="data.activeCandleData" 
+		<Volume ref="volumeRef" :maxVolume="data.maxVolume" :minVolume="data.minVolume" :myKList="data.myKList" :activeCandleData="data.activeCandleData" 
 			@mouse-over="onVolumeMouseOver"
-			@mouse-out="onVolumeMouseOut" />
+			@mouse-out="onVolumeMouseOut"
+			@scroll="onVolumeScroll" />
 		<EditKChartModal :kChartLocalKey="props.kChartLocalKey" @hide-modal="onHideEditModal" :stock="data.stock" :modalVisible="data.editModalVisible" />
 		<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :modalVisible="data.addPotentialModalVisible" />
 		<RemovePotentialModal @hide-modal="onHideRemovePotentialModal"
@@ -129,8 +131,12 @@ const emit = defineEmits(['stocks-remove-potential', 'audit-trail-change']);
 
 const props = defineProps([
 	'kChartLocalKey',
-	'isNewPriceMode'
+	'isNewPriceMode',
+	'auditTrailVisible'
 ]);
+
+let candlesContainerRef = ref(null);
+let volumeRef = ref(null);
 
 let data = ref({
 	dataLoaded: false,
@@ -709,10 +715,13 @@ function updateChart(type) {
 }
 
 function onCandleMouseOver(i, candleData) {
+	const div = document.getElementById('candles-container-' + data.value.stock.stockId);
 	let theData = {
 		...candleData,
 		index: i,
-		candleCount: data.value.myKList.length
+		candleCount: data.value.myKList.length,
+		containerWidth: div.offsetWidth,
+		scrollLeft: div.scrollLeft
 	};
 	if (data.value.myKList && data.value.myKList[i - 1]) {
 		theData.prevClosePrice = data.value.myKList[i - 1][2]
@@ -748,6 +757,14 @@ function onVolumeMouseOut(i) {
 			data.value.activeCandleData = null;
 		}
 	});
+}
+
+function onCandlesContainerScroll(event) {
+	volumeRef.value.setScrollLeft(event.target.scrollLeft);
+}
+
+function onVolumeScroll(scrollLeft) {
+	candlesContainerRef.value.scrollLeft = scrollLeft;
 }
 
 function onStockNameMouseEnter() {
@@ -889,7 +906,7 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK, getDtRate
     flex-wrap: nowrap;
     overflow-x: auto;
     width: calc(100vw - 320px);
-	height: 281px; /* 比 data.candleMaxHeight 高出 1px */
+	height: 301px; /* 比 data.candleMaxHeight 高出 21px */
 }
 
 .add-to-tracking {
