@@ -57,7 +57,7 @@ let stocks = [];
         const stockDetailCol = db.collection('stock_detail');
         const stockDetail = await stockDetailCol.findOne({ stockFullId: stockData.stockFullId });
 
-        if (!strategy2.detectTrend(kList, stockDetail).ok) {
+        if (!strategy1.detectTrend(kList, stockDetail).ok) {
             return;
         }
 
