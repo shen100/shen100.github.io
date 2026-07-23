@@ -3,7 +3,6 @@ import { MongoClient } from 'mongodb';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { parseLocalYMDString } from '../../src/modules/trade/util/date.js';
 import { getAllStocks } from './allStocks.js';
 import * as strategy1 from './strategy/strategy1.js';
 import * as strategy2 from './strategy/strategy2.js';
@@ -18,18 +17,10 @@ const client = new MongoClient(uri);
 
 let myItems = getAllStocks();
 
-const pastDate = new Date(new Date());
-pastDate.setDate(pastDate.getDate() - 365);
-
-// let startStr = '2025-07-03';
-// let endStr = '2026-07-03';
-let startStr = pastDate.toISOString().substring(0, 10); // 2025-07-01
+let startStr = '2025-01-01';
 let endStr = new Date().toISOString().substring(0, 10); // 2026-07-01
 console.log('\nstartStr', startStr);
 console.log('endStr', endStr, '\n');
-
-let startDate = parseLocalYMDString(startStr);
-let endDate = parseLocalYMDString(endStr);
 
 let stocks = [];
 
@@ -43,7 +34,7 @@ let stocks = [];
         console.log('index', index);
 
         const klineDayCol = db.collection('kline_day');
-        const stockKLine = await klineDayCol.findOne({ stockId: stockData.stockId });
+        const stockKLine = await klineDayCol.findOne({ stockFullId: stockData.stockFullId });
         let startIndex = -1;
         let endIndex = -1;
         for (let i = 0; i < stockKLine.kList.length; i++) {
@@ -64,9 +55,9 @@ let stocks = [];
         }
        
         const stockDetailCol = db.collection('stock_detail');
-        const stockDetail = await stockDetailCol.findOne({ stockId: stockData.stockId });
+        const stockDetail = await stockDetailCol.findOne({ stockFullId: stockData.stockFullId });
 
-        if (!strategy1.detectTrend(kList, stockDetail).ok) {
+        if (!strategy2.detectTrend(kList, stockDetail).ok) {
             return;
         }
 

@@ -196,7 +196,6 @@ function onPageChange(page) {
 
     let stocks = getStocks();
     let start = (page - 1) * data.value.pageSize;
-    console.log(page, start);
     data.value.stocks = stocks.slice(start, start + data.value.pageSize);
     window.scrollTo(0, 0);
 

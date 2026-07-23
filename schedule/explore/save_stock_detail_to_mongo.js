@@ -8,6 +8,14 @@ const client = new MongoClient(uri);
 
 let myItems = getAllStocks();
 
+/*
+
+db.getCollection("stock_detail").createIndex(
+  { "stockFullId": 1 },
+  { unique: true, background: true }
+)
+
+*/
 async function main() {
     try {
         await client.connect();
@@ -25,7 +33,7 @@ async function main() {
             console.log('📝 插入成功:', index, ' ', result.insertedId);
             console.log();
 
-        }, { concurrency: 1 });
+        }, { concurrency: 20 });
 
     } catch (error) {
         console.error('❌ 错误:', error);

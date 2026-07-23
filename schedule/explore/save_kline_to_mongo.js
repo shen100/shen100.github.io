@@ -8,6 +8,14 @@ const client = new MongoClient(uri);
 
 let myItems = getAllStocks();
 
+/*
+
+db.getCollection("kline_day").createIndex(
+  { "stockFullId": 1 },
+  { unique: true, background: true }
+)
+
+*/
 async function main() {
     try {
         await client.connect();
@@ -16,17 +24,11 @@ async function main() {
         const db = client.db('mytrade');
         const collection = db.collection('kline_day');
 
-        // // 查询数据
-        // const users = await collection.find({}).toArray();
-        // console.log('📋 所有用户:', users);
-
         const dayJSONMap = {};
-
         let startStr = '2024-01-01';
         let endStr = '2027-01-01';
 
         await bluebird.map(myItems, async function (stockData, index) {
-            console.log(index, 'requestDayK\n');
             let myKList = await requestDayK(dayJSONMap, stockData, startStr, endStr, 1000);
             let kList = myKList.map((item) => {
                 return {
