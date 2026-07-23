@@ -1,48 +1,70 @@
-import { requestDayK } from '../stockUtil.js';
-import { data2024 } from './data/shang_zheng/2024.js';
-import { data2025 } from './data/shang_zheng/2025.js';
-import { data2026 } from './data/shang_zheng/2026.js';
+import { MongoClient } from 'mongodb';
 
-// https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000001,day,2025-01-01,2026-01-01,400,qfq
+/**
+ * start ------------------------------------------------------------
+ * 修改 stockFullId, rateConst3, rateConst2, years 变量的值
+ * 然后, 运行此文件
+ */
 
+// 上证指数
+let stockFullId = 'sh000001';
+let rateConst3 = 0.03;
+let rateConst2 = 0.02;
+let nextRateTableTip = `上证指数 跌幅超过 ${rateConst2 * 100}%`
+
+// 科创50
+// let stockFullId = 'sh000688';
+// let rateConst3 = 0.05;
+// let rateConst2 = 0.03;
+// let nextRateTableTip = `科创50 跌幅超过 ${rateConst2 * 100}% 的日期如下`
+
+let years = [ 2024, 2025, 2026 ];
+
+/**
+ * end --------------------------------------------------------------
+ */
+const uri = 'mongodb://admin:admin123@127.0.0.1:27017';
+const client = new MongoClient(uri);
 
 let rate2List = [];
 
-async function analyzePriceChange(stockFullId, startStr, endStr, count, dataInYear) {
-    const stockData = {
-        stockFullId
-    };
-    let key = `${stockData.stockFullId}-${startStr}-${endStr}-${count}`;
-    let dayJSONMap = {
-        [key]: dataInYear.data.sh000001.day,
-    };
-    let myKList = await requestDayK(dayJSONMap, stockData, startStr, endStr, count);
-  /*
-    [
-		"2021-03-10", 0-交易日
-		"1977.000", 1-开盘价
-		"1970.010", 2-收盘价
-		"1999.870", 3-最高价
-		"1967.000", 4-最低价
-		"51172.000" 5-总手
-	]
-    */
+function getKList(year, list) {
+    let startIndex = -1;
+    let endIndex = -1;
+    for (let i = 0; i < list.length; i++) {
+        let theYear = parseInt(list[i].date.split('-')[0]);
+        if (theYear === year && startIndex < 0) {
+            startIndex = i - 1;
+        }
+        if (theYear > year && endIndex < 0) {
+            endIndex = i;
+        }
+    }
+    endIndex = endIndex >= 0 ? endIndex : list.length;
+    return list.slice(startIndex, endIndex);
+}
+
+async function analyzePriceChange(year, list) {
+    let kList = getKList(year, list);
+
     let upCount = 0;
     let downCount = 0;
 
     let up3RateCount = 0;
-    let down3RateCount = 0;
     let up3RateList = [];
-    let down3RateList = [];
     let up3DateList = [];
+
+    let down3RateCount = 0;
+    let down3RateList = [];
     let down3DateList = [];
-    for (let i = 1; i < myKList.length; i++) {
-        let date = myKList[i][0];
-        if (date === '2026-07-17') {
-            console.log();
-        }
-        let price1 = myKList[i - 1][2];
-        let price2 = myKList[i][2];
+
+    for (let i = 1; i < kList.length; i++) {
+        let date = kList[i].date;
+        // if (date === '2026-07-17') {
+        //     console.log();
+        // }
+        let price1 = kList[i - 1].closePrice;
+        let price2 = kList[i].closePrice;
         if (price2 > price1) {
             upCount++;
         }
@@ -51,55 +73,64 @@ async function analyzePriceChange(stockFullId, startStr, endStr, count, dataInYe
         }
 
         let rate = (price2 - price1) / price1;
-        if (rate >= 0.03) {
+        if (rate >= rateConst3) {
             up3RateCount++;
             up3RateList.push((rate * 100).toFixed(2) + '%');
             up3DateList.push(date.substring(5));
         }
-        if (rate <= -0.03) {
+        if (rate <= -rateConst3) {
             down3RateCount++;
             down3RateList.push((rate * 100).toFixed(2) + '%');
             down3DateList.push(date.substring(5));
         }
 
-        if (rate <= -0.02 && i + 1 < myKList.length) {
-            let price3 = myKList[i + 1][2];
-            let rate2 = (price3 - price2) / price2;
+        if (rate <= -rateConst2 && i + 1 < kList.length) {
+            let price3 = kList[i + 1].closePrice;
+            let nextRate = (price3 - price2) / price2;
             rate2List.push({
                 date,
                 rate: (rate * 100).toFixed(2) + '%',
-                rate22: (rate2 * 100).toFixed(2) + '%',
-                rate2
+                nextRate,
+                nextRatePercent: (nextRate * 100).toFixed(2) + '%',
             });
         }
     }
-    console.log(`${startStr} ${endStr}`);
+    console.log(`\n${year} 年`);
     console.log(`上涨天数`, upCount);
     console.log(`下跌天数`, downCount);
 
-    console.log(`涨幅 >= 3% 的天数`, up3RateCount, up3DateList, up3RateList);
-    console.log(`跌幅 >= 3% 的天数`, down3RateCount, down3DateList, down3RateList);
+    console.log(`涨幅 >= ${rateConst3 * 100}% 的天数`, up3RateCount, up3DateList, up3RateList);
+    console.log(`跌幅 >= ${rateConst3 * 100}% 的天数`, down3RateCount, down3DateList, down3RateList);
 }
 
+(async function() {
+    await client.connect();
+    console.log('✅ 成功连接到 MongoDB');
 
-(async function(params) {
-    await analyzePriceChange('sh000001', '2024-01-01', '2025-01-01', 366, data2024);
-    await analyzePriceChange('sh000001', '2025-01-01', '2026-01-01', 366, data2025);
-    await analyzePriceChange('sh000001', '2026-01-01', '2027-01-01', 366, data2026);
+    const db = client.db('mytrade');
+    const collection = db.collection('kline_index');
 
-    let str = `|   日期  |  跌幅 | 下一交易日涨幅(%) | 下一交易日涨幅 |
-| ---------- | --------- | --------- | --------- |\n`;
-    for (let i = 0; i < rate2List.length; i++) {
-        str = str + `| ${rate2List[i].date}  | ${rate2List[i].rate}   |  ${rate2List[i].rate22} | ${rate2List[i].rate2}   |\n`;
+    const kLineData = await collection.findOne({ stockFullId });
+    if (!kLineData) {
+        console.log('kline_index 集合里没数据');
+        console.log();
+        process.exit(0);
     }
-    console.log('上证指数跌幅超过 2%');
-    console.log(JSON.stringify(rate2List));
+
+    for (let i = 0; i < years.length; i++) {
+        await analyzePriceChange(years[i], kLineData.kList);
+    }
+
+    let str = `|     日期    |   跌幅   |    下一交易日涨幅(%)     | 下一交易日涨幅 |
+| ----------- | -------- | ------------------------ | -------------- |\n`;
+    for (let i = 0; i < rate2List.length; i++) {
+        str = str + `| ${rate2List[i].date}  | ${rate2List[i].rate}   |  ${rate2List[i].nextRatePercent} | ${rate2List[i].nextRate}   |\n`;
+    }
+    console.log('\n' + nextRateTableTip);
+    // console.log(JSON.stringify(rate2List));
     console.log();
     console.log(str);
     console.log();
     console.log('done');
     console.log();
 }());
-
-
-console.log();

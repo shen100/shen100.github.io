@@ -1,23 +1,24 @@
 import { MongoClient } from 'mongodb';
 import bluebird from 'bluebird';
-import { getAllStocks } from './allStocks.js';
-import { requestDayK } from './stockUtil.js';
+import { requestDayK } from '../stockUtil.js';
 
 const uri = 'mongodb://admin:admin123@127.0.0.1:27017';
 const client = new MongoClient(uri);
 
-let myItems = getAllStocks();
+let myItems = [
+    {
+        stockFullId: 'sh000001',
+        stockId: '000001',
+        stockName: '上证指数'
+    },
+    {
+        "stockFullId": "sh000688",
+        "stockId": "000688",
+        "stockName": "科创50"
+    }
+]
 
-/*
-
-db.getCollection("kline_day").createIndex(
-  { "stockFullId": 1 },
-  { unique: true, background: true }
-)
-
-*/
-
-let startStr = '2024-01-01';
+let startStr = '2023-12-29'; // 2023年最后一个交易日
 let endStr = '2027-01-01';
 
 async function main() {
@@ -26,7 +27,7 @@ async function main() {
         console.log('✅ 成功连接到 MongoDB');
 
         const db = client.db('mytrade');
-        const collection = db.collection('kline_day');
+        const collection = db.collection('kline_index');
 
         const dayJSONMap = {};
 
