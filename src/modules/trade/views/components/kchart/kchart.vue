@@ -64,7 +64,7 @@
 			<div v-if="data.activeCandleData && data.isMouseMoveOnCandle" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
 				<div class="y-axis-price-line-price">{{ data.yAxisPriceLinePrice }}</div>
 			</div>
-			<div v-if="data.dataLoaded" ref="candlesContainerRef" :id="`candles-container-${data.stock?.stockId}`"
+			<div v-if="data.dataLoaded" ref="candlesContainerRef"
 				@scroll="onCandlesContainerScroll" class="candles-container">
 				<Candle
 					:ref="el => { if (el) candleRefs[i] = el }"
@@ -715,13 +715,12 @@ function updateChart(type) {
 }
 
 function onCandleMouseOver(i, candleData) {
-	const div = document.getElementById('candles-container-' + data.value.stock.stockId);
 	let theData = {
 		...candleData,
 		index: i,
 		candleCount: data.value.myKList.length,
-		containerWidth: div.offsetWidth,
-		scrollLeft: div.scrollLeft
+		containerWidth: candlesContainerRef.value.offsetWidth,
+		scrollLeft: candlesContainerRef.value.scrollLeft
 	};
 	if (data.value.myKList && data.value.myKList[i - 1]) {
 		theData.prevClosePrice = data.value.myKList[i - 1][2]
