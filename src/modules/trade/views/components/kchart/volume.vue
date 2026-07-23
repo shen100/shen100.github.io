@@ -35,7 +35,6 @@ let data = ref({
 	yAxisVolumeValue: 0
 });
 
-
 onMounted(async () => {
     
 });

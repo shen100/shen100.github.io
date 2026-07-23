@@ -26,6 +26,10 @@ let data = ref({
             label: '全部股票'
         },
         {
+            value: 'tradeIndexStocks',
+            label: '板块指数'
+        },
+        {
             value: 'tradeInvestedStocks',
             label: '当前持仓'
         },
