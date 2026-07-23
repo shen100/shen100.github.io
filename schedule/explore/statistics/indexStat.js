@@ -135,32 +135,38 @@ async function doAnalyze(db, option) {
 }
 
 (async function() {
-    await client.connect();
-    console.log('✅ 成功连接到 MongoDB\n');
+    try {
+        await client.connect();
+        console.log('✅ 成功连接到 MongoDB\n');
 
-    const db = client.db('mytrade');
+        const db = client.db('mytrade');
 
-    // 上证指数
-    const option1 = {
-        stockFullId: 'sh000001',
-        rateConst3: 0.03,
-        rateConst2: 0.02,
-        nextRateTableTip: ``,
-        indexTitle: '上证指数',
-        rate2List: []
-    };
-    option1.nextRateTableTip = `### 上证指数 跌幅超过 ${option1.rateConst2 * 100}%`;
-    await doAnalyze(db, option1);
+        // 上证指数
+        const option1 = {
+            stockFullId: 'sh000001',
+            rateConst3: 0.03,
+            rateConst2: 0.02,
+            nextRateTableTip: ``,
+            indexTitle: '上证指数',
+            rate2List: []
+        };
+        option1.nextRateTableTip = `### 上证指数 跌幅超过 ${option1.rateConst2 * 100}%`;
+        await doAnalyze(db, option1);
 
-    // 科创50
-    const option2 = {
-        stockFullId: 'sh000688',
-        rateConst3: 0.05,
-        rateConst2: 0.03,
-        nextRateTableTip: ``,
-        indexTitle: '科创50',
-        rate2List: []
-    };
-    option2.nextRateTableTip = `### 科创50 跌幅超过 ${option2.rateConst2 * 100}%`,
-    await doAnalyze(db, option2);
+        // 科创50
+        const option2 = {
+            stockFullId: 'sh000688',
+            rateConst3: 0.05,
+            rateConst2: 0.03,
+            nextRateTableTip: ``,
+            indexTitle: '科创50',
+            rate2List: []
+        };
+        option2.nextRateTableTip = `### 科创50 跌幅超过 ${option2.rateConst2 * 100}%`,
+        await doAnalyze(db, option2);
+    } catch (error) {
+        console.error('❌ 错误:', error);
+    } finally {
+        await client.close();
+    }
 }());

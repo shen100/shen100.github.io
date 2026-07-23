@@ -3,6 +3,8 @@ import bluebird from 'bluebird';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import * as strategy1 from '../strategy/strategy1.js';
+import * as strategy2 from '../strategy/strategy2.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,27 +29,27 @@ function findMaxClosePrice(list) {
 }
 
 function getProfit(stock) {
-	if (!(stock && stock.tradeActions && stock.tradeActions.length)) {
-		return 0;
-	}
-	let buyAmount = 0;
-	let sellAmount = 0;
-	let remainingCount = 0;
-	for (let i = 0; i < stock.tradeActions.length; i++) {
-		let action = stock.tradeActions[i];
-		if (action.type === 'buy') {
-			buyAmount += (action.price * action.count);
-			remainingCount += action.count;
-		} else if (action.type === 'sell') {
-			sellAmount += (action.price * action.count);
-			remainingCount -= action.count;
-		}
-	}
-	let finalAmount = sellAmount;
-	return finalAmount - buyAmount;
+    if (!(stock && stock.tradeActions && stock.tradeActions.length)) {
+        return 0;
+    }
+    let buyAmount = 0;
+    let sellAmount = 0;
+    let remainingCount = 0;
+    for (let i = 0; i < stock.tradeActions.length; i++) {
+        let action = stock.tradeActions[i];
+        if (action.type === 'buy') {
+            buyAmount += (action.price * action.count);
+            remainingCount += action.count;
+        } else if (action.type === 'sell') {
+            sellAmount += (action.price * action.count);
+            remainingCount -= action.count;
+        }
+    }
+    let finalAmount = sellAmount;
+    return finalAmount - buyAmount;
 }
 
-async function buyByBreakout(db, stock, minDate, maxDate) {
+async function buyByPullback(db, stock, option) {
     const klineDayCol = db.collection('kline_day');
     const stockKLine = await klineDayCol.findOne({ stockId: stock.stockId });
 
@@ -56,12 +58,21 @@ async function buyByBreakout(db, stock, minDate, maxDate) {
         if (stock.stockId === '300026') {
             console.log();
         }
-        if (stockKLine.kList[i].date >= minDate) {
+        if (stockKLine.kList[i].date >= option.start) {
             index = i;
             break;
         }
     }
     let kList = stockKLine.kList.slice(index);
+
+    let pullbackIndex = -1;
+    for (let i = 0; i < kList.length; i++) {
+        if (kList[i].date >= option.pullbackDate) {
+            pullbackIndex = i + 1;
+            break;
+        }
+    }
+    let pullbackList = kList.slice(0, pullbackIndex);
 
     let result = {
         stockFullId: stock.stockFullId,
@@ -72,67 +83,58 @@ async function buyByBreakout(db, stock, minDate, maxDate) {
         tradeActions: []
     };
 
-    let prevMax = findMaxClosePrice(kList.slice(0, 100));
+    let prevMax = findMaxClosePrice(pullbackList);
     result.highPrice = prevMax.maxClosePrice;
     let count = 0;
     let amount = 10000;
     let buyPrice = 0;
     let maxRate = 0;
     let maxClosePrice = 0;
-    let status = 'forBuy';
 
-    if (stock.stockName === '奥普特') {
+    if (stock.stockName === '沙河股份') {
         console.log();
     }
-    for (let i = 100; i < kList.length; i++) {
+
+    if (!strategy1.detectTrend(pullbackList, stock).ok) {
+        return result;
+    }
+
+    let pullbackData = pullbackList[pullbackList.length - 1];
+    buyPrice = pullbackData.closePrice;
+    count = amount / buyPrice;
+    maxClosePrice = buyPrice;
+    result.tradeActions.push({ type: 'buy', date: pullbackData.date, price: buyPrice, count });
+
+
+    for (let i = pullbackIndex; i < kList.length; i++) {
         let kData = kList[i];
-        if (kData.date === '2024-12-16') {
-            console.log();
-        }
-        if (kData.date >= maxDate) {
+        if (kData.date >= option.end) {
             break;
         }
-        if (status === 'forBuy') {
-            if (kData.closePrice < prevMax.maxClosePrice) {
-                continue;
-            }
-            let rate = (kData.closePrice - prevMax.maxClosePrice) / prevMax.maxClosePrice;
-            if (rate > 0.05) {
-                break;
-            }
-            count = amount / kData.closePrice;
-            buyPrice = kData.closePrice;
-            maxClosePrice = buyPrice;
-            status = 'forSell';
-            result.tradeActions.push({ type: 'buy', date: kData.date, price: buyPrice, count });
-        } else if (status === 'forSell') {
-            if (kData.closePrice > maxClosePrice) {
-                maxClosePrice = kData.closePrice;
-            }
-            let rate = (kData.closePrice - buyPrice) / buyPrice;
-            if (kData.lowPrice < prevMax.maxClosePrice * 0.99) {
-                // 突破失败，卖出
-                result.tradeActions.push({ type: 'sell', date: kData.date, price: kData.lowPrice, count });
-                // result.stopPrice = kData.lowPrice;
-                break;
-            }
-            if (rate > maxRate) {
-                maxRate = rate;
-            }
-            if (maxRate >= 0.1 && rate <= maxRate / 2) {
-                // 已经获得的利润，回撤了一半利润，卖出
-                result.tradeActions.push({ type: 'sell', date: kData.date, price: kData.closePrice, count });
-                break;
-            }
-            let rate2 = (maxClosePrice - kData.closePrice) / maxClosePrice;
-            if (rate2 >= 0.1) {
-                // 最大利润，回撤了 10% 的利润，卖出
-                result.tradeActions.push({ type: 'sell', date: kData.date, price: kData.closePrice, count });
-                break;
-            }
-        }
 
-        console.log();
+        if (kData.closePrice > maxClosePrice) {
+            maxClosePrice = kData.closePrice;
+        }
+        let rate = (kData.closePrice - buyPrice) / buyPrice;
+        if (rate > maxRate) {
+            maxRate = rate;
+        }
+        if (rate <= -0.05) {
+            // 亏损 5% 时，止损
+            result.tradeActions.push({ type: 'sell', date: kData.date, price: kData.closePrice, count });
+            break;
+        }
+        if (maxRate >= 0.1 && rate <= maxRate / 2) {
+            // 已经获得了超过 10% 的利润，回撤了一半利润，卖出
+            result.tradeActions.push({ type: 'sell', date: kData.date, price: kData.closePrice, count });
+            break;
+        }
+        let rate2 = (maxClosePrice - kData.closePrice) / maxClosePrice;
+        if (rate2 >= 0.1) {
+            // 最大利润，回撤了 10% 的利润，卖出
+            result.tradeActions.push({ type: 'sell', date: kData.date, price: kData.closePrice, count });
+            break;
+        }
     }
 
     return result
@@ -150,9 +152,6 @@ async function main() {
     let sumProfit = 0;
     for (let i = 0; i < stockList.length; i++) {
         let stock = stockList[i];
-        if (stock.zongShiZhi < 100) {
-            continue;
-        }
         if (stock.stockName.indexOf('银行') > 0) {
             continue;
         }
@@ -162,7 +161,11 @@ async function main() {
         if (stock.stockName.indexOf('保险') > 0) {
             continue;
         }
-        let stockResult = await buyByBreakout(db, stock, '2025-03-01', '2026-01-01');
+        let stockResult = await buyByPullback(db, stock, {
+            start: '2025-10-01',
+            end: '2026-07-23',
+            pullbackDate: '2026-03-24',
+        });
         if (!stockResult.tradeActions.length) {
             continue;
         }
