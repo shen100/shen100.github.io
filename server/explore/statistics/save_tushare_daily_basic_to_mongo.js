@@ -1,12 +1,24 @@
 import { MongoClient } from 'mongodb';
 import bluebird from 'bluebird';
-import { formatLocalYMD } from '../../util/date';
+import axios from 'axios';
+import { formatLocalYMD } from '../../util/date.js';
 import { getAllStocks } from '../allStocks.js';
 
 const uri = 'mongodb://admin:admin123@127.0.0.1:27017';
 const client = new MongoClient(uri);
 
-async function requestDailyBasic(stock) {
+let allStocks = getAllStocks();
+
+function sleep(timeout) {
+	return new Promise(resolve => setTimeout(resolve, timeout));
+}
+
+async function requestDailyBasic(collection, stock) {
+	let stockInDB = await collection.findOne({ stockFullId: stock.stockFullId});
+	if (stockInDB) {
+		return null;
+	}
+
 	let url = 'https://api.tushare.pro';
 	let before = 20; // 查询多少年前的数据
 	let startDate = formatLocalYMD(new Date(new Date().getTime() - before * 365 * 24 * 3600 * 1000)).replace(/-/g, '');
@@ -21,7 +33,7 @@ async function requestDailyBasic(stock) {
 			token: process.env.TU_SHARE_TOKEN,
 			api_name: 'daily_basic',
 			params: {
-				ts_code: stock.ts_code,
+				ts_code: stock.tsCode,
 				start_date: startDate,
 				end_date: endDate
 			}
@@ -38,19 +50,20 @@ async function requestDailyBasic(stock) {
 		}
 	});
 	return {
+		stockFullId: stock.stockFullId,
 		stockId: stock.stockId,
-		ts_code: stock.ts_code,
+		ts_code: stock.tsCode,
 		items
 	}
 }
 
-async function requestAllDailyBasic() {
+async function requestAllDailyBasic(collection) {
+	let concurrence = 200;
 	for (let i = 0; i < allStocks.length; i += concurrence) {
-		console.log('requestAllDailyBasic', i, new Date().toISOString());
 		let startTime = new Date().getTime();
 		let tasks = [];
 		for (let j = i; j < i + concurrence && j < allStocks.length; j++) {
-			tasks.push(requestDailyBasic(allStocks[j]));
+			tasks.push(requestDailyBasic(collection, allStocks[j]));
 		}
 		let list = await Promise.all(tasks);
 		for (let stock of list) {
@@ -60,39 +73,10 @@ async function requestAllDailyBasic() {
 			if (!(stock.items && stock.items.length)) {
 				continue;
 			}
-			// 用最新的市值来对公司进行分类，分到同一类的公司, 计算它们每天的市值合计、平均指数
-			// total_mv 总市值 （万元）
-			const newTotalMV = stock.items[stock.items.length - 1].total_mv;
-			let indexNum = '';
-			if (newTotalMV < 100) {
-				indexNum = 'index0';
-			} else if (newTotalMV < 500) {
-				indexNum = 'index1';
-			} else if (newTotalMV < 1000) {
-				indexNum = 'index2';
-			} else if (newTotalMV < 2000) {
-				indexNum = 'index3';
-			} else if (newTotalMV < 5000) {
-				indexNum = 'index4';
-			} else if (newTotalMV < 10000) {
-				indexNum = 'index5';
-			} else {
-				indexNum = 'index6';
-			}
-			stock.items.forEach(item => {
-				compositeIndex[indexNum][item.trade_date] = compositeIndex[indexNum][item.trade_date] || {
-					amount: 0,
-					count: 0
-				};
-				compositeIndex['index'][item.trade_date] = compositeIndex['index'][item.trade_date] || {
-					amount: 0,
-					count: 0
-				};
-				compositeIndex[indexNum][item.trade_date].count += 1;
-				compositeIndex[indexNum][item.trade_date].amount += item.total_mv;
-				compositeIndex['index'][item.trade_date].count += 1;
-				compositeIndex['index'][item.trade_date].amount += item.total_mv;
-			});
+			const result = await collection.insertOne(stock);
+
+            console.log(new Date().toISOString(), '📝 插入成功:', i, ' ', result.insertedId);
+            console.log();
 		}
 		let endTime = new Date().getTime();
 		let timeout = 60 * 1000 - (endTime - startTime);
@@ -103,6 +87,7 @@ async function requestAllDailyBasic() {
 		await sleep(timeout);
 	}
 }
+
 async function main() {
     try {
         await client.connect();
@@ -111,7 +96,7 @@ async function main() {
         const db = client.db('mytrade');
         const collection = db.collection('tushare_daily_basic');
 
-        
+        await requestAllDailyBasic(collection);
 
     } catch (error) {
         console.error('❌ 错误:', error);
