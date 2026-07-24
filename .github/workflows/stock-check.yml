@@ -34,6 +34,6 @@ jobs:
         run: npm install
 
       - name: Run stock API check
-        run: node ./schedule/checkStock.js
+        run: node ./server/checkStock.js
 
 

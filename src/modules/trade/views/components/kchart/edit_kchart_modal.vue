@@ -5,7 +5,8 @@
 		:title="`编辑 ${props.stock?.stockName} 的K线`" :width="600">
 		<Form :label-width="100">
             <FormItem label="标星">
-                <Radio v-model="data.editModelData.isStar">⭐️</Radio>
+                <!-- <Radio v-model="data.editModelData.isStar">⭐️</Radio> -->
+                <Checkbox v-model="data.editModelData.isStar">⭐️</Checkbox>
 			</FormItem>
 			<FormItem label="最高参考价">
 				<InputNumber :max="100000000" :min="-100000000" :step="0.0001" v-model="data.editModelData.highPrice" style="width: 100px"/>

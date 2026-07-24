@@ -364,6 +364,7 @@ async function requestAllDailyBasic() {
 				continue;
 			}
 			// 用最新的市值来对公司进行分类，分到同一类的公司, 计算它们每天的市值合计、平均指数
+			// total_mv 总市值 （万元）
 			const newTotalMV = stock.items[stock.items.length - 1].total_mv;
 			let indexNum = '';
 			if (newTotalMV < 100) {
