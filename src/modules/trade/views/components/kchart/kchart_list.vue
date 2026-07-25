@@ -2,8 +2,11 @@
     <div>
         <Card class="kcharts-type-card">
             <div style="display: flex;">
-                <Select v-model="data.kChartLocalKey" @on-change="onLocalKeyChange" style="width: 300px">
+                <Select v-model="data.kChartLocalKey" @on-change="onLocalKeyChange" style="width: 280px">
                     <Option v-for="item in data.localKeys" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                </Select>
+                <Select v-if="data.kChartLocalKey === 'tradeAllFullIdStocks'" v-model="data.selectShiZhiIndex" @on-change="onSelectShiZhiChange" style="width: 200px; margin-left: 10px;">
+                    <Option v-for="item in data.selects" :value="item.value" :key="item.value">{{ item.label }}</Option>
                 </Select>
                 <div class="date-label" style="margin-left: 10px;">开始日期</div>
                 <DatePicker :model-value="data.start"
@@ -19,9 +22,9 @@
                     <Button @click="onTypeChange('month')" :type="data.type === 'month' ? 'primary' : 'default'">月</Button>
                     <Button @click="onTypeChange('year')" :type="data.type === 'year' ? 'primary' : 'default'">年</Button>
                 </ButtonGroup>
-                <Input v-model="data.stockInput" @on-clear="onClearStockInput" clearable placeholder="股票" style="width: 200px; margin-left: 15px" />
+                <Input v-model="data.myFilterData.stockInput" @on-clear="onClearStockInput" clearable placeholder="股票" style="width: 200px; margin-left: 15px" />
                 <Button type="primary" @click="onSearch" icon="ios-search" style="margin-left: 15px">搜素</Button>
-                <div class="new-price-box">
+                <div v-if="data.kChartLocalKey === 'tradeInvestedStocks'" class="new-price-box">
                     <Checkbox v-model="data.isNewPriceMode" @on-change="isNewPriceModeChange">只看最新涨幅</Checkbox>
                 </div>
                 <div class="space-all"></div>
@@ -46,10 +49,14 @@
 
 <script setup>
 import { nextTick, onMounted, ref, watch, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router'
 import KChart from './kchart.vue';
 import { formatLocalYMD, parseLocalYMDString } from '../../../util/date';
 import { replaceAllSpace, trim } from '../../../util/str';
 import StocksUnionModal from './stocks_union_modal.vue';
+
+
+const route = useRoute()
 
 const emit = defineEmits([
     'start-change', 
@@ -58,7 +65,8 @@ const emit = defineEmits([
     'local-key-change', 
     'stock-search', 
     'stocks-union',
-    'stocks-remove-potential'
+    'stocks-remove-potential',
+    'filter-shizhi'
 ]);
 
 const itemRefs = ref([]);
@@ -122,10 +130,63 @@ let data = ref({
     stockId: '',
     stockFullId: '',
     stockName: '',
-    stockInput: '',
     unionModalVisible: false,
-    isNewPriceMode: false
+    isNewPriceMode: false,
+    myFilterData: {
+        stockInput: '',
+        filterShiZhi: {
+            minValue: -1,
+            maxValue: 1000000,
+            value: '-1'
+        }
+    },
+    selects: [
+        {
+            value: '-1',
+            range: [-1, 1000000],
+            label: '不过滤市值'
+        },
+        {
+            value: '0',
+            range: [0, 100],
+            label: '< 100 亿'
+        },
+        {
+            value: '1',
+            range: [100, 500],
+            label: '>= 100亿 且 < 500亿'
+        },
+        {
+            value: '2',
+            range: [500, 1000],
+            label: '>= 500亿 且 < 1000亿'
+        },
+        {
+            value: '3',
+            range: [1000, 2000],
+            label: '>= 1000亿 且 < 2000亿'
+        },
+        {
+            value: '4',
+            range: [2000, 5000],
+            label: '>= 2000亿 且 < 5000亿'
+        },
+        {
+            value: '5',
+            range: [5000, 10000],
+            label: '>= 5000亿 且 < 1 万亿'
+        },
+        {
+            value: '6',
+            range: [10000, 1000000],
+            label: '>= 万亿'
+        }
+    ],
+    selectShiZhiIndex: '-1'
 })
+
+
+console.log('-------------- init~~~', JSON.stringify(data.value.myFilterData));
 
 function onLocalKeyChange(key) {
     localStorage.setItem('tradeKChartLocalKey', key)
@@ -139,7 +200,13 @@ onMounted(async () => {
             break;
         }
     }
+    console.log('onMounted');
     nextTick(() => {
+        console.log('nextTick', data.value.myFilterData?.filterShiZhi.value);
+        data.value.selectShiZhiIndex = data.value.myFilterData?.filterShiZhi.value;
+        console.log('selectShiZhiIndex', data.value.selectShiZhiIndex);
+
+
         data.value.kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
         data.value.type = props.type || data.value.type;
         data.value.start = props.start || data.value.start;
@@ -190,9 +257,24 @@ watch(
     }
 )
 
-watch(() => props.filterData?.stockInput, (newVal) => {
-    data.value.stockInput = newVal || ''
+watch(() => props.filterData, (newVal) => {
+    console.log('watch props.filterData',  JSON.stringify(props.filterData));
+    if (newVal) {
+        data.value.myFilterData = newVal;
+    }
 })
+
+
+// watch(() => props.filterData?.stockInput, (newVal) => {
+//     data.value.myFilterData.stockInput = newVal || '';
+// })
+
+// watch(() => props.filterData?.filterShiZhi, (newVal) => {
+//     console.log('--------------2222', newVal);
+//     // data.value.myFilterData.filterShiZhi = newVal || { minValue: -1, maxValue: 1000000, value: '-1' };
+
+//     // console.log('--------------2222', data.value.myFilterData.filterShiZhi.value);
+// })
 
 function onStartDateChange(dateStr, dateType, type) {
     data.value.start = dateStr;
@@ -275,18 +357,14 @@ async function onRequest(type, stocks) {
 }
 
 function onSearch() {
-    let filterData = null;
-    let stockInput = trim(data.value.stockInput || '');
-    if (stockInput.length > 0) {
-        filterData = {
-            stockInput
-        }
-    }
-    emit('stock-search', filterData);
+    console.log('data.value.myFilterData.stockInput', data.value.myFilterData.stockInput);
+    data.value.myFilterData.stockInput = trim(data.value.myFilterData.stockInput || '');
+    emit('stock-search', data.value.myFilterData);
 }
 
 function onClearStockInput() {
-    emit('stock-search', null);
+    data.value.myFilterData.stockInput = '';
+    emit('stock-search', data.value.myFilterData);
 }
 
 function onShowUnionStocks() {
@@ -339,6 +417,21 @@ async function isNewPriceModeChange(value) {
         });
     }
     onRequest(data.value.type, stocks);
+}
+
+function onSelectShiZhiChange(selectShiZhiIndex) {
+    console.log('onSelectShiZhiChange', selectShiZhiIndex,  JSON.stringify(data.value.myFilterData));
+    for (let i = 0; i < data.value.selects.length; i++) {
+        if (data.value.selects[i].value === selectShiZhiIndex) {
+            data.value.myFilterData.filterShiZhi = {
+                value: selectShiZhiIndex,
+                minValue: data.value.selects[i].range[0],
+                maxValue: data.value.selects[i].range[1]
+            };
+            break;
+        }
+    }
+    emit('filter-shizhi', data.value.myFilterData)
 }
 </script>
 

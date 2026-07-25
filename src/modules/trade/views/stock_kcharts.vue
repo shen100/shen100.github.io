@@ -12,6 +12,7 @@
             @local-key-change="onLocalKeyChange"
             @stock-search="onStockSearch"
             @stocks-union="onStocksUion"
+            @filter-shizhi="onFilterShiZhi"
             @stocks-remove-potential="onStocksRemovePotential"></KChartList>
         <div class="page-container">
             <Page @on-change="onPageChange" :modelValue="data.page" :page-size="data.pageSize" :total="data.total" simple />
@@ -28,6 +29,8 @@ import { formatLocalYMD } from '../util/date';
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
+
+let kChartLocalKey;
 
 let data = ref({
     type: 'day',
@@ -63,6 +66,29 @@ function init() {
     }
     if (settings.filterData) {
         data.value.filterData = settings.filterData;
+        console.log('parent onMounted stock_kcharts ', JSON.stringify(data.value.filterData));
+    }
+
+    if (route.query.selectShiZhiIndex) {
+        settings.filterData = settings.filterData || {
+            stockInput: '',
+            filterShiZhi: {
+                minValue: -1,
+                maxValue: 1000000,
+                value: '-1'
+            }
+        };
+        settings.filterData.filterShiZhi.value = route.query.selectShiZhiIndex;
+        settings.filterData.filterShiZhi.minValue = parseInt(route.query.minValue) || 0;
+        settings.filterData.filterShiZhi.maxValue = parseInt(route.query.maxValue) || 0;
+        data.value.filterData = settings.filterData;
+        saveSettings();
+    }
+
+    kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
+    if (!kChartLocalKey) {
+        kChartLocalKey = 'tradeAllFullIdStocks';
+        localStorage.setItem('tradeKChartLocalKey', kChartLocalKey)
     }
 
     let stocks = getStocks();
@@ -98,11 +124,6 @@ function onPageChange(page) {
 }
 
 function getStocks() {
-    let kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
-    if (!kChartLocalKey) {
-        kChartLocalKey = 'tradeAllFullIdStocks';
-        localStorage.setItem('tradeKChartLocalKey', kChartLocalKey)
-    }
     let stocks = JSON.parse(localStorage.getItem(kChartLocalKey) || '[]');
     stocks = filterStocks(stocks);
     stocks.sort((a, b) => {
@@ -138,22 +159,26 @@ function onStockSearch(filterData) {
 
 function filterStocks(stocks) {
     let filterData = data.value.filterData;
-    let theStocks = [];
-    for (let i = 0; i < stocks.length; i++) {
-        let stock = stocks[i];
-        if (filterData && filterData.stockInput) {
-            if (stock.stockId.indexOf(filterData.stockInput) >= 0) {
-                theStocks.push(stock);
-                continue;
+    let theStocks = stocks.slice(0);
+
+    if (filterData && filterData.stockInput) {
+        for (let i = theStocks.length - 1; i >= 0; i--) {
+            const stock = theStocks[i];
+            if (stock.stockId.indexOf(filterData.stockInput) < 0 && stock.stockName.indexOf(filterData.stockInput) < 0) {
+                theStocks.splice(i, 1);
             }
-            if (stock.stockName.indexOf(filterData.stockInput) >= 0) {
-                theStocks.push(stock);
-                continue;
-            }
-        } else {
-            theStocks.push(stock);
         }
     }
+
+    if (filterData && filterData.filterShiZhi) {
+        for (let i = theStocks.length - 1; i >= 0; i--) {
+            const stock = theStocks[i];
+            if (!(stock.zongShiZhi >= filterData.filterShiZhi.minValue && stock.zongShiZhi < filterData.filterShiZhi.maxValue)) {
+                theStocks.splice(i, 1);
+            }
+        }
+    }
+
     return theStocks;
 }
 
@@ -182,6 +207,18 @@ function saveSettings() {
 function onStocksRemovePotential() {
 	let page = 1;
     data.value.page = 1;
+    let stocks = getStocks();
+    
+    let start = (page - 1) * data.value.pageSize;
+    data.value.curStocks = stocks.slice(start, start + data.value.pageSize);
+    window.scrollTo(0, 0);
+    saveSettings();
+}
+
+function onFilterShiZhi(filterData) {
+    let page = 1;
+    data.value.page = page;
+    data.value.filterData = filterData;
     let stocks = getStocks();
     
     let start = (page - 1) * data.value.pageSize;

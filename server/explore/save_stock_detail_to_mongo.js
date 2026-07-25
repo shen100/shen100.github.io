@@ -28,9 +28,24 @@ async function main() {
         await bluebird.map(myItems, async function (stockData, index) {
             let stockDetail = await requestStockDetail(stockDetailJSONMap, stockData);
 
-            const result = await collection.insertOne(stockDetail);
+            const filter = { stockFullId: stockDetail.stockFullId };
+            const updateDoc = {
+                $set: {
+                    stockId : stockDetail.stockId,
+                    stockFullId: stockDetail.stockFullId,
+                    stockName: stockDetail.stockName,
+                    zongShiZhi: stockDetail.zongShiZhi,
+                },
+                $setOnInsert: {
+                    createdAt: new Date()  // 只有插入时才设置
+                }
+            };
+            const result = await collection.updateOne(filter, updateDoc, { upsert: true });
 
-            console.log('📝 插入成功:', index, ' ', result.insertedId);
+            if (stockDetail.stockName === "*ST康佳A") {
+                console.log();
+            }
+            console.log('📝 更新成功:', index, ' result.upsertedId', result.upsertedId);
             console.log();
 
         }, { concurrency: 20 });

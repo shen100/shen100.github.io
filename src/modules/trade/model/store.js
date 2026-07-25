@@ -274,9 +274,6 @@ export default {
             localStorage.setItem('tradeInvestedStocks', JSON.stringify(investedStocks));
         }
     },
-    updateStockMarketStats: function(stats) {
-        localStorage.setItem('tradeStockMarketStats', JSON.stringify(stats));
-    },
     updateCompositeIndex: function(compositeIndex) {
         localStorage.setItem('tradeCompositeIndex', JSON.stringify(compositeIndex));
     }

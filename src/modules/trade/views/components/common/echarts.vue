@@ -6,6 +6,8 @@
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import * as echarts from 'echarts'
 
+const emit = defineEmits(['click']);
+
 const props = defineProps({
     options: {
         type: Object,
@@ -28,7 +30,9 @@ let chartInstance = null
 const initChart = () => {
     if (chartRef.value) {
         chartInstance = echarts.init(chartRef.value)
-        chartInstance.setOption(props.options)
+        chartInstance.setOption(props.options);
+
+        chartInstance.on('click', onPieClick);
     }
 }
 
@@ -44,6 +48,17 @@ const resizeChart = () => {
     }
 }
 
+function onPieClick(params) {
+    // alert(
+    //             '点击了：' + params.name + '\n' +
+    //             'index：' + params.data.selectIndex + '\n' +
+    //             '数值：' + params.value + '\n' +
+    //             '占比：' + params.percent + '%'
+    //         );
+    //         console.log('点击事件触发：', params);
+    emit('click', params.data);
+}
+
 onMounted(() => {
     initChart()
     window.addEventListener('resize', resizeChart)
@@ -51,6 +66,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     if (chartInstance) {
+        chartInstance.off('click', onPieClick);
         chartInstance.dispose()
         chartInstance = null
     }

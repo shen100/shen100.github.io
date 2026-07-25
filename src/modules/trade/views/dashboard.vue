@@ -2,40 +2,16 @@
     <div>
 		<div style="display: flex; gap: 20px; margin-bottom: 20px;">
 			<Card style="flex: 1">
-				<ECharts v-if="shiZhiPiChartOptions.series.length" :options="shiZhiPiChartOptions" />
+				<ECharts v-if="shiZhiCountPiChartOptions.series.length" @click="onShiZhiPieChartClick" :options="shiZhiCountPiChartOptions" />
+				<div style="display: flex;align-items: center; justify-content: right;">
+					<Icon class="refresh" @click="requestAllStockDetail" type="md-refresh" style="cursor: pointer;" />
+					<div class="updated-at">{{ data.updatedAt1 ? '更新于 ' + data.updatedAt1 : '' }}</div>
+				</div>
 			</Card>
-			<Card style="flex: 1"></Card>
+			<Card style="flex: 1">
+				<ECharts v-if="shiZhiAmountPiChartOptions.series.length" @click="onShiZhiPieChartClick" :options="shiZhiAmountPiChartOptions" />	
+			</Card>
 		</div>
-		<Card>
-			<div class="total-shizhi-txt">
-				<div v-if="data.shiZhi && data.shiZhi.amount">总市值: {{ (data.shiZhi.amount / 10000).toFixed(2) }}万亿 &nbsp;({{ data.shiZhi.count }}家) </div>
-				<Icon class="refresh" @click="requestAllStockDetail" type="md-refresh" style="cursor: pointer;" />
-				<div class="updated-at">{{ data.updatedAt1 ? '更新于 ' + data.updatedAt1 : '' }}</div>
-			</div>
-			<Table border :columns="data.columns" :data="data.shiZhiList">
-				<template #shiZhi0="{ row }">
-					<div class="goto-kcharts" @click="gotoKCharts('shiZhi0')">{{ row.shiZhi0.count }}家 ({{ row.shiZhi0.percent }}%)</div>
-				</template>
-				<template #shiZhi1="{ row }">
-					<div class="goto-kcharts" @click="gotoKCharts('shiZhi1')">{{ row.shiZhi1.count }}家 ({{ row.shiZhi1.percent }}%)</div>
-				</template>
-				<template #shiZhi2="{ row }">
-					<div class="goto-kcharts" @click="gotoKCharts('shiZhi2')">{{ row.shiZhi2.count }}家 ({{ row.shiZhi2.percent }}%)</div>
-				</template>
-				<template #shiZhi3="{ row }">
-					<div class="goto-kcharts" @click="gotoKCharts('shiZhi3')">{{ row.shiZhi3.count }}家 ({{ row.shiZhi3.percent }}%)</div>
-				</template>
-				<template #shiZhi4="{ row }">
-					<div class="goto-kcharts" @click="gotoKCharts('shiZhi4')">{{ row.shiZhi4.count }}家 ({{ row.shiZhi4.percent }}%)</div>
-				</template>
-				<template #shiZhi5="{ row }">
-					<div class="goto-kcharts" @click="gotoKCharts('shiZhi5')">{{ row.shiZhi5.count }}家 ({{ row.shiZhi5.percent }}%)</div>
-				</template>
-				<template #shiZhi6="{ row }">
-					<div class="goto-kcharts" @click="gotoKCharts('shiZhi6')">{{ row.shiZhi6.count }}家 ({{ row.shiZhi6.percent }}%)</div>
-				</template>
-			</Table>
-		</Card>
 		<Card style="margin: 20px 0;">
 			<div class="total-shizhi-txt">
 				<div>大盘总市值(单位: 万亿)</div>
@@ -69,69 +45,6 @@ import { useRouter } from 'vue-router';
 const router = useRouter()
 
 let data = ref({
-	columns: [
-		{
-			title: '小于100亿',
-			slot: 'shiZhi0',
-		},
-		{
-			title: '[100亿, 500亿)',
-			slot: 'shiZhi1'
-		},
-		{
-			title: '[500亿, 1000亿)',
-			slot: 'shiZhi2'
-		},
-		{
-			title: '[1000亿, 2000亿)',
-			slot: 'shiZhi3'
-		},
-		{
-			title: '[2000亿, 5000亿)',
-			slot: 'shiZhi4'
-		},
-		{
-			title: '[5000亿, 1万亿)',
-			slot: 'shiZhi5'
-		},
-		{
-			title: '1万亿以上',
-			slot: 'shiZhi6'
-		}
-	],
-	shiZhi0: { // 100亿以下
-		count: 0,
-		percent: 0,
-	},
-	shiZhi1: { // 100亿-500亿
-		count: 0,
-		percent: 0,
-	},
-	shiZhi2: { // 500亿-1000亿
-		count: 0,
-		percent: 0,
-	},
-	shiZhi3: { // 1000亿-2000亿
-		count: 0,
-		percent: 0,
-	},
-	shiZhi4: { // 2000亿-5000亿
-		count: 0,
-		percent: 0,
-	},
-	shiZhi5: { // 5000亿-1万亿
-		count: 0,
-		percent: 0,
-	},
-	shiZhi6: { // 1万亿以上
-		count: 0,
-		percent: 0,
-	},
-	shiZhiList: [], // 市值分布列表
-	shiZhi: {
-		amount: 0, // 所有公司的总市值
-		count: 0, // 一共有多少个公司
-	},
 	updatedAt1: '',
 	compositeIndex: null, // 综合指数
 	updatedAt2: '',
@@ -139,15 +52,58 @@ let data = ref({
     shiZhiEndDateStr: formatLocalYMD(new Date()), // 2025-06-12
 });
 
-const shiZhiPiChartOptions = ref({
+const shiZhiCountPiChartOptions = ref({
   title: {
-    text: '市值分布',
+    text: '公司分布(按公司数)',
 	subtext: '',
     left: 'center'
   },
   tooltip: {
     trigger: 'item',
 	formatter: '{b}<br/>公司数：{c}<br/>百分比：{d}%'
+  },
+  series: [
+    {
+      type: 'pie',
+      radius: '50%',
+      data: [],
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.5)'
+        }
+      }
+    }
+  ]
+});
+
+const shiZhiAmountPiChartOptions = ref({
+  title: {
+    text: '公司分布(按总市值)',
+	subtext: '',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'item',
+	// formatter: '{b}<br/>总市值：{c}<br/>百分比：{d}%'
+	formatter: function(params) {
+		// params 包含 name, value, percent 等
+		const name = params.name;
+		const value = params.value; // 单位：亿元
+		// 转为万亿（如果数值 >= 10000 亿）
+		let displayValue;
+		let unit = '亿元';
+		if (value >= 10000) {
+			displayValue = (value / 10000).toFixed(1); // 保留一位小数
+			unit = '万亿';
+		} else {
+			displayValue = value.toFixed(0);
+			unit = '亿';
+		}
+		// 百分比使用 params.percent，自带 %
+    return `${name}<br/>总市值：${displayValue} ${unit}<br/>百分比：${params.percent}%`;
+  }
   },
   series: [
     {
@@ -190,22 +146,33 @@ const chartOptions = ref({
 });
 
 onMounted(async () => {
-	if (store.stockMarketStats) {
-		data.value.shiZhi = store.stockMarketStats.shiZhi;
-		data.value.shiZhiList = store.stockMarketStats.shiZhiList;
-		console.log('store.stockMarketStats.shiZhiList', store.stockMarketStats.shiZhiList);
-		data.value.updatedAt1 = utcStringToLocalString(store.stockMarketStats.updatedAt);
-
-		let arr = [];
-		for (let key in store.stockMarketStats.shiZhiList[0]) {
-			let item = store.stockMarketStats.shiZhiList[0][key];
-			arr.push({ value: item.count, name: key });
-		}
-		shiZhiPiChartOptions.value.title.subtext = '总市值 ' + (store.stockMarketStats.shiZhi.amount / 10000).toFixed(2) + '万亿';
-		shiZhiPiChartOptions.value.series[0].data = arr;
-	}
+	updateShiZhiPiChart();
 	updateChart();
 });
+
+function updateShiZhiPiChart(resData) {
+	if (!resData) {
+		let resDataStr = localStorage.getItem('tradeStockMarketStats') || 'null';
+		resData = JSON.parse(resDataStr);
+	}
+	if (!resData) {
+		return;
+	}
+	data.value.updatedAt1 = utcStringToLocalString(resData.updatedAt);
+	let arr = [];
+	let arr2 = [];
+	for (let i = 0; i < resData.shiZhiList.length; i++) {
+		let item = resData.shiZhiList[i];
+		arr.push({ value: item.count, name: item.name, selectIndex: i + '', minValue: item.minValue, maxValue: item.maxValue });
+		arr2.push({ value: item.amount, name: item.name, selectIndex: i + '', minValue: item.minValue, maxValue: item.maxValue });
+	}
+	console.log(arr);
+	shiZhiCountPiChartOptions.value.title.subtext = '总市值 ' + (resData.shiZhiData.amount / 10000).toFixed(2) + '万亿';
+	shiZhiCountPiChartOptions.value.series[0].data = arr;
+
+	shiZhiAmountPiChartOptions.value.title.subtext = '总市值 ' + (resData.shiZhiData.amount / 10000).toFixed(2) + '万亿';
+	shiZhiAmountPiChartOptions.value.series[0].data = arr2;
+}
 
 function updateChart() {
 	if (!store.compositeIndex) {
@@ -261,25 +228,7 @@ function updateChart() {
 	chartOptions.value.series = series;
 }
 
-function resetData() {
-	const defaultData = { count: 0, percent: 0 };
-	data.value.shiZhiList = [];
-	data.value.shiZhi0 = { ...defaultData };
-	data.value.shiZhi1 = { ...defaultData };
-	data.value.shiZhi2 = { ...defaultData };
-	data.value.shiZhi3 = { ...defaultData };
-	data.value.shiZhi4 = { ...defaultData };
-	data.value.shiZhi5 = { ...defaultData };
-	data.value.shiZhi6 = { ...defaultData };
-	data.value.shiZhi = {
-		amount: 0,
-		count: 0,
-	};
-}
-
 async function requestAllStockDetail() {
-	resetData();
-
 	const res = await axios({
 		method: 'get',
 		url: 'http://127.0.0.1:3000/api/statistics/shizhi'
@@ -291,93 +240,16 @@ async function requestAllStockDetail() {
 		});
 		return
 	}
-	let theData = res.data.data;
+	let resData = res.data.data;
+	resData.updatedAt = new Date().toISOString();
 
-	let arr = [];
-	for (let key in theData.shiZhiList) {
-		let item = theData.shiZhiList[key];
-		arr.push({ value: item.count, name: item.name });
-	}
-	shiZhiPiChartOptions.value.title.subtext = '总市值 ' + (theData.shiZhi.amount / 10000).toFixed(2) + '万亿';
-	shiZhiPiChartOptions.value.series[0].data = arr;
+	updateShiZhiPiChart(resData);
 
-	return;
+	delete resData.stocks;
 
+	localStorage.setItem('tradeStockMarketStats', JSON.stringify(resData));
 
-	let allStocks = store.allStocks || [];
-	let concurrence = 100;
-	let allStocksWithZongShiZhi = [];
-	for (let i = 0; i < allStocks.length; i += concurrence) {
-		let tasks = [];
-		console.log('requestAllStockDetail', i, new Date().toISOString());
-		for (let j = i; j < i + concurrence && j < allStocks.length; j++) {
-			tasks.push(requestStockDetail(allStocks[j]));
-		}
-		let list = await Promise.all(tasks);
-		for (let stock of list) {
-			if (stock) {
-				allStocksWithZongShiZhi.push(stock);
-				data.value.shiZhi.count += 1;
-				data.value.shiZhi.amount += stock.zongShiZhi || 0;
-				if (stock.zongShiZhi < 100) {
-					data.value.shiZhi0.count += 1;
-				} else if (stock.zongShiZhi < 500) {
-					data.value.shiZhi1.count += 1;
-				} else if (stock.zongShiZhi < 1000) {
-					data.value.shiZhi2.count += 1;
-				} else if (stock.zongShiZhi < 2000) {
-					data.value.shiZhi3.count += 1;
-				} else if (stock.zongShiZhi < 5000) {
-					data.value.shiZhi4.count += 1;
-				} else if (stock.zongShiZhi < 10000) {
-					data.value.shiZhi5.count += 1;
-				} else {
-					data.value.shiZhi6.count += 1;
-				}
-			}
-		}
-		let theCount = data.value.shiZhi.count;
-		data.value.shiZhi0.percent = (data.value.shiZhi0.count / theCount * 100).toFixed(2);
-		data.value.shiZhi1.percent = (data.value.shiZhi1.count / theCount * 100).toFixed(2);
-		data.value.shiZhi2.percent = (data.value.shiZhi2.count / theCount * 100).toFixed(2);
-		data.value.shiZhi3.percent = (data.value.shiZhi3.count / theCount * 100).toFixed(2);
-		data.value.shiZhi4.percent = (data.value.shiZhi4.count / theCount * 100).toFixed(2);
-		data.value.shiZhi5.percent = (data.value.shiZhi5.count / theCount * 100).toFixed(2);
-		data.value.shiZhi6.percent = (data.value.shiZhi6.count / theCount * 100).toFixed(2);
-	}
-	data.value.shiZhiList = [
-		{
-			shiZhi0: data.value.shiZhi0,
-			shiZhi1: data.value.shiZhi1,
-			shiZhi2: data.value.shiZhi2,
-			shiZhi3: data.value.shiZhi3,
-			shiZhi4: data.value.shiZhi4,
-			shiZhi5: data.value.shiZhi5,
-			shiZhi6: data.value.shiZhi6
-		}
-	];
-	store.updateStockMarketStats({
-		shiZhi: data.value.shiZhi,
-		shiZhiList: data.value.shiZhiList,
-		updatedAt: new Date().toISOString()
-	});
-	store.setAllStocksWithZongShiZhi(allStocksWithZongShiZhi);
 	console.log('requestAllStockDetail done');
-}
-
-async function requestStockDetail(stock) {
-	let url = `https://sqt.gtimg.cn/?q=${stock.stockFullId}&fmt=json&app=wzq&t=${Date.now()}`;
-    let res = await axios.get(url);
-	if (!(res.data && res.data[stock.stockFullId])) {
-		return null;
-	}
-	let arr = res.data[stock.stockFullId] || [];
-	return {
-		stockId: stock.stockId,
-		stockFullId: stock.stockFullId,
-		stockName: stock.stockName,
-		zongShiZhi: Number(arr[45] || '0'), // 总市值
-	}
 }
 
 async function requestAllDailyBasic() {
@@ -421,26 +293,15 @@ function onShiZhiEndDateChange(dateStr) {
 	updateChart();
 }
 
-function gotoKCharts(shiZhiType) {
-	let allStocks = store.getAllStocksWithZongShiZhi() || [];
-	let list = [];
-	if (shiZhiType === 'shiZhi0') {
-		list = allStocks.filter(stock => stock.zongShiZhi < 100);
-	} else if (shiZhiType === 'shiZhi1') {
-		list = allStocks.filter(stock => stock.zongShiZhi >= 100 && stock.zongShiZhi < 500);
-	} else if (shiZhiType === 'shiZhi2') {
-		list = allStocks.filter(stock => stock.zongShiZhi >= 500 && stock.zongShiZhi < 1000);
-	} else if (shiZhiType === 'shiZhi3') {
-		list = allStocks.filter(stock => stock.zongShiZhi >= 1000 && stock.zongShiZhi < 2000);
-	} else if (shiZhiType === 'shiZhi4') {
-		list = allStocks.filter(stock => stock.zongShiZhi >= 2000 && stock.zongShiZhi < 5000);
-	} else if (shiZhiType === 'shiZhi5') {
-		list = allStocks.filter(stock => stock.zongShiZhi >= 5000 && stock.zongShiZhi < 10000);
-	} else if (shiZhiType === 'shiZhi6') {
-		list = allStocks.filter(stock => stock.zongShiZhi >= 10000);
-	}
-	store.setSelectedStocks(list);
-	router.push({ path: '/trade/selected_kcharts' });
+function onShiZhiPieChartClick(chartData) {
+	console.log('onShiZhiPieChartClick', chartData);
+	let query = {
+		selectShiZhiIndex: chartData.selectIndex,
+		minValue: chartData.minValue,
+		maxValue: chartData.maxValue,
+	};
+	console.log('query', query);
+	router.push({ path: `/trade/tracked_kcharts`, query });
 }
 </script>
 
