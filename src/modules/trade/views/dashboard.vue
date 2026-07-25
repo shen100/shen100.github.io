@@ -1,5 +1,11 @@
 <template>
     <div>
+		<div style="display: flex; gap: 20px; margin-bottom: 20px;">
+			<Card style="flex: 1">
+				<ECharts v-if="shiZhiPiChartOptions.series.length" :options="shiZhiPiChartOptions" />
+			</Card>
+			<Card style="flex: 1"></Card>
+		</div>
 		<Card>
 			<div class="total-shizhi-txt">
 				<div v-if="data.shiZhi && data.shiZhi.amount">总市值: {{ (data.shiZhi.amount / 10000).toFixed(2) }}万亿 &nbsp;({{ data.shiZhi.count }}家) </div>
@@ -32,19 +38,21 @@
 		</Card>
 		<Card style="margin: 20px 0;">
 			<div class="total-shizhi-txt">
-				<div>大盘市值</div>
+				<div>大盘总市值(单位: 万亿)</div>
 				<Icon class="refresh" @click="requestAllDailyBasic" type="md-refresh" style="cursor: pointer;" />
 				<div class="updated-at">{{ data.updatedAt2 ? '更新于 ' + data.updatedAt2 : '' }}</div>
 			</div>
-			<ECharts v-if="chartOptions.series.length" :options="chartOptions" />
-		</Card>
-		<Card>
-			<div class="total-shizhi-txt">
-				<div>大盘指数</div>
-				<!-- <Icon class="refresh" @click="requestAllDailyBasic" type="md-refresh" style="cursor: pointer;" /> -->
-				<div class="updated-at">{{ data.updatedAt2 ? '更新于 ' + data.updatedAt2 : '' }}</div>
+			<div class="shizhi-date-box">
+				<div class="date-label" style="margin-left: 10px;">开始日期</div>
+				<DatePicker :model-value="data.shiZhiStartDateStr"
+					type="date" placeholder="Select date" style="width: 200px"
+					@on-change="onShiZhiStartDateChange"/>
+				<div class="date-label date-label-end">结束日期</div>
+				<DatePicker :model-value="data.shiZhiEndDateStr" 
+					type="date" placeholder="Select date" style="width: 200px" 
+					@on-change="onShiZhiEndDateChange" />
 			</div>
-			<ECharts v-if="zhiShuChartOptions.series.length" :options="zhiShuChartOptions" />
+			<ECharts v-if="chartOptions.series.length" :options="chartOptions" />
 		</Card>
     </div>
 </template>
@@ -52,6 +60,7 @@
 <script setup>
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
+import { Message } from 'view-ui-plus';
 import ECharts from './components/common/echarts.vue'
 import store from '../model/store';
 import { formatLocalYMD, utcStringToLocalString } from '../util/date';
@@ -125,7 +134,35 @@ let data = ref({
 	},
 	updatedAt1: '',
 	compositeIndex: null, // 综合指数
-	updatedAt2: ''
+	updatedAt2: '',
+	shiZhiStartDateStr: formatLocalYMD(new Date(new Date().getTime() - 3 * 365 * 24 * 3600 * 1000)), // '2024-09-15'
+    shiZhiEndDateStr: formatLocalYMD(new Date()), // 2025-06-12
+});
+
+const shiZhiPiChartOptions = ref({
+  title: {
+    text: '市值分布',
+	subtext: '',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'item',
+	formatter: '{b}<br/>公司数：{c}<br/>百分比：{d}%'
+  },
+  series: [
+    {
+      type: 'pie',
+      radius: '50%',
+      data: [],
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.5)'
+        }
+      }
+    }
+  ]
 });
 
 let legendData = [
@@ -139,29 +176,9 @@ const chartOptions = ref({
 	tooltip: {
 		trigger: 'axis'
 	},
-	legend: {
-		data: legendData
-	},
-	xAxis: {
-		type: 'category',
-		data: []
-	},
-	yAxis: {
-		type: 'value'
-	},
-	series: []
-});
-
-const zhiShuChartOptions = ref({
-	title: {
-		text: ' '
-	},
-	tooltip: {
-		trigger: 'axis'
-	},
-	legend: {
-		data: legendData
-	},
+	// legend: {
+	// 	data: legendData
+	// },
 	xAxis: {
 		type: 'category',
 		data: []
@@ -176,7 +193,16 @@ onMounted(async () => {
 	if (store.stockMarketStats) {
 		data.value.shiZhi = store.stockMarketStats.shiZhi;
 		data.value.shiZhiList = store.stockMarketStats.shiZhiList;
+		console.log('store.stockMarketStats.shiZhiList', store.stockMarketStats.shiZhiList);
 		data.value.updatedAt1 = utcStringToLocalString(store.stockMarketStats.updatedAt);
+
+		let arr = [];
+		for (let key in store.stockMarketStats.shiZhiList[0]) {
+			let item = store.stockMarketStats.shiZhiList[0][key];
+			arr.push({ value: item.count, name: key });
+		}
+		shiZhiPiChartOptions.value.title.subtext = '总市值 ' + (store.stockMarketStats.shiZhi.amount / 10000).toFixed(2) + '万亿';
+		shiZhiPiChartOptions.value.series[0].data = arr;
 	}
 	updateChart();
 });
@@ -188,22 +214,28 @@ function updateChart() {
 	data.value.updatedAt2 = utcStringToLocalString(store.compositeIndex.updatedAt);
 	let indexArr = [
 		'index',
-		'index0',
-		'index1',
-		'index2',
-		'index3',
-		'index4',
-		'index5',
-		'index6',
+		// 'index0',
+		// 'index1',
+		// 'index2',
+		// 'index3',
+		// 'index4',
+		// 'index5',
+		// 'index6',
 	];
 	let series = [];
-	let zhiShuSeries = [];
 	let allDates;
 	for (let i = 0; i < indexArr.length; i++) {
 		// indexData 为 { '20050620' { amount: 0, count: 0 } }
 		let indexData = store.compositeIndex[indexArr[i]];
 		let arr = [];
+		let startStr = data.value.shiZhiStartDateStr.replaceAll('-', '');
+		let endStr = data.value.shiZhiEndDateStr.replaceAll('-', '');
+		console.log('startStr ->', startStr);
+		console.log('endStr ->', endStr);
 		for (let date in indexData) {
+			if (date < startStr || date > endStr) {
+				continue;
+			}
 			arr.push({
 				date,
 				amount: indexData[date].amount,
@@ -216,11 +248,6 @@ function updateChart() {
 			type: 'line',
 			data: arr.map(item => Number(item.amount / 10000).toFixed(2)), // 转换为万亿
 		});
-		zhiShuSeries.push({
-			name: legendData[i],
-			type: 'line',
-			data: arr.map(item => parseInt(item.amount / item.count)),
-		});
 
 		if (!allDates) {
 			allDates = [];
@@ -232,9 +259,6 @@ function updateChart() {
 	console.log('allDates', allDates);
 	chartOptions.value.xAxis.data = allDates;
 	chartOptions.value.series = series;
-
-	zhiShuChartOptions.value.xAxis.data = allDates;
-	zhiShuChartOptions.value.series = zhiShuSeries;
 }
 
 function resetData() {
@@ -255,6 +279,31 @@ function resetData() {
 
 async function requestAllStockDetail() {
 	resetData();
+
+	const res = await axios({
+		method: 'get',
+		url: 'http://127.0.0.1:3000/api/statistics/shizhi'
+	});
+	if (!(res.data.code === 0 && res.data.data)) {
+		Message.error({
+			duration: 10,
+			content: `大盘市值更新失败`
+		});
+		return
+	}
+	let theData = res.data.data;
+
+	let arr = [];
+	for (let key in theData.shiZhiList) {
+		let item = theData.shiZhiList[key];
+		arr.push({ value: item.count, name: item.name });
+	}
+	shiZhiPiChartOptions.value.title.subtext = '总市值 ' + (theData.shiZhi.amount / 10000).toFixed(2) + '万亿';
+	shiZhiPiChartOptions.value.series[0].data = arr;
+
+	return;
+
+
 	let allStocks = store.allStocks || [];
 	let concurrence = 100;
 	let allStocksWithZongShiZhi = [];
@@ -332,60 +381,44 @@ async function requestStockDetail(stock) {
 }
 
 async function requestAllDailyBasic() {
-	let list = localStorage.getItem('tradeAllDailyBasic') || '[]';
-
-	let compositeIndex = {
-		index: {}, // 整个大盘的数据
-		index0: {},
-		index1: {},
-		index2: {},
-		index3: {},
-		index4: {},
-		index5: {},
-		index6: {},
-	};
-
-	for (let stock of list) {
-		// 用最新的市值来对公司进行分类，分到同一类的公司, 计算它们每天的市值合计、平均指数
-		// total_mv 总市值 （万元）
-		const newTotalMV = stock.items[stock.items.length - 1].total_mv;
-		let indexNum = '';
-		if (newTotalMV < 100) {
-			indexNum = 'index0';
-		} else if (newTotalMV < 500) {
-			indexNum = 'index1';
-		} else if (newTotalMV < 1000) {
-			indexNum = 'index2';
-		} else if (newTotalMV < 2000) {
-			indexNum = 'index3';
-		} else if (newTotalMV < 5000) {
-			indexNum = 'index4';
-		} else if (newTotalMV < 10000) {
-			indexNum = 'index5';
-		} else {
-			indexNum = 'index6';
-		}
-		stock.items.forEach(item => {
-			compositeIndex[indexNum][item.trade_date] = compositeIndex[indexNum][item.trade_date] || {
-				amount: 0,
-				count: 0
-			};
-			compositeIndex['index'][item.trade_date] = compositeIndex['index'][item.trade_date] || {
-				amount: 0,
-				count: 0
-			};
-			compositeIndex[indexNum][item.trade_date].count += 1;
-			compositeIndex[indexNum][item.trade_date].amount += item.total_mv;
-			compositeIndex['index'][item.trade_date].count += 1;
-			compositeIndex['index'][item.trade_date].amount += item.total_mv;
+	const res = await axios({
+		method: 'get',
+		url: 'http://127.0.0.1:3000/api/tushare/all_daily_basic'
+	});
+	if (!(res.data.code === 0 && res.data.data)) {
+		Message.error({
+			duration: 10,
+			content: `大盘市值更新失败`
 		});
+		return
 	}
-
 	store.updateCompositeIndex({
-		...compositeIndex,
+		...res.data.data.compositeIndex,
 		updatedAt: new Date().toISOString()
 	});
-	console.log('requestAllDailyBasic done');
+	location.reload();
+}
+
+function onShiZhiStartDateChange(dateStr) {
+	if (!store.compositeIndex) {
+		return;
+	}
+	data.value.shiZhiStartDateStr = dateStr;
+	store.updateCompositeIndex({
+		...store.compositeIndex
+	});
+	updateChart();
+}
+
+function onShiZhiEndDateChange(dateStr) {
+	if (!store.compositeIndex) {
+		return;
+	}
+	data.value.shiZhiEndDateStr = dateStr;
+	store.updateCompositeIndex({
+		...store.compositeIndex
+	});
+	updateChart();
 }
 
 function gotoKCharts(shiZhiType) {
@@ -438,5 +471,20 @@ function gotoKCharts(shiZhiType) {
 
 .goto-kcharts:hover {
 	color: #409eff;
+}
+
+.shizhi-date-box {
+	display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.date-label {
+    margin-right: 10px;
+    line-height: 32px;
+}
+
+.date-label-end {
+    margin-left: 10px;
 }
 </style>

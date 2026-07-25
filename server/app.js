@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import cors from 'cors';
 import * as mongo from './database/mongo.js';
 import * as router from './router/router.js';
 
@@ -9,6 +10,8 @@ const PORT = 3000;
 await mongo.init();
 
 // ============ 中间件配置 ============
+
+app.use(cors());
 
 // 解析 JSON 请求体
 app.use(express.json());

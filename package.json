@@ -21,6 +21,7 @@
     "axios": "^1.7.2",
     "bluebird": "^3.7.2",
     "bytemd": "^1.21.0",
+    "cors": "^2.8.6",
     "echarts": "^5.6.0",
     "express": "^5.2.1",
     "iconv-lite": "^0.7.0",
