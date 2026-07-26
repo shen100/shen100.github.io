@@ -40,9 +40,11 @@ export async function requestDayK(dayJSONMap, stock, start, end, count) {
 		convertKListToNumbers(dayJSONMap[key]);
 		return dayJSONMap[key];
     }
-    let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
+    let url = "https://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get?_var=kline_dayqfq&param="
 	url += (stock.stockFullId + ",day," + start + "," + end + "," + count + ",qfq");
     let res = await axios.get(url);
+	let str = res.data.replace('kline_dayqfq=', '');
+	let resData = JSON.parse(str);
 	/*
     [
 		"2021-03-10", 0-交易日
@@ -54,10 +56,10 @@ export async function requestDayK(dayJSONMap, stock, start, end, count) {
 	]
     */
 	let myKList = [];
-	if (res.data.data[stock.stockFullId]['qfqday']) {
-		myKList = res.data.data[stock.stockFullId].qfqday;
+	if (resData.data[stock.stockFullId]['qfqday']) {
+		myKList = resData.data[stock.stockFullId].qfqday;
     } else {
-		myKList = res.data.data[stock.stockFullId].day;
+		myKList = resData.data[stock.stockFullId].day;
     }
 
 	let todayStr = new Date().toISOString().substring(0, 10);
@@ -80,6 +82,9 @@ function convertKListToNumbers(myKList) {
         myKList[i][3] = Number(myKList[i][3]);
         myKList[i][4] = Number(myKList[i][4]);
         myKList[i][5] = Number(myKList[i][5]);
+		myKList[i][6] = myKList[i][6];
+		myKList[i][7] = Number(myKList[i][7]);
+		myKList[i][8] = Number(myKList[i][8]);
     }
 }
 

@@ -30,6 +30,24 @@
 			</div>
 			<ECharts v-if="chartOptions.series.length" :options="chartOptions" />
 		</Card>
+		<div style="margin-top: 20px; display: flex; gap: 20px;">
+			<Card style="flex: 1;">
+				<div class="total-shizhi-txt">
+					<div style="margin-right: 4px;">每日上涨股票数(和前十天每天的股价相比)</div>
+					<Tooltip content="假如股票A在7月27日的收盘价是100, 那和前十天每天的收盘价相比，100都是最大值的话，那么就把7月27日的上涨股票数加 1"
+						:max-width="300" placement="top">
+						<Icon type="ios-alert" />
+					</Tooltip>
+				</div>
+				<ECharts v-if="dailyUpCountChartOptions.series.length" :options="dailyUpCountChartOptions" />
+			</Card>
+			<Card style="flex: 1;">
+				<div class="total-shizhi-txt">
+					<div style="margin-right: 4px;">资金流向</div>
+				</div>
+				<ECharts v-if="dailyMoneyFlowChartOptions.series.length" :options="dailyMoneyFlowChartOptions" />
+			</Card>
+		</div>
     </div>
 </template>
 
@@ -145,9 +163,51 @@ const chartOptions = ref({
 	series: []
 });
 
+const dailyUpCountChartOptions = ref({
+	title: {
+		text: ' '
+	},
+	tooltip: {
+		trigger: 'axis'
+	},
+	// legend: {
+	// 	data: legendData
+	// },
+	xAxis: {
+		type: 'category',
+		data: []
+	},
+	yAxis: {
+		type: 'value'
+	},
+	series: []
+});
+
+const dailyMoneyFlowChartOptions = ref({
+	title: {
+		text: ' '
+	},
+	tooltip: {
+		trigger: 'axis'
+	},
+	legend: {
+		data: []
+	},
+	xAxis: {
+		type: 'category',
+		data: []
+	},
+	yAxis: {
+		type: 'value'
+	},
+	series: []
+});
+
 onMounted(async () => {
 	updateShiZhiPiChart();
 	updateChart();
+	requestDailyUpCount();
+	requestDailyMoneyFlow();
 });
 
 function updateShiZhiPiChart(resData) {
@@ -302,6 +362,62 @@ function onShiZhiPieChartClick(chartData) {
 	};
 	console.log('query', query);
 	router.push({ path: `/trade/tracked_kcharts`, query });
+}
+
+async function requestDailyUpCount() {
+	const res = await axios({
+		method: 'get',
+		url: 'http://localhost:3000/api/statistics/daily/up'
+	});
+	if (!(res.data.code === 0 && res.data.data)) {
+		Message.error({
+			duration: 10,
+			content: `请求接口失败, /api/statistics/daily/up`
+		});
+		return
+	}
+	let list = res.data.data.list;
+
+	let series = [];
+
+	let dates = list.map(item => item.date)
+	series.push({
+		type: 'line',
+		data: list.map(item => item.count)
+	});
+	dailyUpCountChartOptions.value.xAxis.data = dates;
+	dailyUpCountChartOptions.value.series = series;
+}
+
+async function requestDailyMoneyFlow() {
+	const res = await axios({
+		method: 'get',
+		url: 'http://localhost:3000/api/statistics/daily/money_flow'
+	});
+	if (!(res.data.code === 0 && res.data.data)) {
+		Message.error({
+			duration: 10,
+			content: `请求接口失败, /api/statistics/daily/money_flow`
+		});
+		return
+	}
+	let list = res.data.data.list;
+
+	let series = [];
+
+	let dates = list[0].dates.map(item => item.date);
+
+	for (let i = 0; i < list.length; i++) {
+		series.push({
+			name: list[i].name,
+			type: 'line',
+			data: list[i].dates.map(item => (item.amount / 10000).toFixed(2))
+		});
+	}
+	dailyMoneyFlowChartOptions.value.legend.data = res.data.data.names;
+	dailyMoneyFlowChartOptions.value.xAxis.data = dates;
+	dailyMoneyFlowChartOptions.value.series = series;
+	console.log(dailyMoneyFlowChartOptions.value);
 }
 </script>
 

@@ -7,6 +7,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /*
+股票数据 - 基础数据 - 股票列表
+
+接口: stock_basic
+
 allStocksRes 的数据结构
 
 {

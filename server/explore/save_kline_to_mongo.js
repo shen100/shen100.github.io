@@ -39,19 +39,25 @@ async function main() {
                     closePrice: item[2],
                     highPrice: item[3],
                     lowPrice: item[4],
-                    volume: item[5]
+                    volume: item[5],
+                    amount: item[8],
                 }
             });
-            let saveData = {
-                stockFullId: stockData.stockFullId,
-                stockId: stockData.stockId,
-                stockName: stockData.stockName,
-                kList
-            };
-            const result = await collection.insertOne(saveData);
 
-            console.log('📝 插入成功:', index, ' ', result.insertedId);
-            console.log();
+            const filter = { stockFullId: stockData.stockFullId };
+            const updateDoc = {
+                $set: {
+                    stockFullId: stockData.stockFullId,
+                    stockId: stockData.stockId,
+                    stockName: stockData.stockName,
+                    kList
+                },
+                $setOnInsert: {
+                    createdAt: new Date()  // 只有插入时才设置
+                }
+            };
+            const result = await collection.updateOne(filter, updateDoc, { upsert: true });
+            console.log('📝 更新成功 index ', index, ' result.upsertedId', result.upsertedId);
 
         }, { concurrency: 20 });
 

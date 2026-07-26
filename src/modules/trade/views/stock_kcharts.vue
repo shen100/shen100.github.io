@@ -170,7 +170,7 @@ function filterStocks(stocks) {
         }
     }
 
-    if (filterData && filterData.filterShiZhi) {
+    if (filterData && filterData.filterShiZhi && kChartLocalKey === 'tradeAllFullIdStocks') {
         for (let i = theStocks.length - 1; i >= 0; i--) {
             const stock = theStocks[i];
             if (!(stock.zongShiZhi >= filterData.filterShiZhi.minValue && stock.zongShiZhi < filterData.filterShiZhi.maxValue)) {

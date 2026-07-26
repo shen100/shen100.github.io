@@ -31,7 +31,7 @@ async function main() {
             const filter = { stockFullId: stockDetail.stockFullId };
             const updateDoc = {
                 $set: {
-                    stockId : stockDetail.stockId,
+                    stockId: stockDetail.stockId,
                     stockFullId: stockDetail.stockFullId,
                     stockName: stockDetail.stockName,
                     zongShiZhi: stockDetail.zongShiZhi,
