@@ -755,7 +755,7 @@ function updateMinuteChart(type, option) {
 	data.value.dtRate = data.value.dtPrice / option.prevDayClosePrice;
 	if (data.value.curPrice > option.prevDayClosePrice) {
 		data.value.lastPriceUpColor = '#ee2500'
-	} else if (item.price === option.prevDayClosePrice) {
+	} else if (data.value.curPrice === option.prevDayClosePrice) {
 		data.value.lastPriceUpColor = '#868686';
 	} else {
 		data.value.lastPriceUpColor = '#02b33d';
