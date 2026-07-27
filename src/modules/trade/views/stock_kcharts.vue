@@ -1,6 +1,8 @@
 <template>
     <div>
-        <KChartList :type="data.type" 
+        <KChartList 
+            :isCustomStocks="data.isCustomStocks"
+            :type="data.type" 
             :start="data.start"
             :end="data.end"
             :page="data.page"
@@ -24,9 +26,10 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router'
 import KChartList from './components/kchart/kchart_list.vue';
 import { formatLocalYMD } from '../util/date';
-import { useRoute } from 'vue-router'
+import { trim } from '../util/str';
 
 const route = useRoute()
 
@@ -37,6 +40,8 @@ let data = ref({
     start: formatLocalYMD(new Date(new Date().getTime() - 100 * 24 * 3600 * 1000)),
     end: formatLocalYMD(new Date()), // 2025-06-12
     curStocks: [],
+    isCustomStocks: false,
+    customStocks: [],
     total: 0,
     pageSize: 20,
     page: 1,
@@ -50,6 +55,14 @@ onMounted(async () => {
 function init() {
     let settingsStr = localStorage.getItem('tradeTrackedStockKChartSettings') || '{}';
     let settings = JSON.parse(settingsStr);
+
+    if (route.query.customStocks) {
+        let customStocksStr = trim(route.query.customStocks || '');
+        const customStocksBase64 = atob(customStocksStr);
+        const decoded = decodeURIComponent(customStocksBase64);
+        data.value.customStocks = JSON.parse(decoded);
+        data.value.isCustomStocks = true;
+    }
 
     // type: day week month year
     if (settings.type) {
@@ -124,7 +137,12 @@ function onPageChange(page) {
 }
 
 function getStocks() {
-    let stocks = JSON.parse(localStorage.getItem(kChartLocalKey) || '[]');
+    let stocks;
+    if (data.value.isCustomStocks) {
+        stocks = data.value.customStocks.slice(0);
+    } else {
+        stocks = JSON.parse(localStorage.getItem(kChartLocalKey) || '[]');
+    }
     stocks = filterStocks(stocks);
     stocks.sort((a, b) => {
         if (a.isStar && !b.isStar) {
@@ -142,7 +160,8 @@ function getStocks() {
 function onLocalKeyChange() {
     data.value.page = 1;
     saveSettings();
-    location.reload();
+    location.href = '/trade/tracked_kcharts';
+    // location.reload();
 }
 
 function onStockSearch(filterData) {

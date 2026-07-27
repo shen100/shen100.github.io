@@ -1,5 +1,5 @@
 import * as mongo from '../../database/mongo.js';
-import { conceptSectors } from '../../explore/statistics/concept_sector.js';
+import { conceptSectors } from '../../data/concept_sector.js';
 
 export async function queryDailyUpCount(req, res) {
     const direction = req.params.direction;

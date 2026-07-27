@@ -26,6 +26,10 @@ let data = ref({
             label: '全部股票'
         },
         {
+            value: 'tradeCustomStocks',
+            label: '地址栏传参'
+        },
+        {
             value: 'tradeIndexStocks',
             label: '板块指数'
         },

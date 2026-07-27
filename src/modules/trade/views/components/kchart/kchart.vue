@@ -20,7 +20,7 @@
 						<span v-if="data.stock && props.kChartLocalKey === 'tradeTrail'" class="stop-rate-label">买入金额 {{ maiRuJinE.toLocaleString() }}</span>
 						<span v-if="data.stock && isSoldOut" class="stop-rate-label">卖出价格 {{  sellPrice.toFixed(4) }}</span>
 						<span v-if="data.stock && profitRate" class="stop-rate-label">利润 <span :style="{color: profitRateColor}">{{ profitRate }}</span></span>
-						<Button @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
+						<Button v-if="props.kChartLocalKey !== 'tradeCustomStocks'" @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
 					</template>
 					<Button v-if="allowAddToPotential" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
 					<Button v-if="props.kChartLocalKey === 'tradePotentialStocks'" @click="onShowRemovePotentialModal" type="primary" size="small" style="margin-left: 10px;">移出候选股</Button>
@@ -356,7 +356,7 @@ const allowMaxDownRate = computed(() => {
 })
 
 const allowAddToPotential = computed(() => {
-	let arr = [ 'tradeAllFullIdStocks', 'tradeStocksByStrategy1', 'tradeStocksByStrategy2' ];
+	let arr = [ 'tradeAllFullIdStocks', 'tradeCustomStocks', 'tradeStocksByStrategy1', 'tradeStocksByStrategy2' ];
 	return arr.indexOf(props.kChartLocalKey) >= 0;
 })
 

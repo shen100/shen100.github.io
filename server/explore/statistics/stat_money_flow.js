@@ -1,5 +1,5 @@
 import { MongoClient } from 'mongodb';
-import { conceptSectors } from './concept_sector.js';
+import { conceptSectors } from '../../data/concept_sector.js';
 
 const uri = 'mongodb://admin:admin123@127.0.0.1:27017';
 const client = new MongoClient(uri);

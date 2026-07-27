@@ -72,6 +72,7 @@ const emit = defineEmits([
 const itemRefs = ref([]);
 
 const props = defineProps([
+    'isCustomStocks',
     'stocks',
     'type',
     'start',
@@ -85,6 +86,10 @@ let data = ref({
         {
             value: 'tradeAllFullIdStocks',
             label: '全部股票'
+        },
+        {
+            value: 'tradeCustomStocks',
+            label: '地址栏传参'
         },
         {
             value: 'tradeIndexStocks',
@@ -207,7 +212,11 @@ onMounted(async () => {
         console.log('selectShiZhiIndex', data.value.selectShiZhiIndex);
 
 
-        data.value.kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
+        if (props.isCustomStocks) {
+            data.value.kChartLocalKey = 'tradeCustomStocks';
+        } else {
+            data.value.kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
+        }
         data.value.type = props.type || data.value.type;
         data.value.start = props.start || data.value.start;
         data.value.end = props.end || data.value.end;

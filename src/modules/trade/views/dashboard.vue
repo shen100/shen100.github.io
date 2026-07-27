@@ -45,6 +45,13 @@
 				<div class="total-shizhi-txt">
 					<div style="margin-right: 4px;">资金流向</div>
 				</div>
+				<div style="text-align: center; margin-bottom: 20px;">
+					<div class="concept-label">概念板块</div>
+					<Select v-model="data.selectedCconcept" style="width: 200px; margin-right: 10px; text-align: left;">
+						<Option v-for="item in data.concepts" :value="item" :key="item">{{ item }}</Option>
+					</Select>
+					<Button :disabled="!data.selectedCconcept" type="primary" @click="gotoCustomStocksKLine">查看K线</Button>
+				</div>
 				<ECharts v-if="dailyMoneyFlowChartOptions.series.length" :options="dailyMoneyFlowChartOptions" />
 			</Card>
 		</div>
@@ -68,6 +75,8 @@ let data = ref({
 	updatedAt2: '',
 	shiZhiStartDateStr: formatLocalYMD(new Date(new Date().getTime() - 3 * 365 * 24 * 3600 * 1000)), // '2024-09-15'
     shiZhiEndDateStr: formatLocalYMD(new Date()), // 2025-06-12
+	concepts: [],
+	selectedConcept: ''
 });
 
 const shiZhiCountPiChartOptions = ref({
@@ -417,7 +426,34 @@ async function requestDailyMoneyFlow() {
 	dailyMoneyFlowChartOptions.value.legend.data = res.data.data.names;
 	dailyMoneyFlowChartOptions.value.xAxis.data = dates;
 	dailyMoneyFlowChartOptions.value.series = series;
+	data.value.concepts = res.data.data.names;
 	console.log(dailyMoneyFlowChartOptions.value);
+}
+
+async function gotoCustomStocksKLine() {
+	let url = 'http://localhost:3000/api/statistics/concept/get_stocks?concept=' + encodeURIComponent(data.value.selectedCconcept);
+	const res = await axios({
+		method: 'get',
+		url
+	});
+	if (!(res.data.code === 0 && res.data.data)) {
+		Message.error({
+			duration: 10,
+			content: `请求接口失败, /api/statistics/concept/get_stocks`
+		});
+		return
+	}
+	const stocks = res.data.data.stocks;
+	const stockListStr = JSON.stringify(stocks);
+	const encodeStockListStr = encodeURIComponent(stockListStr);
+	console.log(encodeStockListStr);
+
+	const customStocksBase64 = btoa(encodeStockListStr);
+	const query = {
+		customStocks: customStocksBase64
+	};
+	console.log(customStocksBase64);
+	router.push({ path: `/trade/tracked_kcharts`, query });
 }
 </script>
 
@@ -425,7 +461,7 @@ async function requestDailyMoneyFlow() {
 .total-shizhi-txt {
 	font-size: 20px;
 	font-weight: bold;
-	margin-bottom: 20px;
+	margin-bottom: 5px;
 	height: 36px;
 	display: flex;
 	justify-content: center;  /* 水平居中 */
@@ -463,5 +499,12 @@ async function requestDailyMoneyFlow() {
 
 .date-label-end {
     margin-left: 10px;
+}
+
+.concept-label {
+	display: inline-block;
+	vertical-align: top;
+	margin-right: 10px;
+	line-height: 32px;
 }
 </style>
