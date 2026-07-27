@@ -17,6 +17,7 @@
                     type="date" placeholder="Select date" style="width: 200px" 
                     @on-change="(dateStr, dateType) => onEndDateChange(dateStr, dateType, data.type)" />
                 <ButtonGroup class="button-group">
+                    <Button @click="onTypeChange('minute')" :type="data.type === 'minute' ? 'primary' : 'default'">分时</Button>
                     <Button @click="onTypeChange('day')" :type="data.type === 'day' ? 'primary' : 'default'">天</Button>
                     <Button @click="onTypeChange('week')" :type="data.type === 'week' ? 'primary' : 'default'">周</Button>
                     <Button @click="onTypeChange('month')" :type="data.type === 'month' ? 'primary' : 'default'">月</Button>
@@ -33,6 +34,7 @@
         </Card>
         <div v-if="data.kCharts && data.kCharts.length">
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" 
+                :type="props.type"
                 @stocks-remove-potential="onStocksRemovePotential" 
                 @audit-trail-change="onAuditTrailChange"
                 :kChartLocalKey="data.kChartLocalKey"
@@ -187,9 +189,9 @@ let data = ref({
             label: '>= 万亿'
         }
     ],
-    selectShiZhiIndex: '-1'
+    selectShiZhiIndex: '-1',
+    isInited: false
 })
-
 
 console.log('-------------- init~~~', JSON.stringify(data.value.myFilterData));
 
@@ -220,6 +222,7 @@ onMounted(async () => {
         data.value.type = props.type || data.value.type;
         data.value.start = props.start || data.value.start;
         data.value.end = props.end || data.value.end;
+        data.value.isInited = true;
         onRequest(props.type, props.stocks);
     })
 });
@@ -241,7 +244,9 @@ const kChartLocalKeyLabel = computed(() => {
 watch(
     () => props.stocks,
     (newValue, oldValue) => {
-        onRequest(data.value.type, newValue);
+        if (data.value.isInited) {
+            onRequest(data.value.type, newValue);
+        }
     }
 )
 
@@ -318,7 +323,9 @@ async function onRequest(type, stocks) {
 
 	let count;
 	
-    if (type === "day") {
+    if (type === 'minute') {
+        // 
+    } else if (type === "day") {
         count = Math.floor((endDate - startDate) / (24 * 3600 * 1000));
     } else if (type === "week") {
         count = Math.floor((endDate - startDate) / (7 * 24 * 3600 * 1000));
@@ -352,7 +359,9 @@ async function onRequest(type, stocks) {
                 return;
             }
             let requestType = data.value.type;
-            if (requestType == "day") {
+            if (requestType === 'minute') {
+                el.requestMinuteK(stock, startStr, endStr, count);
+            } else if (requestType == "day") {
                 el.requestDayK(stock, startStr, endStr, count);
             } else if (requestType == "week") {
                 el.requestWeekK(stock, startStr, endStr, count);

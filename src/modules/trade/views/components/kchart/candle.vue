@@ -25,7 +25,7 @@ import { Message } from 'view-ui-plus'
 const props = defineProps([
     'stockId',
     'stockHighPrice',
-    'candleType', // day, week, month, year
+    'kLineType', // minute, day, week, month, year
     'date',
     'lowPrice',
     'highPrice',
@@ -185,8 +185,8 @@ onMounted(async () => {
 function getCandleData() {
     return {
         stockId: props.stockId,
-        candleType: props.candleType,
-        date: props.date,
+        kLineType: props.kLineType,
+        time: props.date,
         lowPrice: props.lowPrice,
         highPrice: props.highPrice,
         openPrice: props.openPrice,

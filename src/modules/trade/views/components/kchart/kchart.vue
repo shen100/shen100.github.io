@@ -42,12 +42,12 @@
 			<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
 			<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
 			
-			<template v-if="data.activeCandleData && data.activeCandleData.tradeAction">
-				<div v-if="data.activeCandleData.tradeAction.type === 'buy'" class="kchart-trade-buy-or-sell">
-					买入 {{data.activeCandleData.tradeAction.price}} X {{data.activeCandleData.tradeAction.count}} 股
+			<template v-if="data.activeKItemData && data.activeKItemData.tradeAction">
+				<div v-if="data.activeKItemData.tradeAction.type === 'buy'" class="kchart-trade-buy-or-sell">
+					买入 {{data.activeKItemData.tradeAction.price}} X {{data.activeKItemData.tradeAction.count}} 股
 				</div>
-				<div v-else-if="data.activeCandleData.tradeAction.type === 'sell'" class="kchart-trade-buy-or-sell" style="background-color: #5287ee;">
-					卖出 {{data.activeCandleData.tradeAction.price}} X {{data.activeCandleData.tradeAction.count}} 股
+				<div v-else-if="data.activeKItemData.tradeAction.type === 'sell'" class="kchart-trade-buy-or-sell" style="background-color: #5287ee;">
+					卖出 {{data.activeKItemData.tradeAction.price}} X {{data.activeKItemData.tradeAction.count}} 股
 				</div>
 			</template>
 
@@ -61,17 +61,17 @@
 				<div class="y-axis-price-line-price avg-stop-price-line-price">{{ data.stock.stopPrice }}</div>
 			</div>
 
-			<div v-if="data.activeCandleData && data.isMouseMoveOnCandle" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
+			<div v-if="data.activeKItemData && data.isMouseMoveOnKItem" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
 				<div class="y-axis-price-line-price">{{ data.yAxisPriceLinePrice }}</div>
 			</div>
-			<div v-if="data.dataLoaded" ref="candlesContainerRef"
+			<div v-if="data.type !== 'minute' && data.dataLoaded" ref="candlesContainerRef"
 				@scroll="onCandlesContainerScroll" class="candles-container">
 				<Candle
 					:ref="el => { if (el) candleRefs[i] = el }"
 					v-for="(item, i) in data.myKList" :key="i"
 					:stockId="data.stock.stockId"
 					:stockHighPrice="data.stock.highPrice"
-					:candleType="data.type"
+					:kLineType="data.type"
 					:date="item[0]"
 					:tradeAction="getTradeAction(item[0])"
 					:openPrice="item[1]"
@@ -87,10 +87,32 @@
 					@mouse-move="(candleData) => onCandleMouseMove(i, candleData)"
 				/>
 			</div>
-			<StockInfoPopup v-if="data.activeCandleData" :info="data.activeCandleData" />
+			<div v-else-if="data.dataLoaded" ref="minuteLinesContainerRef"
+				@scroll="onMinuteLinesContainerScroll" class="minute-lines-container">
+				<MinuteLine 
+					:ref="el => { if (el) minuteLineRefs[i] = el }"
+					v-for="(item, i) in data.minuteList" :key="i"
+					:stock="data.stock"
+					:kLineType="data.type"
+					:index="i"
+					:minute="item.minute"
+					:price="item.price"
+					:prevDayClosePrice="item.prevDayClosePrice"
+					:highPriceInAll="item.highPriceInAll"
+					:lowPriceInAll="item.lowPriceInAll"
+					:nextPrice="item.nextPrice"
+					:volume="item.volume"
+					:maxHeight="data.candleMaxHeight"
+					@mouse-over="(candleData) => onMinuteLineMouseOver(i, candleData)"
+					@mouse-out="() => onMinuteLineMouseOut(i)"
+					@mouse-move="(candleData) => onMinuteLineMouseMove(i, candleData)"
+				/>
+			</div>
+			<StockInfoPopup v-if="data.activeKItemData" :info="data.activeKItemData" />
 			<AuditTrail v-if="props.auditTrailVisible" @audit-trail-change="onAuditTrailChange" :trailData="data.stock?.trailData"/>
 		</div>
-		<Volume ref="volumeRef" :maxVolume="data.maxVolume" :minVolume="data.minVolume" :myKList="data.myKList" :activeCandleData="data.activeCandleData" 
+		<Volume ref="volumeRef" :maxVolume="data.maxVolume" :minVolume="data.minVolume" 
+			:kLineType="data.type" :volumeList="data.volumeList" :activeKItemData="data.activeKItemData" 
 			@mouse-over="onVolumeMouseOver"
 			@mouse-out="onVolumeMouseOut"
 			@scroll="onVolumeScroll" />
@@ -118,6 +140,7 @@ import axios from 'axios';
 import { onMounted, ref, computed } from 'vue'
 import { findFromRight } from '../../../util/str';
 import StockNewPrice from '../stock_new_price.vue';
+import MinuteLine from './minute_line.vue';
 import Candle from './candle.vue';
 import Volume from './volume.vue';
 import StockInfoPopup from './stock_info_popup.vue';
@@ -131,11 +154,17 @@ const emit = defineEmits(['stocks-remove-potential', 'audit-trail-change']);
 
 const props = defineProps([
 	'kChartLocalKey',
+	'type',
 	'isNewPriceMode',
 	'auditTrailVisible'
 ]);
 
 let candlesContainerRef = ref(null);
+let minuteLinesContainerRef = ref(null);
+
+const candleRefs = ref([]);
+const minuteLineRefs = ref([]);
+
 let volumeRef = ref(null);
 
 let data = ref({
@@ -153,6 +182,7 @@ let data = ref({
 	start: '',
     end: '',
     myKList: [],
+	volumeList: [],
 	maxVolume: 0,
 	minVolume: 0,
 	yAxis1: 0,
@@ -162,13 +192,13 @@ let data = ref({
     yAxis5: 0,
 	yAxisPriceLine: 0,
 	yAxisPriceLinePrice: 0,
-	isMouseMoveOnCandle: false,
+	isMouseMoveOnKItem: false, // 鼠标在K线图的蜡烛上滑动，或分时图的分时点上滑动
     yAxisText1: '',
     yAxisText2: '',
     yAxisText3: '',
     yAxisText4: '',
     yAxisText5: '',
-	activeCandleData: null,
+	activeKItemData: null,
 	addToTrackingBtnVisible: false,
 	dtPriceUpdated: false,
 	dtPrice: 0,
@@ -178,12 +208,12 @@ let data = ref({
 	editModalVisible: false,
 	addPotentialModalVisible: false,
 	removePotentialModalVisible: false,
-	askAIModalVisible: false
+	askAIModalVisible: false,
+	minuteList: []
 });
 
-const candleRefs = ref([]);
-
 onMounted(async () => {
+	data.value.type = props.type;
 });
 
 function getTradeAction(date) {
@@ -387,6 +417,62 @@ async function requestStockDetail(stock) {
 		stockId: stock.stockId,
 		zongShiZhi: Number(arr[45] || '0').toFixed(2), // 总市值
 	}
+}
+
+async function requestMinuteK(stock, start, end, count) {
+	resetData(stock, start, end, count);
+	requestStockDetail(stock);
+	let url = `https://web.ifzq.gtimg.cn/appstock/app/minute/query?code=${stock.stockFullId}`;
+	let res = await axios.get(url);
+
+	if (!(res.data && res.data.data)) {
+		data.value.dataLoaded = true;
+		return;
+    }
+	data.value.dataLoaded = true;
+
+	const minuteList = [];
+	const resList = res.data.data[stock.stockFullId].data.data;
+	const stockInfo = res.data.data[stock.stockFullId].qt[stock.stockFullId];
+	console.log('stockInfo', stockInfo);
+	const prevDayClosePrice = stockInfo[4];
+
+	let highPriceInAll = -1;
+	let lowPriceInAll = 1000000;
+	for (let i = 0; i < resList.length; i++) {
+		let arr = resList[i].split(' ');
+		let minute = arr[0].slice(0, 2) + ':' + arr[0].slice(2); // 转成 09:30
+		let price = Number(arr[1]); // 当前分钟最新成交价格
+		let sumVolume = Number(arr[2]); // 开盘至当前分钟累计成交总量;
+		if (price < lowPriceInAll) {
+			lowPriceInAll = price;
+		}
+		if (price > highPriceInAll) {
+			highPriceInAll = price;
+		}
+		// 和东方财富分时的成交量数据是一致的，和招商证券，雪球分时的成交量数据不一致
+		let volume = i === 0 ? sumVolume: (sumVolume - minuteList[i - 1].sumVolume);
+		minuteList.push({
+			minute,
+			prevDayClosePrice,
+			price, // 当前分钟最新成交价格
+			openPrice: i === 0 ? prevDayClosePrice: minuteList[i - 1].price,
+			closePrice: price,
+			volume,
+			sumVolume,
+			amount: Number(arr[3]) // 开盘至当前分钟累计成交总金额
+		});
+	}
+	for (let i = 0; i < minuteList.length - 1; i++) {
+		minuteList[i].highPriceInAll = highPriceInAll;
+		minuteList[i].lowPriceInAll = lowPriceInAll;
+		minuteList[i].nextPrice = minuteList[i + 1].price;
+	}
+	data.value.minuteList = minuteList;
+	data.value.curPrice = stockInfo[3];
+
+	// console.log('minuteList', minuteList);
+	updateMinuteChart('minute', { prevDayClosePrice });
 }
 
 async function requestDayK(stock, start, end, count) {
@@ -642,6 +728,40 @@ function getDtRate() {
 	return data.value.dtRate;
 }
 
+function updateMinuteChart(type, option) {
+	data.value.type = type;
+	data.value.volumeList = [];
+	data.value.maxVolume = 0;
+	data.value.minVolume = -1;
+	const minuteList = data.value.minuteList;
+    for (let i = 0; i < minuteList.length; i++) {
+		data.value.volumeList.push({
+			time: minuteList[i].minute,
+			volume: minuteList[i].volume,
+			openPrice: minuteList[i].openPrice,
+			closePrice: minuteList[i].closePrice,
+		});
+
+		if (minuteList[i].volume > data.value.maxVolume) {
+			data.value.maxVolume = minuteList[i].volume;
+		}
+		if (minuteList[i].volume < data.value.minVolume || data.value.minVolume === -1) {
+			data.value.minVolume = minuteList[i].volume;
+		}
+    }
+
+	data.value.dtPriceUpdated = true;
+	data.value.dtPrice = data.value.curPrice - option.prevDayClosePrice;
+	data.value.dtRate = data.value.dtPrice / option.prevDayClosePrice;
+	if (data.value.curPrice > option.prevDayClosePrice) {
+		data.value.lastPriceUpColor = '#ee2500'
+	} else if (item.price === option.prevDayClosePrice) {
+		data.value.lastPriceUpColor = '#868686';
+	} else {
+		data.value.lastPriceUpColor = '#02b33d';
+	}
+}
+
 function updateChart(type) {
 	let lowPriceInAll = 10000000;
 	let highPriceInAll = -10000000;
@@ -649,6 +769,7 @@ function updateChart(type) {
     data.value.type = type;
 
 	const myKList = data.value.myKList;
+	data.value.volumeList = [];
     for (let i = 0; i < myKList.length; i++) {
 		let highPrice = myKList[i][3];
 		let lowPrice = myKList[i][4];
@@ -658,6 +779,12 @@ function updateChart(type) {
 		if (highPrice > highPriceInAll) {
 			highPriceInAll = highPrice;
         }
+		data.value.volumeList.push({
+			time: myKList[i][0],
+			openPrice: myKList[i][1],
+			closePrice: myKList[i][2],
+			volume: myKList[i][5],
+		});
     }
 
 	data.value.dtPriceUpdated = false;
@@ -718,28 +845,61 @@ function onCandleMouseOver(i, candleData) {
 	let theData = {
 		...candleData,
 		index: i,
-		candleCount: data.value.myKList.length,
 		containerWidth: candlesContainerRef.value.offsetWidth,
 		scrollLeft: candlesContainerRef.value.scrollLeft
 	};
 	if (data.value.myKList && data.value.myKList[i - 1]) {
 		theData.prevClosePrice = data.value.myKList[i - 1][2]
 	}
-	data.value.activeCandleData = theData;
+	data.value.activeKItemData = theData;
 }
 
 function onCandleMouseOut(i) {
-	data.value.activeCandleData = null;
-	data.value.isMouseMoveOnCandle = false;
+	data.value.activeKItemData = null;
+	data.value.isMouseMoveOnKItem = false;
 }
 
 function onCandleMouseMove(i, candleData) {
 	data.value.yAxisPriceLine = candleData.y + 55;
 	data.value.yAxisPriceLinePrice = candleData.price;
-	data.value.isMouseMoveOnCandle = true;
+	data.value.isMouseMoveOnKItem = true;
+}
+
+function onMinuteLineMouseOver(i, minuteLineData) {
+	let theData = {
+		...minuteLineData,
+		index: i,
+		containerWidth: minuteLinesContainerRef.value.offsetWidth,
+		scrollLeft: minuteLinesContainerRef.value.scrollLeft
+	};
+	if (data.value.minuteList && data.value.minuteList[i - 1]) {
+		theData.prevClosePrice = data.value.minuteList[i - 1].price;
+	}
+	data.value.activeKItemData = theData;
+}
+
+function onMinuteLineMouseOut(i) {
+	data.value.activeKItemData = null;
+	data.value.isMouseMoveOnKItem = false;
+}
+
+function onMinuteLineMouseMove(i, minuteLineData) {
+	data.value.yAxisPriceLine = minuteLineData.y + 55;
+	data.value.yAxisPriceLinePrice = minuteLineData.price;
+	data.value.isMouseMoveOnKItem = true;
 }
 
 function onVolumeMouseOver(i) {
+	if (data.value.type === 'minute') {
+		minuteLineRefs.value.forEach((el, index) => {
+			if (index === i) {
+				el.setMouseOver();
+				let theData = el.getMinuteData();
+				onMinuteLineMouseOver(i, theData);
+			}
+		});
+		return;
+	}
 	candleRefs.value.forEach((el, index) => {
 		if (index === i) {
 			el.setMouseOver();
@@ -750,20 +910,37 @@ function onVolumeMouseOver(i) {
 }
 
 function onVolumeMouseOut(i) {
+	if (data.value.type === 'minute') {
+		minuteLineRefs.value.forEach((el, index) => {
+			if (index === i) {
+				el.setMouseOut();
+				data.value.activeKItemData = null;
+			}
+		});
+		return;
+	}
 	candleRefs.value.forEach((el, index) => {
 		if (index === i) {
 			el.setMouseOut();
-			data.value.activeCandleData = null;
+			data.value.activeKItemData = null;
 		}
 	});
+}
+
+function onVolumeScroll(scrollLeft) {
+	if (data.value.type === 'minute') {
+		minuteLinesContainerRef.value.scrollLeft = scrollLeft;
+	} else {
+		candlesContainerRef.value.scrollLeft = scrollLeft;
+	}
 }
 
 function onCandlesContainerScroll(event) {
 	volumeRef.value.setScrollLeft(event.target.scrollLeft);
 }
 
-function onVolumeScroll(scrollLeft) {
-	candlesContainerRef.value.scrollLeft = scrollLeft;
+function onMinuteLinesContainerScroll(event) {
+	volumeRef.value.setScrollLeft(event.target.scrollLeft);
 }
 
 function onStockNameMouseEnter() {
@@ -816,7 +993,7 @@ function onAuditTrailChange(trailData) {
 	});
 }
 
-defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK, getDtRate });
+defineExpose({ requestMinuteK, requestDayK, requestWeekK, requestMonthK, requestYearK, getDtRate });
 </script>
 
 <style scoped>
@@ -906,6 +1083,14 @@ defineExpose({ requestDayK, requestWeekK, requestMonthK, requestYearK, getDtRate
     overflow-x: auto;
     width: calc(100vw - 320px);
 	height: 301px; /* 比 data.candleMaxHeight 高出 21px */
+}
+
+.minute-lines-container {
+	display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: calc(100vw - 320px);
+    height: 301px; /* 比 data.candleMaxHeight 高出 21px */
 }
 
 .add-to-tracking {

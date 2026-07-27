@@ -1,12 +1,15 @@
 <template>
 	<div class="kchart-volume">
 		<div ref="kchartVolumeListRef" @scroll="onScroll" class="kchart-volume-list">
-			<div v-for="(item, i) in props.myKList" :key="i" class="kchart-volume-item-box"
+			<div v-for="(item, i) in props.volumeList" :key="i" class="kchart-volume-item-box"
+				:style="{'min-width': volumeItemBoxMinWidth}"
                 @mouseenter="onMouseOver(i)"
                 @mouseleave="onMouseOut(i)"
                 @mousemove="onMouseMove">
-				<div class="kchart-volume-item" :style="{height: getVolumeItemHeight(item), 'background-color': getVolumeItemColor(item)}"></div>
-				<div v-if="props.activeCandleData && props.activeCandleData.date === item[0]" class="kchart-volume-full-line"></div>
+				<div class="kchart-volume-item" :style="{width: volumeItemMinWidth, height: getVolumeItemHeight(item), 'background-color': getVolumeItemColor(item)}"></div>
+				<div v-if="i === 3 || props.activeKItemData && props.activeKItemData.time === item.time"
+					:style="{ left: volumeCurrentLineLeft }"
+					class="kchart-volume-full-line"></div>
 			</div>
 		</div>
         <div v-if="data.isMouseOver" class="y-axis-price-line" :style="{top: `${data.yAxisVolumeLineY}px`}">
@@ -19,10 +22,11 @@
 import { onMounted, ref, computed } from 'vue';
 
 const props = defineProps([
+	'kLineType',
     'maxVolume',
     'minVolume',
-    'myKList',
-    'activeCandleData'
+    'volumeList',
+    'activeKItemData'
 ]);
 
 const emit = defineEmits(['mouse-over', 'mouse-out', 'mouse-move', 'scroll']);
@@ -35,18 +39,42 @@ let data = ref({
 	yAxisVolumeValue: 0
 });
 
+const volumeItemBoxMinWidth = computed(() => {
+    if (props.kLineType === 'minute') {
+		return '4px';
+	} else {
+		return '9px';
+	}
+});
+
+const volumeItemMinWidth = computed(() => {
+    if (props.kLineType === 'minute') {
+		return '3px';
+	} else {
+		return '7px';
+	}
+});
+
+const volumeCurrentLineLeft = computed(() => {
+    if (props.kLineType === 'minute') {
+		return '1px';
+	} else {
+		return '3px';
+	}
+});
+
 onMounted(async () => {
-    
 });
 
 function getVolumeItemHeight(item) {
-	let volume = item[5];
+	let volume = item.volume;
 	return (volume / props.maxVolume) * 100 + '%'
 }
 
 function getVolumeItemColor(item) {
-	let openPrice = item[1];
-	let closePrice = item[2];
+	// console.log('getVolumeItemColor', JSON.stringify(item));
+	let openPrice = item.openPrice;
+	let closePrice = item.closePrice;
 	if (closePrice > openPrice) {
         return '#ee2500';
     } else if (closePrice === openPrice) {
@@ -123,7 +151,7 @@ defineExpose({ setScrollLeft });
 
 .kchart-volume-full-line {
     position: absolute;
-    border-left: 1px dashed #cecece;
+    border-left: 1px dashed #23848b;
     height: 100%;
     pointer-events: none;
 	left: 3px;
