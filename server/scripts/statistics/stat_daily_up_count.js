@@ -32,25 +32,15 @@ async function exec(option) {
                 let item;
                 if (option.isMax) {
                     item = items.reduce((max, current) => {
-                        if (option.direction === 'up') {
-                            return current.closePrice > max.closePrice ? current : max
-                        } else if (option.direction === 'down') {
-                            return current.closePrice < max.closePrice ? current : max
-                        }
+                        return current.closePrice > max.closePrice ? current : max
                     });
                 } else {
                     let item1 = stock.kList[j - option.statDayCount];
                     let item2 = stock.kList[j];
 
-                    if (option.direction === 'up') {
-                        if (item2.closePrice > item1.closePrice) {
-                            item = item2;
-                        } 
-                    } else if (option.direction === 'down') {
-                        if (item2.closePrice < item1.closePrice) {
-                            item = item2;
-                        } 
-                    }  
+                    if (item2.closePrice > item1.closePrice) {
+                        item = item2;
+                    }
                 }
                 if (item && item.date === stock.kList[j].date) {
                     dataMap[item.date] = dataMap[item.date] || {
@@ -66,13 +56,12 @@ async function exec(option) {
         
         for (let key in dataMap) {
             const statData = dataMap[key];
-            const filter = { uniqueId: statData.date + `-${option.direction}-` + option.statDayCount };
+            const filter = { uniqueId: statData.date + `-` + option.statDayCount };
             const updateDoc = {
                 $set: {
                     date: statData.date,
                     count: statData.count,
-                    statDayCount: option.statDayCount,
-                    direction: option.direction
+                    statDayCount: option.statDayCount
                 },
                 $setOnInsert: {
                     createdAt: new Date()  // 只有插入时才设置
@@ -93,7 +82,6 @@ async function exec(option) {
 async function main() {
     exec({
         statDayCount: 10,
-        direction: 'up', // up, down
         isMax: true
     });  
 }

@@ -3,10 +3,6 @@
 		<div style="display: flex; gap: 20px; margin-bottom: 20px;">
 			<Card style="flex: 1">
 				<ECharts v-if="shiZhiCountPiChartOptions.series.length" @click="onShiZhiPieChartClick" :options="shiZhiCountPiChartOptions" />
-				<div style="display: flex;align-items: center; justify-content: right;">
-					<Icon class="refresh" @click="requestAllStockDetail" type="md-refresh" style="cursor: pointer;" />
-					<div class="updated-at">{{ data.updatedAt1 ? '更新于 ' + data.updatedAt1 : '' }}</div>
-				</div>
 			</Card>
 			<Card style="flex: 1">
 				<ECharts v-if="shiZhiAmountPiChartOptions.series.length" @click="onShiZhiPieChartClick" :options="shiZhiAmountPiChartOptions" />	
@@ -70,7 +66,6 @@ import { useRouter } from 'vue-router';
 const router = useRouter()
 
 let data = ref({
-	updatedAt1: '',
 	compositeIndex: null, // 综合指数
 	updatedAt2: '',
 	shiZhiStartDateStr: formatLocalYMD(new Date(new Date().getTime() - 3 * 365 * 24 * 3600 * 1000)), // '2024-09-15'
@@ -213,6 +208,7 @@ const dailyMoneyFlowChartOptions = ref({
 });
 
 onMounted(async () => {
+	requestAllStockDetail();
 	updateShiZhiPiChart();
 	updateChart();
 	requestDailyUpCount();
@@ -227,7 +223,6 @@ function updateShiZhiPiChart(resData) {
 	if (!resData) {
 		return;
 	}
-	data.value.updatedAt1 = utcStringToLocalString(resData.updatedAt);
 	let arr = [];
 	let arr2 = [];
 	for (let i = 0; i < resData.shiZhiList.length; i++) {
@@ -263,6 +258,7 @@ function updateChart() {
 	for (let i = 0; i < indexArr.length; i++) {
 		// indexData 为 { '20050620' { amount: 0, count: 0 } }
 		let indexData = store.compositeIndex[indexArr[i]];
+		console.log('indexData', indexData);
 		let arr = [];
 		let startStr = data.value.shiZhiStartDateStr.replaceAll('-', '');
 		let endStr = data.value.shiZhiEndDateStr.replaceAll('-', '');
@@ -333,8 +329,9 @@ async function requestAllDailyBasic() {
 		});
 		return
 	}
+	console.log('res.data.data.compositeIndex', res.data.data);
 	store.updateCompositeIndex({
-		...res.data.data.compositeIndex,
+		...res.data.data,
 		updatedAt: new Date().toISOString()
 	});
 	location.reload();

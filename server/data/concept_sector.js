@@ -102,8 +102,7 @@ export const conceptSectors = [
     {
         name: '培育钻石',
         stocks: [
-            '黄河旋风', // 人造钻石
-            '力拓钻石' // 培育钻石
+            '黄河旋风' // 人造钻石
         ]
     },
     {

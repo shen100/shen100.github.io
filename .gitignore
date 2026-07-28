@@ -3,5 +3,5 @@ dist
 
 node_modules
 
-server/explore/json
-server/explore/buy_point/json
+server/scripts/json
+server/scripts/buy_point/json

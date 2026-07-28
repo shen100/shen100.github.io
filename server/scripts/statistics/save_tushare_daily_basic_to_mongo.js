@@ -13,14 +13,9 @@ function sleep(timeout) {
 	return new Promise(resolve => setTimeout(resolve, timeout));
 }
 
-async function requestDailyBasic(collection, stock) {
-	let stockInDB = await collection.findOne({ stockFullId: stock.stockFullId});
-	if (stockInDB) {
-		return null;
-	}
-
+async function requestDailyBasic(stock) {
 	let url = 'https://api.tushare.pro';
-	let before = 20; // 查询多少年前的数据
+	let before = 10; // 查询多少年前的数据
 	let startDate = formatLocalYMD(new Date(new Date().getTime() - before * 365 * 24 * 3600 * 1000)).replace(/-/g, '');
 	let endDate = formatLocalYMD(new Date()).replace(/-/g, '');
 	const reqData = {
@@ -63,7 +58,7 @@ async function requestAllDailyBasic(collection) {
 		let startTime = new Date().getTime();
 		let tasks = [];
 		for (let j = i; j < i + concurrence && j < allStocks.length; j++) {
-			tasks.push(requestDailyBasic(collection, allStocks[j]));
+			tasks.push(requestDailyBasic(allStocks[j]));
 		}
 		let list = await Promise.all(tasks);
 		for (let stock of list) {
@@ -73,10 +68,21 @@ async function requestAllDailyBasic(collection) {
 			if (!(stock.items && stock.items.length)) {
 				continue;
 			}
-			const result = await collection.insertOne(stock);
 
-            console.log(new Date().toISOString(), '📝 插入成功:', i, ' ', result.insertedId);
-            console.log();
+			const filter = { stockFullId: stock.stockFullId };
+            const updateDoc = {
+                $set: {
+					stockFullId: stock.stockFullId,
+                    stockId: stock.stockId,
+                    ts_code: stock.ts_code,
+                    items: stock.items
+                },
+                $setOnInsert: {
+                    createdAt: new Date() // 只有插入时才设置
+                }
+            };
+            const result = await collection.updateOne(filter, updateDoc, { upsert: true });
+            console.log('📝 更新成功 stockFullId ', stock.stockFullId, ' result.upsertedId', result.upsertedId);
 		}
 		let endTime = new Date().getTime();
 		let timeout = 60 * 1000 - (endTime - startTime);
