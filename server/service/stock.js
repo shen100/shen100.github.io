@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import allStocksRes from './json/all_original_stocks.json' with { type: 'json' }
+import allStocksRes from '../data/all_original_stocks.json' with { type: 'json' }
+import * as mongo from '../database/mongo.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,6 +81,13 @@ for (let i = 0; i < myItems.length; i++) {
     });
 }
 
-export function getAllStocks() {
+export function getAllStocksFromFile() {
     return myStocks;
+}
+
+export async function getAllStocksFromDB() {
+    const db = await mongo.getDB();
+    const stockDetailCol = db.collection('stock_detail');
+    const stocks = await stockDetailCol.find({}).toArray();
+    return stocks;
 }

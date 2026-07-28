@@ -2,7 +2,9 @@ import Dashboard from '../views/dashboard.vue';
 import Trans from '../views/trans.vue';
 import Profit from '../views/profit.vue';
 import My from '../views/my.vue';
-import TradeLocalStorage from '../views/trade_Local_storage.vue';
+import TradeTool from '../views/tool/trade_tool.vue';
+import TradeLocalStorage from '../views/tool/trade_Local_storage.vue';
+import TradeNameToJson from '../views/tool/trade_name_to_json.vue';
 import StockCharts from '../views/stock_kcharts.vue';
 import TradeTrail from '../views/trade_trail.vue';
 import BuyPointCalculator from '../views/buy_point_calculator.vue';
@@ -75,10 +77,20 @@ const routeList = [
         component: My,
     },
     {
-        path: '/trade/localstorage',
+        path: '/trade/tool',
+        name: 'tradeTool',
+        component: TradeTool,
+    },
+    {
+        path: '/trade/tool/localstorage',
         name: 'tradeLocalStorage',
         component: TradeLocalStorage,
     },
+    {
+        path: '/trade/tool/name_to_json',
+        name: 'tradeNameToJson',
+        component: TradeNameToJson,
+    }
 ];
 
 export default routeList

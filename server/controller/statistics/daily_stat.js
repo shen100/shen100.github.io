@@ -6,7 +6,7 @@ import * as mongo from '../../database/mongo.js';
  * 那么就把7月27日的上涨股票数加 1
  */
 export async function queryDailyUpCount(req, res) {
-    const db = mongo.getDB();
+    const db = await mongo.getDB();
     const collection = db.collection('daily_up_count');
     let list = await collection.find({
         statDayCount: 10, 
@@ -31,7 +31,7 @@ export async function queryDailyUpCount(req, res) {
  * 概念板块每日资金流向
  */
 export async function queryDailyMoneyFlow(req, res) {
-    const db = mongo.getDB();
+    const db = await mongo.getDB();
     const collection = db.collection('money_flow');
     let list = await collection.aggregate([
         { $match: { date: { $gt: '2026-01-01' } } },

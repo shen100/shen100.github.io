@@ -31,7 +31,7 @@ export async function queryStocksByConcept(req, res) {
         _id: 0 // 不返回 _id
     };
 
-    const db = mongo.getDB();
+    const db = await mongo.getDB();
     const collection = db.collection('stock_detail');
     const list = await collection.find({
         stockName: { $in: stockNames }

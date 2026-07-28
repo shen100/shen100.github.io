@@ -1,7 +1,7 @@
 import * as mongo from '../../database/mongo.js';
 
 export async function queryAllDailyBasic(req, res) {
-    const db = mongo.getDB();
+    const db = await mongo.getDB();
     const collection = db.collection('tushare_daily_basic');
     const list = await collection.find({}).toArray();
 

@@ -4,7 +4,7 @@ import * as mongo from '../../database/mongo.js';
  * 把公司按市值分组，统计每个分组下的公司数、总市值
  */
 export async function queryShiZhi(req, res) {
-    const db = mongo.getDB();
+    const db = await mongo.getDB();
     const collection = db.collection('stock_detail');
     const list = await collection.find({}).toArray();
 

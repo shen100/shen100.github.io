@@ -18,6 +18,13 @@ export async function init() {
     }
 }
 
-export function getDB() {
+export async function getDB() {
+    if (!db) {
+        await init();
+    }
     return db;
+}
+
+export async function close() {
+    await client.close();
 }

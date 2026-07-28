@@ -1,12 +1,12 @@
 import { MongoClient } from 'mongodb';
 import bluebird from 'bluebird';
-import { getAllStocks } from './allStocks.js';
+import * as stockService from '../service/stock.js';
 import { requestStockDetail } from './stockUtil.js';
 
 const uri = 'mongodb://admin:admin123@127.0.0.1:27017';
 const client = new MongoClient(uri);
 
-let myItems = getAllStocks();
+let myItems = await stockService.getAllStocksFromFile();
 
 /*
 

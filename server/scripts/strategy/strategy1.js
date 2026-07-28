@@ -6,10 +6,6 @@ import * as strategy4 from './strategy4.js';
  * 2. 公司市值小于 100 亿
  */
 export function detectTrend(allItems, stockDetail, options) {
-    if (stockDetail.stockName === '艾罗能源') {
-        console.log();
-    }
-
     // 上市时间少于 100 个交易日的，不考虑
     if (allItems.length < 100) {
         return { ok: false };

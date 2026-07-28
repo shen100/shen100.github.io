@@ -47,8 +47,8 @@ export default {
             path: '/trade/my'
         },
         {
-            title: '本地存储',
-            path: '/trade/localstorage'
+            title: '工具',
+            path: '/trade/tool'
         },
     ]
 }
