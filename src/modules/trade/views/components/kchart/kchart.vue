@@ -95,6 +95,7 @@
 					:stock="data.stock"
 					:kLineType="data.type"
 					:index="i"
+					:time="item.time"
 					:minute="item.minute"
 					:price="item.price"
 					:prevDayClosePrice="item.prevDayClosePrice"
@@ -437,6 +438,8 @@ async function requestMinuteK(stock, start, end, count) {
 	console.log('stockInfo', stockInfo);
 	const prevDayClosePrice = stockInfo[4];
 
+	let dateStr = res.data.data[stock.stockFullId].data.date;
+	let date = `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}`;
 	let highPriceInAll = -1;
 	let lowPriceInAll = 1000000;
 	for (let i = 0; i < resList.length; i++) {
@@ -453,6 +456,7 @@ async function requestMinuteK(stock, start, end, count) {
 		// 和东方财富分时的成交量数据是一致的，和招商证券，雪球分时的成交量数据不一致
 		let volume = i === 0 ? sumVolume: (sumVolume - minuteList[i - 1].sumVolume);
 		minuteList.push({
+			time: date + ' ' + minute,
 			minute,
 			prevDayClosePrice,
 			price, // 当前分钟最新成交价格
@@ -463,10 +467,12 @@ async function requestMinuteK(stock, start, end, count) {
 			amount: Number(arr[3]) // 开盘至当前分钟累计成交总金额
 		});
 	}
-	for (let i = 0; i < minuteList.length - 1; i++) {
+	for (let i = 0; i < minuteList.length; i++) {
 		minuteList[i].highPriceInAll = highPriceInAll;
 		minuteList[i].lowPriceInAll = lowPriceInAll;
-		minuteList[i].nextPrice = minuteList[i + 1].price;
+		if (i < minuteList.length - 1) {
+			minuteList[i].nextPrice = minuteList[i + 1].price;
+		}
 	}
 	data.value.minuteList = minuteList;
 	data.value.curPrice = stockInfo[3];
@@ -736,7 +742,7 @@ function updateMinuteChart(type, option) {
 	const minuteList = data.value.minuteList;
     for (let i = 0; i < minuteList.length; i++) {
 		data.value.volumeList.push({
-			time: minuteList[i].minute,
+			time: minuteList[i].time,
 			volume: minuteList[i].volume,
 			openPrice: minuteList[i].openPrice,
 			closePrice: minuteList[i].closePrice,

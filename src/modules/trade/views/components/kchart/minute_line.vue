@@ -7,8 +7,8 @@
             <div class="minute-line-line" :style="{ transform: `rotate(${data.angle}deg)`, width: data.lineLength + 'px' }"></div>
             
         </div>
-        <div v-if="data.isMouseOver"
-					class="minute-line-full-line"></div>
+        <div v-if="data.isMouseOver" class="minute-line-full-line"></div>
+        <div v-if="data.isMouseOver" :style="{top: (data.lineY - 2) + 'px'}" class="current-minute-point"></div>
     </div>
 </template>
 
@@ -25,6 +25,7 @@ const props = defineProps([
     'highPriceInAll',
     'lowPriceInAll',
     'nextPrice',
+    'time',
     'minute',
     'volume',
     'maxHeight'
@@ -48,10 +49,27 @@ onMounted(async () => {
     let x2 = (props.index + 1) * lineWidth;;
     let y2 = (props.highPriceInAll - props.nextPrice) / priceDt * props.maxHeight;
 
+    // 已经是最后一个分时点了，没有nextPrice， 即没有下一个分时点，这时让 y2 = y1
+    if (typeof props.nextPrice === 'undefined') {
+        y2 = y1;
+    }
+
     const dx = x2 - x1;
     const dy = y2 - y1;
     const rad = Math.atan2(dy, dx); // 弧度
-    const deg = 360 + rad * (180 / Math.PI); // 转换为度
+    const deg = rad * (180 / Math.PI); // 转换为度
+
+    if (props.index === 265 || props.index === 266) {
+        console.log('props.index', props.index);
+        console.log('props.price', props.price);
+        console.log('props.highPriceInAll', props.highPriceInAll);
+        console.log('props.lowPriceInAll', props.lowPriceInAll);
+        console.log('props.maxHeight', props.maxHeight);
+
+        console.log('x1, y1', x1, y1);
+        console.log('x2, y2', x2, y2);
+        console.log('deg', deg);
+    }
 
     let lineLength = Math.round(Math.sqrt(dx * dx + dy * dy));
 
@@ -75,7 +93,7 @@ function getMinuteData() {
     return {
         stockId: props.stock.stockId,
         kLineType: props.kLineType,
-        time: props.minute,
+        time: props.time,
         prevDayClosePrice: props.prevDayClosePrice,
         lowPrice: props.price,
         highPrice: props.price,
@@ -129,6 +147,7 @@ defineExpose({ getMinuteData, setMouseOver, setMouseOut });
 
 .minute-line {
     position: absolute;
+    left: 1px;
 }
 
 .minute-line-line {
@@ -139,9 +158,19 @@ defineExpose({ getMinuteData, setMouseOver, setMouseOut });
 
 .minute-line-full-line {
     position: absolute;
-    border-left: 1px dashed #23848b;
+    border-left: 1px dashed #cecece;
     height: 100%;
     pointer-events: none;
-    left: 0px;
+    left: 1px;
+}
+
+.current-minute-point {
+    position: absolute;
+    left: -1.5px;
+    width: 6px;
+    height: 6px;
+    border: 1px #f35c5c solid;
+    border-radius: 3px;
+    background-color: #fff;
 }
 </style>

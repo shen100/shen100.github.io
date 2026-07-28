@@ -94,13 +94,13 @@ onMounted(async () => {
     if (props.info.kLineType === 'day') {
         itemWidth = 9;
     } else if (props.info.kLineType === 'minute') {
-        itemWidth = 3;
+        itemWidth = 4;
     }
     let left = props.info.index * itemWidth - props.info.scrollLeft;
     if (left < props.info.containerWidth / 2) {
-        left += 160;
+        left += 180;
     } else {
-        left -= 262;
+        left -= 282;
     }
     data.value.left = left + 'px';
 });
@@ -114,7 +114,7 @@ onMounted(async () => {
     top: 55px;
     border: 1px solid #eee;
     padding: 5px 10px;
-    width: 150px;
+    width: 170px;
     z-index: 2;
     background-color: #fff;
 }

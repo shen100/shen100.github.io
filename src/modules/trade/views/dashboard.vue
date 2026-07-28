@@ -453,7 +453,10 @@ async function gotoCustomStocksKLine() {
 		customStocks: customStocksBase64
 	};
 	console.log(customStocksBase64);
-	router.push({ path: `/trade/tracked_kcharts`, query });
+	// router.push({ path: `/trade/tracked_kcharts`, query });
+
+	let gotoUrl = `/trade/tracked_kcharts?customStocks=${customStocksBase64}`
+	window.open(gotoUrl, '_blank');
 }
 </script>
 

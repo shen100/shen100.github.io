@@ -7,7 +7,7 @@
                 @mouseleave="onMouseOut(i)"
                 @mousemove="onMouseMove">
 				<div class="kchart-volume-item" :style="{width: volumeItemMinWidth, height: getVolumeItemHeight(item), 'background-color': getVolumeItemColor(item)}"></div>
-				<div v-if="i === 3 || props.activeKItemData && props.activeKItemData.time === item.time"
+				<div v-if="props.activeKItemData && props.activeKItemData.time === item.time"
 					:style="{ left: volumeCurrentLineLeft }"
 					class="kchart-volume-full-line"></div>
 			</div>
@@ -75,12 +75,18 @@ function getVolumeItemColor(item) {
 	// console.log('getVolumeItemColor', JSON.stringify(item));
 	let openPrice = item.openPrice;
 	let closePrice = item.closePrice;
-	if (closePrice > openPrice) {
-        return '#ee2500';
-    } else if (closePrice === openPrice) {
-        return '#868686';
-    } else {
+	// if (closePrice > openPrice) {
+    //     return '#ee2500';
+    // } else if (closePrice === openPrice) {
+    //     return '#868686';
+    // } else {
+    //     return '#02b33d';
+    // }
+
+	if (closePrice < openPrice) {
         return '#02b33d';
+    } else {
+        return '#ee2500';
     }
 }
 
@@ -151,7 +157,7 @@ defineExpose({ setScrollLeft });
 
 .kchart-volume-full-line {
     position: absolute;
-    border-left: 1px dashed #23848b;
+    border-left: 1px dashed #cecece;
     height: 100%;
     pointer-events: none;
 	left: 3px;

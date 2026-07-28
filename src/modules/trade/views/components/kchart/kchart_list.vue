@@ -74,7 +74,6 @@ const emit = defineEmits([
 const itemRefs = ref([]);
 
 const props = defineProps([
-    'isCustomStocks',
     'stocks',
     'type',
     'start',
@@ -213,12 +212,7 @@ onMounted(async () => {
         data.value.selectShiZhiIndex = data.value.myFilterData?.filterShiZhi.value;
         console.log('selectShiZhiIndex', data.value.selectShiZhiIndex);
 
-
-        if (props.isCustomStocks) {
-            data.value.kChartLocalKey = 'tradeCustomStocks';
-        } else {
-            data.value.kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
-        }
+        data.value.kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
         data.value.type = props.type || data.value.type;
         data.value.start = props.start || data.value.start;
         data.value.end = props.end || data.value.end;

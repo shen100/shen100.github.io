@@ -49,6 +49,7 @@ let data = ref({
 })
 
 onMounted(async () => {
+    console.log('onMounted 1');
     init();
 });
 
@@ -102,6 +103,19 @@ function init() {
     if (!kChartLocalKey) {
         kChartLocalKey = 'tradeAllFullIdStocks';
         localStorage.setItem('tradeKChartLocalKey', kChartLocalKey)
+    }
+
+    if (route.query.customStocks) {
+        localStorage.setItem('tradeKChartLocalKey', 'tradeCustomStocks');
+        kChartLocalKey = 'tradeCustomStocks'
+    } else {
+        // 地址栏没有传 customStocks， 但本地存的 tradeKChartLocalKey 为 tradeCustomStocks
+        // 因为，没有在本地存 key 为 tradeCustomStocks 对应的数据(query.customStocks 在地址栏传的 股票数据 可能每次不一样)， 
+        // 所以将 tradeKChartLocalKey 设为 tradeAllFullIdStocks
+        if (kChartLocalKey === 'tradeCustomStocks') {
+            kChartLocalKey = 'tradeAllFullIdStocks';
+            localStorage.setItem('tradeKChartLocalKey', kChartLocalKey)
+        }
     }
 
     let stocks = getStocks();
