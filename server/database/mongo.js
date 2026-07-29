@@ -14,6 +14,10 @@ async function createIndexes() {
         { stockFullId: 1 },
         { unique: true, background: true }
     );
+    await db.collection('tushare_daily_basic').createIndex(
+        { stockFullId: 1 },
+        { unique: true, background: true }
+    );
     console.log();
 }
 

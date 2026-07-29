@@ -77,7 +77,6 @@ for (let i = 0; i < myItems.length; i++) {
         stockFullId: myItems[i].stockFullId,
         stockId: myItems[i].symbol,
         stockName: myItems[i].name,
-        tsCode: myItems[i].ts_code,
     });
 }
 

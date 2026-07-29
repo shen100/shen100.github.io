@@ -1,13 +1,10 @@
-import { MongoClient } from 'mongodb';
-import bluebird from 'bluebird';
 import axios from 'axios';
+import * as mongo from '../../database/mongo.js';
+import * as stockService from '../../service/stock.js';
 import { formatLocalYMD } from '../../util/date.js';
-import { getAllStocks } from '../allStocks.js';
+import { convertStockFullIdToTsCode } from '../../util/tushare_util.js';
 
-const uri = 'mongodb://admin:admin123@127.0.0.1:27017';
-const client = new MongoClient(uri);
-
-let allStocks = getAllStocks();
+let allStocks = await stockService.getAllStocksFromDB();
 
 function sleep(timeout) {
 	return new Promise(resolve => setTimeout(resolve, timeout));
@@ -28,7 +25,7 @@ async function requestDailyBasic(stock) {
 			token: process.env.TU_SHARE_TOKEN,
 			api_name: 'daily_basic',
 			params: {
-				ts_code: stock.tsCode,
+				ts_code: convertStockFullIdToTsCode(stock.stockFullId),
 				start_date: startDate,
 				end_date: endDate
 			}
@@ -47,12 +44,13 @@ async function requestDailyBasic(stock) {
 	return {
 		stockFullId: stock.stockFullId,
 		stockId: stock.stockId,
-		ts_code: stock.tsCode,
 		items
 	}
 }
 
-async function requestAllDailyBasic(collection) {
+async function requestAllDailyBasic() {
+	const db = await mongo.getDB();
+    const collection = db.collection('tushare_daily_basic');
 	let concurrence = 200;
 	for (let i = 0; i < allStocks.length; i += concurrence) {
 		let startTime = new Date().getTime();
@@ -74,7 +72,6 @@ async function requestAllDailyBasic(collection) {
                 $set: {
 					stockFullId: stock.stockFullId,
                     stockId: stock.stockId,
-                    ts_code: stock.ts_code,
                     items: stock.items
                 },
                 $setOnInsert: {
@@ -94,21 +91,17 @@ async function requestAllDailyBasic(collection) {
 	}
 }
 
+/**
+ * 把每个公司每日的市值存入数据库，用来计算整个大盘每日的总市值
+ */
 async function main() {
     try {
-        await client.connect();
-        console.log('✅ 成功连接到 MongoDB');
-
-        const db = client.db('mytrade');
-        const collection = db.collection('tushare_daily_basic');
-
-        await requestAllDailyBasic(collection);
-
+        await requestAllDailyBasic();
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
-        await client.close();
+        await mongo.close();
     }
 }
 
-main();
+await main();
