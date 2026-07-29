@@ -1,15 +1,16 @@
-import { MongoClient } from 'mongodb';
+import * as mongo from '../../database/mongo.js';
+import { requestDayK } from '../util/stock_util.js';
 
 let years = [ 2026, 2025, 2024 ];
-
-const uri = 'mongodb://admin:admin123@127.0.0.1:27017';
-const client = new MongoClient(uri);
 
 function getKList(year, list) {
     let startIndex = -1;
     let endIndex = -1;
+    // list 里的数据，从小日期，往大日期 排序
     for (let i = 0; i < list.length; i++) {
         let theYear = parseInt(list[i].date.split('-')[0]);
+        // 如果 year 是 2026，那把 2025 年的最后一个交易日也返回
+        // 因为2026 年第一个交易日的涨幅，是相对于2025 年的最后一个交易日的
         if (theYear === year && startIndex < 0) {
             startIndex = i - 1;
         }
@@ -18,7 +19,19 @@ function getKList(year, list) {
         }
     }
     endIndex = endIndex >= 0 ? endIndex : list.length;
-    return list.slice(startIndex, endIndex);
+    const list2 =  list.slice(startIndex, endIndex);
+    return list2;
+}
+
+function padStr(list, padCount) {
+    padCount = padCount || 11;
+    for (let i = 0; i < list.length; i++) {
+        let str = list[i];
+        str = str.padEnd(padCount, ' '); // 在字符串末尾填充，适用于左对齐
+        str = str.replace(/ /g, "&nbsp;");
+        list[i] = str;
+    }
+    return list.join('');
 }
 
 async function analyzePriceChange(year, list, option) {
@@ -37,9 +50,6 @@ async function analyzePriceChange(year, list, option) {
 
     for (let i = 1; i < kList.length; i++) {
         let date = kList[i].date;
-        // if (date === '2026-07-17') {
-        //     console.log();
-        // }
         let price1 = kList[i - 1].closePrice;
         let price2 = kList[i].closePrice;
         if (price2 > price1) {
@@ -92,30 +102,33 @@ async function analyzePriceChange(year, list, option) {
     console.log();
 }
 
-function padStr(list, padCount) {
-    padCount = padCount || 11;
-    for (let i = 0; i < list.length; i++) {
-        let str = list[i];
-        str = str.padEnd(padCount, ' '); // 在字符串末尾填充，适用于左对齐
-        str = str.replace(/ /g, "&nbsp;");
-        list[i] = str;
-    }
-    return list.join('');
+async function requestKList(stockData, startStr, endStr, count) {
+    let myKList = await requestDayK(stockData, startStr, endStr, count);
+    let kList = myKList.map((item) => {
+        return {
+            date: item[0],
+            openPrice: item[1],
+            closePrice: item[2],
+            highPrice: item[3],
+            lowPrice: item[4],
+            volume: item[5]
+        }
+    });
+    return kList;
 }
 
 async function doAnalyze(db, option) {
     console.log('## ' + option.indexTitle);
-    const collection = db.collection('kline_index');
-
-    const kLineData = await collection.findOne({ stockFullId: option.stockFullId });
-    if (!kLineData) {
-        console.log('kline_index 集合里没数据');
-        console.log();
-        process.exit(0);
-    }
 
     for (let i = 0; i < years.length; i++) {
-        await analyzePriceChange(years[i], kLineData.kList, option);
+        const year = years[i];
+        const kList = await requestKList({ stockFullId: option.stockFullId }, `${year - 1}-12-01`, `${year}-12-31`, 1000);
+        if (!(kList && kList.length)) {
+            console.log('kList 没数据');
+            console.log();
+            process.exit(0);
+        }
+        await analyzePriceChange(years[i], kList, option);
     }
 
     option.rate2List.sort((a, b) => {
@@ -134,18 +147,18 @@ async function doAnalyze(db, option) {
     console.log();
 }
 
-(async function() {
+/**
+ * 统计上证指数、科创 50 等近几年的跌幅
+ */
+async function main() {
     try {
-        await client.connect();
-        console.log('✅ 成功连接到 MongoDB\n');
-
-        const db = client.db('mytrade');
+        const db = await mongo.getDB();
 
         // 上证指数
         const option1 = {
             stockFullId: 'sh000001',
-            rateConst3: 0.03,
-            rateConst2: 0.02,
+            rateConst3: 0.03, // 跌幅超过 3%
+            rateConst2: 0.02, // 跌幅超过 2%
             nextRateTableTip: ``,
             indexTitle: '上证指数',
             rate2List: []
@@ -167,6 +180,8 @@ async function doAnalyze(db, option) {
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
-        await client.close();
+        await mongo.close();
     }
-}());
+}
+
+await main();

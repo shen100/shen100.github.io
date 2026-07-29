@@ -10,6 +10,10 @@ async function createIndexes() {
         { stockFullId: 1 },
         { unique: true, background: true }
     );
+    await db.collection('stock_detail').createIndex(
+        { stockFullId: 1 },
+        { unique: true, background: true }
+    );
     console.log();
 }
 

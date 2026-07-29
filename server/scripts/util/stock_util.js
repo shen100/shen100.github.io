@@ -2,7 +2,6 @@ import axios from 'axios'
 
 function findFromRight(str, char) {
     const reversed = str.split('').reverse().join('');
-    
     const reversedIndex = reversed.indexOf(char);
     
     if (reversedIndex === -1) {
@@ -12,12 +11,7 @@ function findFromRight(str, char) {
     return str.length - reversedIndex - 1;
 }
 
-export async function requestStockDetail(dayJSONMap, stock) {
-    let key = `${stock.stockFullId}`;
-    if (dayJSONMap && dayJSONMap[key]) {
-        return dayJSONMap[key];
-    }
-
+export async function requestStockDetail(stock) {
 	let url = `https://sqt.gtimg.cn/?q=${stock.stockFullId}&fmt=json&app=wzq&t=${Date.now()}`;
     let res = await axios.get(url);
 	if (!(res.data && res.data[stock.stockFullId])) {
@@ -34,11 +28,9 @@ export async function requestStockDetail(dayJSONMap, stock) {
 }
 
 export async function requestDayK(stock, start, end, count) {
-    let key = `${stock.stockFullId}-${start}-${end}-${count}`;
-
-    let url = "https://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get?_var=kline_dayqfq&param="
+	let url = "https://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get?_var=kline_dayqfq&param="
 	url += (stock.stockFullId + ",day," + start + "," + end + "," + count + ",qfq");
-    let res = await axios.get(url);
+	let res = await axios.get(url);
 	let str = res.data.replace('kline_dayqfq=', '');
 	let resData = JSON.parse(str);
 	/*
@@ -57,6 +49,7 @@ export async function requestDayK(stock, start, end, count) {
     } else {
 		myKList = resData.data[stock.stockFullId].day;
     }
+	myKList = myKList || [];
 
 	let todayStr = new Date().toISOString().substring(0, 10);
 	let endStr = myKList && myKList.length && myKList[myKList.length - 1][0];
@@ -66,22 +59,20 @@ export async function requestDayK(stock, start, end, count) {
 			myKList.push(todayKData);
 		}
 	}
+	let index = -1;
+	// 如果 start, end 之间的交易日数量 小于 count，那返回的数据可能会有 start 之前的交易日数据
+	for (let i = 0; i < myKList.length; i++) {
+		if (myKList[i][0] >= start) {
+			index = i;
+			break;
+		}
+	}
+	if (index > 0) {
+		myKList = myKList.slice(index);
+	}
 
-	convertKListToNumbers(myKList)
+	castKListToNumbers(myKList);
 	return myKList;
-}
-
-function convertKListToNumbers(myKList) {
-    for (let i = 0; i < myKList.length; i++) {
-        myKList[i][1] = Number(myKList[i][1]);
-        myKList[i][2] = Number(myKList[i][2]);
-        myKList[i][3] = Number(myKList[i][3]);
-        myKList[i][4] = Number(myKList[i][4]);
-        myKList[i][5] = Number(myKList[i][5]);
-		myKList[i][6] = myKList[i][6];
-		myKList[i][7] = Number(myKList[i][7]);
-		myKList[i][8] = Number(myKList[i][8]);
-    }
 }
 
 async function requestToday(stockFullId) {
@@ -91,7 +82,7 @@ async function requestToday(stockFullId) {
         responseType: 'arraybuffer' 
     });
     if (!res.data) {
-		return;
+		return null;
     }
 
     let gbkData = res.data;
@@ -99,7 +90,7 @@ async function requestToday(stockFullId) {
     const utf8String = decoder.decode(gbkData);
     const jsonStr = utf8String;
 	if (!jsonStr) {
-        return;
+        return null;
     }
 	let todayStr = "";
 	let index = jsonStr.indexOf('"');
@@ -122,4 +113,17 @@ async function requestToday(stockFullId) {
 		todayData[6],  // 总手
 	];
 	return kData;
+}
+
+function castKListToNumbers(myKList) {
+    for (let i = 0; i < myKList.length; i++) {
+        myKList[i][1] = Number(myKList[i][1]); // 开盘价
+        myKList[i][2] = Number(myKList[i][2]); // 收盘价
+        myKList[i][3] = Number(myKList[i][3]); // 最高价
+        myKList[i][4] = Number(myKList[i][4]); // 最低价
+        myKList[i][5] = Number(myKList[i][5]); // 成交量(总手)
+		myKList[i][6] = myKList[i][6];
+		myKList[i][7] = Number(myKList[i][7]); // 换手率
+		myKList[i][8] = Number(myKList[i][8]); // 成交额(竞)，单位 万
+    }
 }

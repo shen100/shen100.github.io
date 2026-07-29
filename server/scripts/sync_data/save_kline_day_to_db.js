@@ -1,13 +1,13 @@
 import bluebird from 'bluebird';
 import * as mongo from '../../database/mongo.js';
 import * as stockService from '../../service/stock.js';
-import { requestDayK } from '../util/stockUtil.js';
+import { requestDayK } from '../util/stock_util.js';
 
 let startStr = '2024-01-01';
 let endStr = new Date().toISOString().substring(0, 10); // '2027-01-01';
 
 /**
- * 把所有的股票的历史K线(日线)存入数据库, 可以指定时间 startStr, endStr
+ * 把所有股票的历史K线(日线)存入数据库, 可以指定时间 startStr, endStr
  */
 async function main() {
     try {
