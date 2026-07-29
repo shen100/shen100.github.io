@@ -1,37 +1,21 @@
-import { MongoClient } from 'mongodb';
 import bluebird from 'bluebird';
-import { getAllStocks } from './allStocks.js';
-import { requestDayK } from './stockUtil.js';
-
-const uri = 'mongodb://admin:admin123@127.0.0.1:27017';
-const client = new MongoClient(uri);
-
-let myItems = getAllStocks();
-
-/*
-
-db.getCollection("kline_day").createIndex(
-  { "stockFullId": 1 },
-  { unique: true, background: true }
-)
-
-*/
+import * as mongo from '../../database/mongo.js';
+import * as stockService from '../../service/stock.js';
+import { requestDayK } from '../util/stockUtil.js';
 
 let startStr = '2024-01-01';
-let endStr = '2027-01-01';
+let endStr = new Date().toISOString().substring(0, 10); // '2027-01-01';
 
+/**
+ * 把所有的股票的历史K线(日线)存入数据库, 可以指定时间 startStr, endStr
+ */
 async function main() {
     try {
-        await client.connect();
-        console.log('✅ 成功连接到 MongoDB');
-
-        const db = client.db('mytrade');
+        const allStocks = await stockService.getAllStocksFromDB();
+        const db = await mongo.getDB();
         const collection = db.collection('kline_day');
-
-        const dayJSONMap = {};
-
-        await bluebird.map(myItems, async function (stockData, index) {
-            let myKList = await requestDayK(dayJSONMap, stockData, startStr, endStr, 1000);
+        await bluebird.map(allStocks, async function (stockData, index) {
+            let myKList = await requestDayK(stockData, startStr, endStr, 1000);
             let kList = myKList.map((item) => {
                 return {
                     date: item[0],
@@ -53,7 +37,7 @@ async function main() {
                     kList
                 },
                 $setOnInsert: {
-                    createdAt: new Date()  // 只有插入时才设置
+                    createdAt: new Date() // 只有插入时才设置
                 }
             };
             const result = await collection.updateOne(filter, updateDoc, { upsert: true });
@@ -61,11 +45,13 @@ async function main() {
 
         }, { concurrency: 20 });
 
+        console.log(`一共更新了 ${allStocks.length} 条数据`);
+        console.log();
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
-        await client.close();
+        await mongo.close();
     }
 }
 
-main();
+await main();

@@ -5,3 +5,9 @@ node_modules
 
 server/scripts/json
 server/scripts/buy_point/json
+
+# 忽略 tmp 下所有内容
+server/tmp/**/*
+
+# 但不忽略 empty.txt
+!server/tmp/empty.txt

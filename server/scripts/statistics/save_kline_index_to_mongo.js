@@ -19,7 +19,7 @@ let myItems = [
 ]
 
 let startStr = '2023-12-29'; // 2023年最后一个交易日
-let endStr = '2027-01-01';
+let endStr = new Date().toISOString().substring(0, 10); // '2027-01-01';
 
 async function main() {
     try {
@@ -32,7 +32,7 @@ async function main() {
         const dayJSONMap = {};
 
         await bluebird.map(myItems, async function (stockData, index) {
-            let myKList = await requestDayK(dayJSONMap, stockData, startStr, endStr, 1000);
+            let myKList = await requestDayK(stockData, startStr, endStr, 1000);
             let kList = myKList.map((item) => {
                 return {
                     date: item[0],

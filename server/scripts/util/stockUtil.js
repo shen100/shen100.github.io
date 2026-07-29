@@ -33,13 +33,9 @@ export async function requestStockDetail(dayJSONMap, stock) {
 	}
 }
 
-export async function requestDayK(dayJSONMap, stock, start, end, count) {
+export async function requestDayK(stock, start, end, count) {
     let key = `${stock.stockFullId}-${start}-${end}-${count}`;
 
-    if (dayJSONMap && dayJSONMap[key]) {
-		convertKListToNumbers(dayJSONMap[key]);
-		return dayJSONMap[key];
-    }
     let url = "https://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get?_var=kline_dayqfq&param="
 	url += (stock.stockFullId + ",day," + start + "," + end + "," + count + ",qfq");
     let res = await axios.get(url);

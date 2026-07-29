@@ -5,6 +5,14 @@ const client = new MongoClient(uri);
 
 let db;
 
+async function createIndexes() {
+    await db.collection('kline_day').createIndex(
+        { stockFullId: 1 },
+        { unique: true, background: true }
+    );
+    console.log();
+}
+
 export async function init() {
     try {
         await client.connect();
@@ -12,6 +20,7 @@ export async function init() {
 
         db = client.db('mytrade');
 
+        await createIndexes();
     } catch (error) {
         console.error('❌ 错误:', error);
         process.exit(-1, error.message);
