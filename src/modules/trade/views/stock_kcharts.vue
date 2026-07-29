@@ -25,6 +25,7 @@
 </template>
 
 <script setup>
+import axios from 'axios';
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router'
 import KChartList from './components/kchart/kchart_list.vue';
@@ -53,16 +54,14 @@ onMounted(async () => {
     init();
 });
 
-function init() {
+async function init() {
     let settingsStr = localStorage.getItem('tradeTrackedStockKChartSettings') || '{}';
     let settings = JSON.parse(settingsStr);
 
-    if (route.query.customStocks) {
-        let customStocksStr = trim(route.query.customStocks || '');
-        const customStocksBase64 = atob(customStocksStr);
-        const decoded = decodeURIComponent(customStocksBase64);
-        data.value.customStocks = JSON.parse(decoded);
+    let uuid = trim(route.query.uuid || '');
+    if (uuid) {
         data.value.isCustomStocks = true;
+        data.value.customStocks = [];
     }
 
     // type: day week month year
@@ -105,17 +104,23 @@ function init() {
         localStorage.setItem('tradeKChartLocalKey', kChartLocalKey)
     }
 
-    if (route.query.customStocks) {
+    if (uuid) {
         localStorage.setItem('tradeKChartLocalKey', 'tradeCustomStocks');
         kChartLocalKey = 'tradeCustomStocks'
     } else {
-        // 地址栏没有传 customStocks， 但本地存的 tradeKChartLocalKey 为 tradeCustomStocks
-        // 因为，没有在本地存 key 为 tradeCustomStocks 对应的数据(query.customStocks 在地址栏传的 股票数据 可能每次不一样)， 
+        // 地址栏没有传 uuid， 但本地存的 tradeKChartLocalKey 为 tradeCustomStocks
+        // 因为，没有在本地存 key 为 tradeCustomStocks 对应的数据(在地址栏传的 股票数据(用uuid 获取股票数据) 可能每次不一样)， 
         // 所以将 tradeKChartLocalKey 设为 tradeAllFullIdStocks
         if (kChartLocalKey === 'tradeCustomStocks') {
             kChartLocalKey = 'tradeAllFullIdStocks';
             localStorage.setItem('tradeKChartLocalKey', kChartLocalKey)
         }
+    }
+
+    if (uuid) {
+        let url = 'http://localhost:3000/api/stocks/get_stocks_by_uuid/' + uuid;
+        const res = await axios.get(url);
+		data.value.customStocks = res.data.data.stocks;
     }
 
     let stocks = getStocks();

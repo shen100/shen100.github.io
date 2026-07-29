@@ -8,17 +8,19 @@ import * as mongo from '../../database/mongo.js';
 export async function queryDailyUpCount(req, res) {
     const db = await mongo.getDB();
     const collection = db.collection('daily_up_count');
+
+    const projection = {
+        date: 1,
+        count: 1,
+        statDayCount: 1,
+        stocks: 1,
+        _id: 0 // 不返回 _id
+    };
     let list = await collection.find({
         statDayCount: 10, 
         date: {$gte: '2025-10-01' }
-    }).sort({ date: 1 }).toArray();
-    list = list.map(item => {
-        return {
-            date: item.date,
-            count: item.count,
-            statDayCount: item.statDayCount
-        }
-    });
+    }, { projection }).sort({ date: 1 }).toArray();
+
     res.json({
         code: 0,
         data: {

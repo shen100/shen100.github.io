@@ -18,6 +18,11 @@ async function createIndexes() {
         { stockFullId: 1 },
         { unique: true, background: true }
     );
+    await db.collection('daily_up_count').createIndex(
+        { date: 1, statDayCount: 1 },
+        { unique: true, background: true }
+    );
+
     console.log();
 }
 

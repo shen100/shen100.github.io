@@ -96,7 +96,10 @@ async function requestAllDailyBasic() {
  */
 async function main() {
     try {
+		let startTime = Date.now();
         await requestAllDailyBasic();
+		let endTime = Date.now();
+		console.log(`总用时 ${(endTime - startTime) / 1000 / 60} 分`);
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {

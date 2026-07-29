@@ -1,89 +1,76 @@
-import { MongoClient } from 'mongodb';
-
-const uri = 'mongodb://admin:admin123@127.0.0.1:27017';
-const client = new MongoClient(uri);
-
-/*
-
-db.getCollection("daily_up_count").createIndex(
-  { "stockFullId": 1 },
-  { unique: true, background: true }
-)
-
-*/
+import * as mongo from '../../database/mongo.js';
 
 async function exec(option) {
-    try {
-        await client.connect();
-        console.log('✅ 成功连接到 MongoDB');
+    const db = await mongo.getDB();
+    const collection = db.collection('kline_day');
+    const stocks = await collection.find({}).toArray();
+    const dataMap = {};
 
-        const db = client.db(process.env.MY_DB);
-        const collection = db.collection('kline_day');
-        const stocks = await collection.find({}).toArray();
-        const dataMap = {};
-
-        for (let i = 0; i < stocks.length; i++) {
-            let stock = stocks[i];
-            if (stock.kList.length < option.statDayCount + 1) {
-                continue;
-            }
-            for (let j = stock.kList.length - 1; j >= option.statDayCount; j--) {
-                let items = stock.kList.slice(j - option.statDayCount, j + 1);
-                let item;
-                if (option.isMax) {
-                    item = items.reduce((max, current) => {
-                        return current.closePrice > max.closePrice ? current : max
-                    });
-                } else {
-                    let item1 = stock.kList[j - option.statDayCount];
-                    let item2 = stock.kList[j];
-
-                    if (item2.closePrice > item1.closePrice) {
-                        item = item2;
-                    }
-                }
-                if (item && item.date === stock.kList[j].date) {
-                    dataMap[item.date] = dataMap[item.date] || {
-                        date: item.date,
-                        count: 0
-                    };
-                    dataMap[item.date].count++;
-                }
+    for (let i = 0; i < stocks.length; i++) {
+        let stock = stocks[i];
+        // if (stock.stockFullId.indexOf('bj') === 0) {
+        //     // 忽略北交所的股票
+        //     continue;
+        // }
+        if (stock.kList.length < option.statDayCount + 1) {
+            continue;
+        }
+        for (let j = stock.kList.length - 1; j >= option.statDayCount; j--) {
+            // 假如 j 当前为 10, 那就是 在 0 到 10 号元素里找最大值
+            let items = stock.kList.slice(j - option.statDayCount, j + 1);
+            let item = items.reduce((max, current) => {
+                return current.closePrice > max.closePrice ? current : max
+            });
+            // 如果最大元素 是 10 号元素，即 j 对应的元素就是最大元素
+            if (item && item.date === stock.kList[j].date) {
+                dataMap[item.date] = dataMap[item.date] || {
+                    date: item.date,
+                    count: 0,
+                    stocks: []
+                };
+                dataMap[item.date].count++;
+                dataMap[item.date].stocks.push(stock.stockFullId);
             }
         }
+    }
 
-        const dailyUpCountCol = db.collection('daily_up_count');
-        
-        for (let key in dataMap) {
-            const statData = dataMap[key];
-            const filter = { uniqueId: statData.date + `-` + option.statDayCount };
-            const updateDoc = {
-                $set: {
-                    date: statData.date,
-                    count: statData.count,
-                    statDayCount: option.statDayCount
-                },
-                $setOnInsert: {
-                    createdAt: new Date()  // 只有插入时才设置
-                }
-            };
-            const result = await dailyUpCountCol.updateOne(filter, updateDoc, { upsert: true });
-            console.log('📝 更新成功 date ', key, ' result.upsertedId', result.upsertedId);
-            console.log();
-        }
-
-    } catch (error) {
-        console.error('❌ 错误:', error);
-    } finally {
-        await client.close();
+    const dailyUpCountCol = db.collection('daily_up_count');
+    
+    for (let key in dataMap) {
+        const statData = dataMap[key];
+        const filter = { uniqueId: statData.date + `-` + option.statDayCount };
+        const updateDoc = {
+            $set: {
+                date: statData.date,
+                count: statData.count,
+                statDayCount: option.statDayCount,
+                stocks: statData.stocks
+            },
+            $setOnInsert: {
+                createdAt: new Date()  // 只有插入时才设置
+            }
+        };
+        const result = await dailyUpCountCol.updateOne(filter, updateDoc, { upsert: true });
+        console.log('📝 更新成功 date ', key, ' result.upsertedId', result.upsertedId);
+        console.log();
     }
 }
 
+/**
+ * 每日上涨股票数(和前十天每天的股价相比)
+ * 假如股票A在7月27日的收盘价是100, 那和前十天每天的收盘价相比，
+ * 100都是最大值的话，那么就把7月27日的上涨股票数加
+ */
 async function main() {
-    exec({
-        statDayCount: 10,
-        isMax: true
-    });  
+    try {
+        await exec({
+            statDayCount: 10
+        });  
+    } catch (error) {
+        console.error('❌ 错误:', error);
+    } finally {
+        await mongo.close();
+    }
 }
 
-main();
+await main();

@@ -10,5 +10,7 @@ export function init(app) {
     app.get('/api/statistics/daily/money_flow', daily_stat.queryDailyMoneyFlow);
     app.get('/api/statistics/daily/:direction', daily_stat.queryDailyUpCount);
     app.get('/api/statistics/concept/get_stocks', concept_sector.queryStocksByConcept);
+    app.get('/api/stocks/get_stocks_by_uuid/:uuid', stock.queryStocksByUUID);
     app.post('/api/stocks/get_stocks_by_names', stock.queryStocksByNames);
+    app.post('/api/stocks/get_stocks_by_fullids', stock.queryStocksByFullIds);
 }

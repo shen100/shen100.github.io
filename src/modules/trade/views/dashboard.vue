@@ -35,7 +35,7 @@
 						<Icon type="ios-alert" />
 					</Tooltip>
 				</div>
-				<ECharts v-if="dailyUpCountChartOptions.series.length" :options="dailyUpCountChartOptions" />
+				<ECharts v-if="dailyUpCountChartOptions.series.length" @click="onDailyUpChartClick" :options="dailyUpCountChartOptions" />
 			</Card>
 			<Card style="flex: 1;">
 				<div class="total-shizhi-txt">
@@ -68,7 +68,7 @@ const router = useRouter()
 let data = ref({
 	compositeIndex: null, // 综合指数
 	updatedAt2: '',
-	shiZhiStartDateStr: formatLocalYMD(new Date(new Date().getTime() - 3 * 365 * 24 * 3600 * 1000)), // '2024-09-15'
+	shiZhiStartDateStr: formatLocalYMD(new Date(new Date().getTime() - 2 * 365 * 24 * 3600 * 1000)), // '2024-09-15'
     shiZhiEndDateStr: formatLocalYMD(new Date()), // 2025-06-12
 	concepts: [],
 	selectedConcept: ''
@@ -230,7 +230,6 @@ function updateShiZhiPiChart(resData) {
 		arr.push({ value: item.count, name: item.name, selectIndex: i + '', minValue: item.minValue, maxValue: item.maxValue });
 		arr2.push({ value: item.amount, name: item.name, selectIndex: i + '', minValue: item.minValue, maxValue: item.maxValue });
 	}
-	console.log(arr);
 	shiZhiCountPiChartOptions.value.title.subtext = '总市值 ' + (resData.shiZhiData.amount / 10000).toFixed(2) + '万亿';
 	shiZhiCountPiChartOptions.value.series[0].data = arr;
 
@@ -258,12 +257,9 @@ function updateChart() {
 	for (let i = 0; i < indexArr.length; i++) {
 		// indexData 为 { '20050620' { amount: 0, count: 0 } }
 		let indexData = store.compositeIndex[indexArr[i]];
-		console.log('indexData', indexData);
 		let arr = [];
 		let startStr = data.value.shiZhiStartDateStr.replaceAll('-', '');
 		let endStr = data.value.shiZhiEndDateStr.replaceAll('-', '');
-		console.log('startStr ->', startStr);
-		console.log('endStr ->', endStr);
 		for (let date in indexData) {
 			if (date < startStr || date > endStr) {
 				continue;
@@ -288,7 +284,6 @@ function updateChart() {
 			}
 		}
 	}
-	console.log('allDates', allDates);
 	chartOptions.value.xAxis.data = allDates;
 	chartOptions.value.series = series;
 }
@@ -313,8 +308,6 @@ async function requestAllStockDetail() {
 	delete resData.stocks;
 
 	localStorage.setItem('tradeStockMarketStats', JSON.stringify(resData));
-
-	console.log('requestAllStockDetail done');
 }
 
 async function requestAllDailyBasic() {
@@ -329,7 +322,6 @@ async function requestAllDailyBasic() {
 		});
 		return
 	}
-	console.log('res.data.data.compositeIndex', res.data.data);
 	store.updateCompositeIndex({
 		...res.data.data,
 		updatedAt: new Date().toISOString()
@@ -359,14 +351,13 @@ function onShiZhiEndDateChange(dateStr) {
 	updateChart();
 }
 
-function onShiZhiPieChartClick(chartData) {
-	console.log('onShiZhiPieChartClick', chartData);
+function onShiZhiPieChartClick(params) {
+	const chartData = params.data;
 	let query = {
 		selectShiZhiIndex: chartData.selectIndex,
 		minValue: chartData.minValue,
 		maxValue: chartData.maxValue,
 	};
-	console.log('query', query);
 	router.push({ path: `/trade/tracked_kcharts`, query });
 }
 
@@ -389,10 +380,37 @@ async function requestDailyUpCount() {
 	let dates = list.map(item => item.date)
 	series.push({
 		type: 'line',
-		data: list.map(item => item.count)
+		data: list.map(item => {
+			return {
+				value: item.count, // 图表绘图使用的值
+            	...item // 把原始所有字段放进来
+			}
+		})
 	});
 	dailyUpCountChartOptions.value.xAxis.data = dates;
 	dailyUpCountChartOptions.value.series = series;
+}
+
+async function onDailyUpChartClick(params) {
+	if (params.componentType === 'series' && params.seriesType === 'line') {
+		const serie = dailyUpCountChartOptions.value.series[params.seriesIndex];
+		const item = serie.data[params.dataIndex];
+		console.log(item);
+
+		let url = 'http://localhost:3000/api/stocks/get_stocks_by_fullids';
+		const res = await axios.post(url, {
+			stockFullIds: item.stocks,
+		});
+		if (!(res.data.code === 0 && res.data.data)) {
+			Message.error({
+				duration: 10,
+				content: `请求接口失败`
+			});
+			return
+		}
+		let gotoUrl = `/trade/tracked_kcharts?uuid=${res.data.data.uuid}`
+		window.open(gotoUrl, '_blank');
+	}
 }
 
 async function requestDailyMoneyFlow() {
@@ -424,7 +442,6 @@ async function requestDailyMoneyFlow() {
 	dailyMoneyFlowChartOptions.value.xAxis.data = dates;
 	dailyMoneyFlowChartOptions.value.series = series;
 	data.value.concepts = res.data.data.names;
-	console.log(dailyMoneyFlowChartOptions.value);
 }
 
 async function gotoCustomStocksKLine() {
