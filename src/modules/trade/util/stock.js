@@ -1,5 +1,16 @@
 import axios from 'axios'
 
+function findFromRight(str, char) {
+    const reversed = str.split('').reverse().join('');
+    const reversedIndex = reversed.indexOf(char);
+    
+    if (reversedIndex === -1) {
+        return -1;
+    }
+  
+    return str.length - reversedIndex - 1;
+}
+
 export async function requestStockDetail(stock) {
 	let url = `https://sqt.gtimg.cn/?q=${stock.stockFullId}&fmt=json&app=wzq&t=${Date.now()}`;
     let res = await axios.get(url);
@@ -99,7 +110,10 @@ async function requestToday(stockFullId) {
 		todayData[3],  // 收盘价
 		todayData[33], // 最高价
 		todayData[34], // 最低价
-		todayData[6],  // 总手
+		todayData[6],  // 成交量
+		{},
+		todayData[38], // 换手率
+		todayData[37], // 成交额，单位万
 	];
 	return kData;
 }

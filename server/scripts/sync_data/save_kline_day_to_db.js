@@ -17,7 +17,7 @@ async function main() {
         await bluebird.map(allStocks, async function (stockData, index) {
             let myKList = await requestDayK(stockData, startStr, endStr, 1000);
             let kList = myKList.map((item) => {
-                return {
+                const saveData = {
                     date: item[0],
                     openPrice: item[1],
                     closePrice: item[2],
@@ -25,7 +25,19 @@ async function main() {
                     lowPrice: item[4],
                     volume: item[5],
                     amount: item[8],
+                };
+                // 普通股成交量返回的是手，科创板的股票返回的是股
+                let avgPrice = (saveData.openPrice + saveData.closePrice + saveData.highPrice + saveData.lowPrice) / 4;
+                let amount1 = avgPrice * saveData.volume;
+                let amount2 = avgPrice * saveData.volume * 100;
+                let amountYuan = saveData.amount * 10000; // 单位是万， 乘以 10000 转成元
+                let dt1 = Math.abs(amount1 - amountYuan);
+                let dt2 = Math.abs(amount2 - amountYuan);
+                if (dt2 < dt1) {
+                    // dt2 更接近真实的成交额，成交量统一转为股，而不是手
+                    saveData.volume = saveData.volume * 100;
                 }
+                return saveData;
             });
 
             const filter = { stockFullId: stockData.stockFullId };

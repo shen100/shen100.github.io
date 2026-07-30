@@ -57,15 +57,24 @@ async function exec(option) {
 }
 
 /**
- * 每日上涨股票数(和前十天每天的股价相比)
- * 假如股票A在7月27日的收盘价是100, 那和前十天每天的收盘价相比，
- * 100都是最大值的话，那么就把7月27日的上涨股票数加
+ * 每日上涨股票数(和前 N 个交易日每天的股价相比)
+ * 假如股票A在7月27日的收盘价是100, 那和前 N 个交易日每天的收盘价相比，
+ * 100都是最大值的话，那么就把7月27日的上涨股票数加 1
  */
 async function main() {
     try {
         await exec({
-            statDayCount: 10
-        });  
+            statDayCount: 10 // 2周大概 10 个交易日
+        });
+        await exec({
+            statDayCount: 22 // 1个月大概 22 个交易日
+        });
+        await exec({
+            statDayCount: 44 // 2个月大概 44 个交易日
+        });
+        await exec({
+            statDayCount: 250 // 一年大概 250 个交易日
+        });
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {

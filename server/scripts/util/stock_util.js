@@ -40,7 +40,7 @@ export async function requestDayK(stock, start, end, count) {
 		"1970.010", 2-收盘价
 		"1999.870", 3-最高价
 		"1967.000", 4-最低价
-		"51172.000" 5-总手
+		"51172.000" 5-成交量(即多少股，不用乘 100)
 	]
     */
 	let myKList = [];
@@ -110,7 +110,10 @@ async function requestToday(stockFullId) {
 		todayData[3],  // 收盘价
 		todayData[33], // 最高价
 		todayData[34], // 最低价
-		todayData[6],  // 总手
+		todayData[6],  // 成交量
+		{},
+		todayData[38], // 换手率
+		todayData[37], // 成交额，单位万
 	];
 	return kData;
 }
@@ -121,7 +124,7 @@ function castKListToNumbers(myKList) {
         myKList[i][2] = Number(myKList[i][2]); // 收盘价
         myKList[i][3] = Number(myKList[i][3]); // 最高价
         myKList[i][4] = Number(myKList[i][4]); // 最低价
-        myKList[i][5] = Number(myKList[i][5]); // 成交量(总手)
+        myKList[i][5] = Number(myKList[i][5]); // 成交量(即多少股，不用乘 100)
 		myKList[i][6] = myKList[i][6];
 		myKList[i][7] = Number(myKList[i][7]); // 换手率
 		myKList[i][8] = Number(myKList[i][8]); // 成交额(竞)，单位 万

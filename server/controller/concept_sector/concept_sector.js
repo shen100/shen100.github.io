@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import * as mongo from '../../database/mongo.js';
 import { conceptSectors } from '../../data/concept_sector.js';
 
@@ -33,14 +34,22 @@ export async function queryStocksByConcept(req, res) {
 
     const db = await mongo.getDB();
     const collection = db.collection('stock_detail');
-    const list = await collection.find({
+    const stocks = await collection.find({
         stockName: { $in: stockNames }
     }, { projection }).toArray();
+
+    const uuid = crypto.randomUUID();
+    const uuidDataCol = db.collection('uuid_data');
+    await uuidDataCol.insertOne({
+        uuid,
+        stocks
+    });
 
     res.json({
         code: 0,
         data: {
-            stocks: list,
+            uuid,
+            stocks,
         }
     });
 }

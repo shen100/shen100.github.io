@@ -29,26 +29,34 @@
 		<div style="margin-top: 20px; display: flex; gap: 20px;">
 			<Card style="flex: 1;">
 				<div class="total-shizhi-txt">
-					<div style="margin-right: 4px;">每日上涨股票数(和前十天每天的股价相比)</div>
+					<div style="margin-right: 4px;">每日涨跌数</div>
+				</div>
+				<ECharts v-if="dailySurgePlungeChartOptions.series.length" @click="onDailyUpChartClick" :options="dailySurgePlungeChartOptions" />
+			</Card>
+			<Card style="flex: 1;">
+				<div class="total-shizhi-txt">
+					<div style="margin-right: 4px;">资金流向(单位亿)</div>
+				</div>
+				<div style="text-align: center; margin-bottom: 20px;">
+					<div class="concept-label">概念板块</div>
+					<Select v-model="data.selectedConcept" @on-change="onConceptChange" style="width: 200px; margin-right: 10px; text-align: left;">
+						<Option v-for="item in data.concepts" :value="item" :key="item">{{ item }}</Option>
+					</Select>
+					<Button :disabled="!data.selectedConcept" type="primary" @click="gotoCustomStocksKLine">查看K线</Button>
+				</div>
+				<ECharts v-if="dailyMoneyFlowChartOptions.series.length" :options="dailyMoneyFlowChartOptions" />
+			</Card>
+		</div>
+		<div class="daily-up-list">
+			<Card v-for="(item, i) in dailyUpCountList" :key="i" class="daily-up-item">
+				<div class="total-shizhi-txt">
+					<div style="margin-right: 4px;">每日上涨股票数(和前{{ item.dayCount }}个交易日每天的股价相比)</div>
 					<Tooltip content="假如股票A在7月27日的收盘价是100, 那和前十天每天的收盘价相比，100都是最大值的话，那么就把7月27日的上涨股票数加 1"
 						:max-width="300" placement="top">
 						<Icon type="ios-alert" />
 					</Tooltip>
 				</div>
-				<ECharts v-if="dailyUpCountChartOptions.series.length" @click="onDailyUpChartClick" :options="dailyUpCountChartOptions" />
-			</Card>
-			<Card style="flex: 1;">
-				<div class="total-shizhi-txt">
-					<div style="margin-right: 4px;">资金流向</div>
-				</div>
-				<div style="text-align: center; margin-bottom: 20px;">
-					<div class="concept-label">概念板块</div>
-					<Select v-model="data.selectedCconcept" style="width: 200px; margin-right: 10px; text-align: left;">
-						<Option v-for="item in data.concepts" :value="item" :key="item">{{ item }}</Option>
-					</Select>
-					<Button :disabled="!data.selectedCconcept" type="primary" @click="gotoCustomStocksKLine">查看K线</Button>
-				</div>
-				<ECharts v-if="dailyMoneyFlowChartOptions.series.length" :options="dailyMoneyFlowChartOptions" />
+				<ECharts v-if="item.series.length" @click="params => onDailyUpChartClick(i, params)" :options="item" />
 			</Card>
 		</div>
     </div>
@@ -187,7 +195,59 @@ const dailyUpCountChartOptions = ref({
 	series: []
 });
 
+function getDailyUpCountChartInitData(dayCount) {
+	return {
+		dayCount,
+		title: {
+			text: ' '
+		},
+		tooltip: {
+			trigger: 'axis'
+		},
+		// legend: {
+		// 	data: legendData
+		// },
+		xAxis: {
+			type: 'category',
+			data: []
+		},
+		yAxis: {
+			type: 'value'
+		},
+		series: []
+	};
+}
+
+const dailyUpCountList = ref([
+	getDailyUpCountChartInitData(10),
+	getDailyUpCountChartInitData(22),
+	getDailyUpCountChartInitData(44),
+	getDailyUpCountChartInitData(250),
+])
+
 const dailyMoneyFlowChartOptions = ref({
+	title: {
+		text: ' '
+	},
+	tooltip: {
+		trigger: 'axis'
+	},
+	legend: {
+		data: []
+	},
+	xAxis: {
+		type: 'category',
+		data: []
+	},
+	yAxis: {
+		type: 'value'
+	},
+	series: []
+});
+
+let allDailyMoneyFlowList = [];
+
+const dailySurgePlungeChartOptions = ref({
 	title: {
 		text: ' '
 	},
@@ -211,8 +271,9 @@ onMounted(async () => {
 	requestAllStockDetail();
 	updateShiZhiPiChart();
 	updateChart();
-	requestDailyUpCount();
+	requestAllDailyUpCount();
 	requestDailyMoneyFlow();
+	requestDailySurgePlunge();
 });
 
 function updateShiZhiPiChart(resData) {
@@ -361,10 +422,19 @@ function onShiZhiPieChartClick(params) {
 	router.push({ path: `/trade/tracked_kcharts`, query });
 }
 
-async function requestDailyUpCount() {
+async function requestAllDailyUpCount(params) {
+	Promise.all([
+		requestDailyUpCount(0, 10),
+		requestDailyUpCount(1, 22),
+		requestDailyUpCount(2, 44),
+		requestDailyUpCount(3, 250),
+	])
+}
+
+async function requestDailyUpCount(index, dayCount) {
 	const res = await axios({
 		method: 'get',
-		url: 'http://localhost:3000/api/statistics/daily/up'
+		url: 'http://localhost:3000/api/statistics/daily/up/' + dayCount
 	});
 	if (!(res.data.code === 0 && res.data.data)) {
 		Message.error({
@@ -387,13 +457,17 @@ async function requestDailyUpCount() {
 			}
 		})
 	});
-	dailyUpCountChartOptions.value.xAxis.data = dates;
-	dailyUpCountChartOptions.value.series = series;
+	const dailyUpCountChartOptions = dailyUpCountList.value[index]; //  JSON.parse(JSON.stringify(dailyUpCountList.value[index]));
+	dailyUpCountChartOptions.xAxis.data = dates;
+	dailyUpCountChartOptions.series = series;
+	dailyUpCountList.value.splice(index, 1, dailyUpCountChartOptions);
 }
 
-async function onDailyUpChartClick(params) {
+async function onDailyUpChartClick(index, params) {
+	console.log(params);
 	if (params.componentType === 'series' && params.seriesType === 'line') {
-		const serie = dailyUpCountChartOptions.value.series[params.seriesIndex];
+		const dailyUpCountChartOptions = dailyUpCountList.value[index];
+		const serie = dailyUpCountChartOptions.series[params.seriesIndex];
 		const item = serie.data[params.dataIndex];
 		console.log(item);
 
@@ -426,26 +500,78 @@ async function requestDailyMoneyFlow() {
 		return
 	}
 	let list = res.data.data.list;
+	allDailyMoneyFlowList = list;
 
-	let series = [];
+	data.value.concepts = res.data.data.names;
+	setCurrentDailyMoneyFlow(0);
+}
 
-	let dates = list[0].dates.map(item => item.date);
-
-	for (let i = 0; i < list.length; i++) {
-		series.push({
-			name: list[i].name,
+function setCurrentDailyMoneyFlow(index) {
+	let series = [
+		{
+			name: allDailyMoneyFlowList[index].name,
 			type: 'line',
-			data: list[i].dates.map(item => (item.amount / 10000).toFixed(2))
-		});
-	}
-	dailyMoneyFlowChartOptions.value.legend.data = res.data.data.names;
+			data: allDailyMoneyFlowList[index].dates.map(item => (item.amount / 10000).toFixed(2))
+		}
+	];
+
+	let dates = allDailyMoneyFlowList[index].dates.map(item => item.date);
+
+	dailyMoneyFlowChartOptions.value.legend.data = [ allDailyMoneyFlowList[index].name ];
 	dailyMoneyFlowChartOptions.value.xAxis.data = dates;
 	dailyMoneyFlowChartOptions.value.series = series;
-	data.value.concepts = res.data.data.names;
+	data.value.selectedConcept = allDailyMoneyFlowList[index].name;
+}
+
+function onConceptChange(value) {
+	console.log(value);
+	for (let i = 0; i < allDailyMoneyFlowList.length; i++) {
+		if (allDailyMoneyFlowList[i].name === value) {
+			setCurrentDailyMoneyFlow(i);
+			break;
+		}
+	}
+}
+
+async function requestDailySurgePlunge() {
+	const res = await axios({
+		method: 'get',
+		url: 'http://localhost:3000/api/statistics/daily/surge_plunge'
+	});
+	if (!(res.data.code === 0 && res.data.data)) {
+		Message.error({
+			duration: 10,
+			content: `请求接口失败, /api/statistics/daily/money_flow`
+		});
+		return
+	}
+	let list = res.data.data.list;
+	let series = [];
+	let incArr = [];
+	let subArr = [];
+	let dates = [];
+	list.forEach(item => {
+		incArr.push(item.incCount);
+		subArr.push(item.subCount);
+		dates.push(item.date);
+	});
+	series.push({
+		name: '上涨数',
+		type: 'line',
+		data: incArr
+	});
+	series.push({
+		name: '下跌数',
+		type: 'line',
+		data: subArr
+	});
+	dailySurgePlungeChartOptions.value.legend.data = [ '上涨数', '下跌数' ];
+	dailySurgePlungeChartOptions.value.xAxis.data = dates;
+	dailySurgePlungeChartOptions.value.series = series;
 }
 
 async function gotoCustomStocksKLine() {
-	let url = 'http://localhost:3000/api/statistics/concept/get_stocks?concept=' + encodeURIComponent(data.value.selectedCconcept);
+	let url = 'http://localhost:3000/api/statistics/concept/get_stocks?concept=' + encodeURIComponent(data.value.selectedConcept);
 	const res = await axios({
 		method: 'get',
 		url
@@ -457,19 +583,8 @@ async function gotoCustomStocksKLine() {
 		});
 		return
 	}
-	const stocks = res.data.data.stocks;
-	const stockListStr = JSON.stringify(stocks);
-	const encodeStockListStr = encodeURIComponent(stockListStr);
-	console.log(encodeStockListStr);
-
-	const customStocksBase64 = btoa(encodeStockListStr);
-	const query = {
-		customStocks: customStocksBase64
-	};
-	console.log(customStocksBase64);
-	// router.push({ path: `/trade/tracked_kcharts`, query });
-
-	let gotoUrl = `/trade/tracked_kcharts?customStocks=${customStocksBase64}`
+	const uuid = res.data.data.uuid;
+	let gotoUrl = `/trade/tracked_kcharts?uuid=${uuid}`
 	window.open(gotoUrl, '_blank');
 }
 </script>
@@ -523,5 +638,17 @@ async function gotoCustomStocksKLine() {
 	vertical-align: top;
 	margin-right: 10px;
 	line-height: 32px;
+}
+
+.daily-up-list {
+	margin-top: 20px;
+	display: flex;
+  	flex-wrap: wrap;
+  	gap: 20px; /* 间距 */
+}
+
+.daily-up-item {
+  /* 两列：减去gap，均分宽度 */
+  width: calc(50% - 10px);
 }
 </style>
