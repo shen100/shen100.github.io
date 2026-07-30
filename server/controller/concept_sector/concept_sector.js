@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import * as mongo from '../../database/mongo.js';
 import { conceptSectors } from '../../data/concept_sector.js';
+import config from '../../config/config.js';
 
 /**
  * 根据概念板块名来查询其包含的所有股票
@@ -42,7 +43,8 @@ export async function queryStocksByConcept(req, res) {
     const uuidDataCol = db.collection('uuid_data');
     await uuidDataCol.insertOne({
         uuid,
-        stocks
+        stocks,
+        expiredAt: new Date(Date.now() + config.uuidDataExpiredTime)
     });
 
     res.json({

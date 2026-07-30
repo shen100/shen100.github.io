@@ -16,9 +16,10 @@ async function exec() {
                 incCount: 0,
                 subCount: 0
             };
-            if (item2.closePrice > item1.closePrice) {
+            let rate = (item2.closePrice - item1.closePrice) / item1.closePrice;
+            if (rate >= 0.095) {
                 dataMap[item2.date].incCount++;
-            } else if (item2.closePrice < item1.closePrice) {
+            } else if (rate <= -0.095) {
                 dataMap[item2.date].subCount++;
             }
         }

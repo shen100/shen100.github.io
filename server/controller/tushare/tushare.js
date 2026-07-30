@@ -1,5 +1,8 @@
 import * as mongo from '../../database/mongo.js';
 
+/**
+ * 统计每日大盘总市值
+ */
 export async function queryAllDailyBasic(req, res) {
     const db = await mongo.getDB();
     const collection = db.collection('tushare_daily_basic');
@@ -26,7 +29,6 @@ export async function queryAllDailyBasic(req, res) {
 			index4: {},
 			index5: {},
 			index6: {},
-
         }
     });
 }

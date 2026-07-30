@@ -22,7 +22,10 @@ async function createIndexes() {
         { date: 1, statDayCount: 1 },
         { unique: true, background: true }
     );
-
+    await db.collection('uuid_data').createIndex(
+        { expiredAt: 1 },
+        { expireAfterSeconds: 0 } // expireAfterSeconds 为 0 时，使用字段自身时间作为过期时间
+    );
     console.log();
 }
 

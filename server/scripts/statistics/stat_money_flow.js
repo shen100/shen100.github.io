@@ -27,28 +27,20 @@ async function exec() {
         for (let j = stock.kList.length - 1; j > 0; j--) {
             let item1 = stock.kList[j - 1];
             let item2 = stock.kList[j];
-            // let amount = item2.amount - (item2.volume * item1.closePrice / 10000); // 单位万
-
             let rate = (item2.closePrice - item1.closePrice) / item1.closePrice;
             let amount = item2.amount * rate;
 
-            if (stock.stockName === '兆易创新' && item2.date === "2026-07-29") {
-                console.log(amount);
-                console.log();
-            }
-
             for (let k = 0; k < concepts.length; k++) {
                 let conceptName = concepts[k];
-                if (conceptName === '半导体设备' && item2.date === "2026-07-02") {
-                    console.log();
-                }
                 let key = item2.date + '-' + conceptName;
                 dataMap[key] = dataMap[key] || {
                     date: item2.date,
                     concept: conceptName,
-                    amount: 0
+                    amount: 0,
+                    stocks: []
                 };
                 dataMap[key].amount += amount;
+                dataMap[key].stocks.push(stock.stockFullId);
             }
         }
     }
@@ -63,6 +55,8 @@ async function exec() {
                 date: statData.date,
                 concept: statData.concept,
                 amount: statData.amount,
+                stocks: statData.stocks,
+                updatedAt: new Date()
             },
             $setOnInsert: {
                 createdAt: new Date()  // 只有插入时才设置
@@ -84,4 +78,7 @@ async function main() {
     }
 }
 
+/**
+ * 统计概念板块的资金流向
+ */
 await main();

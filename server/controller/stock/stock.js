@@ -1,15 +1,8 @@
 import crypto from 'node:crypto';
 import * as mongo from '../../database/mongo.js';
+import config from '../../config/config.js';
 
 export async function queryStocksByNames(req, res) {
-    // res.json({
-    //     code: 0,
-    //     data: {
-    //         stocks: [],
-    //     }
-    // });
-    // return;
-
     const stockNames = req.body.stockNames;
     const db = await mongo.getDB();
     const collection = db.collection('stock_detail');
@@ -49,7 +42,8 @@ export async function queryStocksByFullIds(req, res) {
     const uuidDataCol = db.collection('uuid_data');
     await uuidDataCol.insertOne({
         uuid,
-        stocks
+        stocks,
+        expiredAt: new Date(Date.now() + config.uuidDataExpiredTime)
     });
 
     res.json({
@@ -66,11 +60,12 @@ export async function queryStocksByUUID(req, res) {
     const db = await mongo.getDB();
     const collection = db.collection('uuid_data');
     const uuidData = await collection.findOne({ uuid });
+    const stocks = uuidData && uuidData.stocks || [];
 
     res.json({
         code: 0,
         data: {
-            stocks: uuidData.stocks
+            stocks
         }
     });
 }

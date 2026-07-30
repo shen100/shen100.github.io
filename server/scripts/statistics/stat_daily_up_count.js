@@ -67,13 +67,7 @@ async function main() {
             statDayCount: 10 // 2周大概 10 个交易日
         });
         await exec({
-            statDayCount: 22 // 1个月大概 22 个交易日
-        });
-        await exec({
-            statDayCount: 44 // 2个月大概 44 个交易日
-        });
-        await exec({
-            statDayCount: 250 // 一年大概 250 个交易日
+            statDayCount: 256 // 一年大概 250 个交易日
         });
     } catch (error) {
         console.error('❌ 错误:', error);

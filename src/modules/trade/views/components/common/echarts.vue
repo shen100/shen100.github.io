@@ -66,7 +66,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     if (chartInstance) {
-        chartInstance.off('click', onPieClick);
+        chartInstance.off('click', onChartClick);
         chartInstance.dispose()
         chartInstance = null
     }

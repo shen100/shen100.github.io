@@ -20,7 +20,7 @@ export async function queryShiZhi(req, res) {
         '市值 >= 1万亿'
     ];
     for (let i = 0; i < 7; i++) {
-        shiZhiList.push({ count: 0, amount: 0, percent: 0, name: names[i] });
+        shiZhiList.push({ count: 0, amount: 0, name: names[i] });
     }
 
     const cond = [ 100, 500, 1000, 2000, 5000, 10000, 1000000 ];
@@ -34,7 +34,7 @@ export async function queryShiZhi(req, res) {
         });
         shiZhiData.count += 1;
         shiZhiData.amount += stock.zongShiZhi || 0;
-        for (let i = 0; i < cond.length; i++){
+        for (let i = 0; i < cond.length; i++) {
             if (stock.zongShiZhi < cond[i]) {
                 shiZhiList[i].count += 1;
                 shiZhiList[i].amount += stock.zongShiZhi;
@@ -43,9 +43,6 @@ export async function queryShiZhi(req, res) {
                 break;
             }
         }
-    }
-    for (let i = 0; i < cond.length; i++){
-        shiZhiList[i].percent = (shiZhiList[i].count / shiZhiData.count * 100).toFixed(2) + '%';
     }
 
     res.json({
