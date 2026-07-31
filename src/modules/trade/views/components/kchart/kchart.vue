@@ -9,7 +9,7 @@
 						{{ data.stockName }}
 					</a>
 					{{ data.stockData ? `&nbsp;(总市值&nbsp;${zongShiZhi})` : '' }}
-					<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice }}</span>
+					<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice.toFixed(2) }}</span>
 					<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(2) : ''}}</span>
 					<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
 					<template v-if="props.kChartLocalKey !== 'tradeAllFullIdStocks'">
@@ -424,8 +424,15 @@ async function requestStockDetail(stock) {
 async function requestMinuteK(stock, start, end, count) {
 	resetData(stock, start, end, count);
 	requestStockDetail(stock);
+
 	let url = `https://web.ifzq.gtimg.cn/appstock/app/minute/query?code=${stock.stockFullId}`;
-	let res = await axios.get(url);
+	let res;
+
+	if ([ '^KS11' ].indexOf(stock.stockFullId) >= 0) {
+		res = await stockUtil.requestMinuteK(stock.stockFullId);
+	} else {
+		res = await axios.get(url);
+	}
 
 	if (!(res.data && res.data.data)) {
 		data.value.dataLoaded = true;
@@ -476,7 +483,7 @@ async function requestMinuteK(stock, start, end, count) {
 		}
 	}
 	data.value.minuteList = minuteList;
-	data.value.curPrice = stockInfo[3];
+	data.value.curPrice = Number(stockInfo[3]);
 
 	// console.log('minuteList', minuteList);
 	updateMinuteChart('minute', { prevDayClosePrice });
@@ -578,6 +585,7 @@ function updateMinuteChart(type, option) {
 	data.value.dtPriceUpdated = true;
 	data.value.dtPrice = data.value.curPrice - option.prevDayClosePrice;
 	data.value.dtRate = data.value.dtPrice / option.prevDayClosePrice;
+	console.log(data.value.curPrice, option.prevDayClosePrice);
 	if (data.value.curPrice > option.prevDayClosePrice) {
 		data.value.lastPriceUpColor = '#ee2500'
 	} else if (data.value.curPrice === option.prevDayClosePrice) {

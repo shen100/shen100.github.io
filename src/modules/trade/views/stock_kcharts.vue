@@ -26,22 +26,23 @@
 
 <script setup>
 import axios from 'axios';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router'
 import KChartList from './components/kchart/kchart_list.vue';
 import { formatLocalYMD } from '../util/date';
 import { trim } from '../util/str';
+import config from '../config/config.js';
 
 const route = useRoute()
 
 let kChartLocalKey;
 
 let data = ref({
-    type: 'day',
+    type: 'day', // minute, day, week, month, year
     start: formatLocalYMD(new Date(new Date().getTime() - 100 * 24 * 3600 * 1000)),
     end: formatLocalYMD(new Date()), // 2025-06-12
     curStocks: [],
-    isCustomStocks: false,
+    isCustomStocks: false, // 通过地址栏传 uuid，uuid 对应一堆股票
     customStocks: [],
     total: 0,
     pageSize: 20,
@@ -50,7 +51,6 @@ let data = ref({
 })
 
 onMounted(async () => {
-    console.log('onMounted 1');
     init();
 });
 
@@ -64,7 +64,6 @@ async function init() {
         data.value.customStocks = [];
     }
 
-    // type: day week month year
     if (settings.type) {
         data.value.type = settings.type;
     }
@@ -79,9 +78,10 @@ async function init() {
     }
     if (settings.filterData) {
         data.value.filterData = settings.filterData;
-        console.log('parent onMounted stock_kcharts ', JSON.stringify(data.value.filterData));
     }
 
+    // /trade/tracked_kcharts?selectShiZhiIndex=1&minValue=100&maxValue=500
+    // 直接访问全部股票，市值 >= minValue 且 < maxValue
     if (route.query.selectShiZhiIndex) {
         settings.filterData = settings.filterData || {
             stockInput: '',
@@ -118,7 +118,7 @@ async function init() {
     }
 
     if (uuid) {
-        let url = 'http://localhost:3000/api/stocks/get_stocks_by_uuid/' + uuid;
+        let url = config.url + '/api/stocks/get_stocks_by_uuid/' + uuid;
         const res = await axios.get(url);
 		data.value.customStocks = res.data.data.stocks;
     }
@@ -130,7 +130,6 @@ async function init() {
 }
 
 function onTypeChange(type) {
-    // type: day week month year
     data.value.type = type;
     saveSettings();
 }
@@ -180,7 +179,6 @@ function onLocalKeyChange() {
     data.value.page = 1;
     saveSettings();
     location.href = '/trade/tracked_kcharts';
-    // location.reload();
 }
 
 function onStockSearch(filterData) {
@@ -216,7 +214,6 @@ function filterStocks(stocks) {
             }
         }
     }
-
     return theStocks;
 }
 

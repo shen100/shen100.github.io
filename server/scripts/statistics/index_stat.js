@@ -1,5 +1,5 @@
 import * as mongo from '../../database/mongo.js';
-import { requestDayK } from '../util/stock_util.js';
+import { requestDayK } from '../../util/stock_util.js';
 
 let years = [ 2026, 2025, 2024 ];
 

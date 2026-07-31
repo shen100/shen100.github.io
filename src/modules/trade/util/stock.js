@@ -1,4 +1,5 @@
-import axios from 'axios'
+import axios from 'axios';
+import config from '../config/config';
 
 function findFromRight(str, char) {
     const reversed = str.split('').reverse().join('');
@@ -12,6 +13,16 @@ function findFromRight(str, char) {
 }
 
 export async function requestStockDetail(stock) {
+	if ([ '^KS11' ].indexOf(stock.stockFullId) >= 0) {
+		let stockDetail = await requestStockDetailByServer(stock);
+		return {
+			stockId: stock.stockId,
+			stockFullId: stock.stockFullId,
+			stockName: stock.stockName,
+			zongShiZhi: stockDetail.zongShiZhi, // 总市值
+			price: stockDetail.price, // 当前价格  
+		}
+	}
 	let url = `https://sqt.gtimg.cn/?q=${stock.stockFullId}&fmt=json&app=wzq&t=${Date.now()}`;
     let res = await axios.get(url);
 	if (!(res.data && res.data[stock.stockFullId])) {
@@ -27,7 +38,22 @@ export async function requestStockDetail(stock) {
 	}
 }
 
+async function requestStockDetailByServer(stock, start, end, count) {
+	let url = config.url + `/api/stocks/kline/detail?stockFullId=${stock.stockFullId}`;
+	let res = await axios.get(url);
+	return res.data.data;
+}
+
+export async function requestMinuteK(stockFullId) {
+	let url = config.url + `/api/stocks/kline/minute?stockFullId=${stockFullId}`;
+	let res = await axios.get(url);
+	return res;
+}
+
 export async function requestDayK(stock, start, end, count) {
+	if ([ '^KS11' ].indexOf(stock.stockFullId) >= 0) {
+		return await requestDayKByServer(stock, start, end, count);
+	}
 	let url = "https://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get?_var=kline_dayqfq&param="
 	url += (stock.stockFullId + ",day," + start + "," + end + "," + count + ",qfq");
 	let res = await axios.get(url);
@@ -72,6 +98,13 @@ export async function requestDayK(stock, start, end, count) {
 	}
 
 	castKListToNumbers(myKList);
+	return myKList;
+}
+
+async function requestDayKByServer(stock, start, end, count) {
+	let url = config.url + `/api/stocks/kline/day?stockFullId=${stock.stockFullId}&start=${start}&end=${end}&count=${count}`;
+	let res = await axios.get(url);
+	let myKList = res.data.data.kList;
 	return myKList;
 }
 

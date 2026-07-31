@@ -1,7 +1,7 @@
 import bluebird from 'bluebird';
 import * as mongo from '../../database/mongo.js';
 import * as stockService from '../../service/stock.js';
-import { requestDayK } from '../util/stock_util.js';
+import { requestDayK } from '../../util/stock_util.js';
 
 let startStr = '2024-01-01';
 let endStr = new Date().toISOString().substring(0, 10); // '2027-01-01';

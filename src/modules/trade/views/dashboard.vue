@@ -60,7 +60,7 @@
 			<Card v-for="(item, i) in dailyUpCountList" :key="i" class="daily-up-item">
 				<div class="total-shizhi-txt">
 					<div style="margin-right: 4px;">每日上涨股票数(和前{{ item.dayCount }}个交易日每天的股价相比)</div>
-					<Tooltip content="假如股票A在7月27日的收盘价是100, 那和前{{ item.dayCount }}个交易日每天的收盘价相比，100都是最大值的话，那么就把7月27日的上涨股票数加 1"
+					<Tooltip :content="`假如股票A在7月27日的收盘价是100, 那和前 ${item.dayCount} 个交易日每天的收盘价相比，100都是最大值的话，那么就把7月27日的上涨股票数加 1`"
 						:max-width="300" placement="top">
 						<Icon type="ios-alert" />
 					</Tooltip>

@@ -1,7 +1,7 @@
 import bluebird from 'bluebird';
 import * as mongo from '../../database/mongo.js';
 import * as stockService from '../../service/stock.js';
-import { requestStockDetail } from '../util/stock_util.js';
+import { requestStockDetail } from '../../util/stock_util.js';
 
 /**
  * 把所有股票的详细信息存入数据库，需要先更新 server/data/all_original_stocks.json

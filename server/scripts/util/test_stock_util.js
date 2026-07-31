@@ -1,4 +1,4 @@
-import { requestDayK } from './stock_util.js';
+import { requestDayK } from '../../util/stock_util.js';
 
 const stock = {
     stockFullId: "sz000001",
