@@ -1,10 +1,15 @@
 import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import cors from 'cors';
 import * as mongo from './database/mongo.js';
 import * as router from './router/router.js';
+import * as socket from './socket/socket.js';
+
+const PORT = 3000;
 
 const app = express();
-const PORT = 3000;
+const httpServer = createServer(app);
 
 await mongo.init();
 
@@ -38,7 +43,9 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(PORT, () => {
+socket.init(httpServer);
+
+httpServer.listen(PORT, () => {
     console.log(`🚀 服务器已启动`);
     console.log(`📡 访问地址: http://localhost:${PORT}`);
     console.log(`📝 按 Ctrl+C 停止服务器`);

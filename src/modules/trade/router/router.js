@@ -9,6 +9,7 @@ import StockCharts from '../views/stock_kcharts.vue';
 import TradeTrail from '../views/trade_trail.vue';
 import BuyPointCalculator from '../views/buy_point_calculator.vue';
 import BuyPointCalculatorDetail from '../views/buy_point_calculator_detail.vue';
+import Task from '../views/task.vue';
 
 const routeList = [
     {
@@ -80,6 +81,11 @@ const routeList = [
         path: '/trade/tool',
         name: 'tradeTool',
         component: TradeTool,
+    },
+    {
+        path: '/trade/task',
+        name: 'tradeTask',
+        component: Task,
     },
     {
         path: '/trade/tool/localstorage',

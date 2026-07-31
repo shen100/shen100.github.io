@@ -52,17 +52,17 @@ export async function requestDayKLine(stockFullId, start, end, count) {
 	]
     */
 	let myKList = [];
-	if (resData.data[stock.stockFullId]['qfqday']) {
-		myKList = resData.data[stock.stockFullId].qfqday;
+	if (resData.data[stockFullId]['qfqday']) {
+		myKList = resData.data[stockFullId].qfqday;
     } else {
-		myKList = resData.data[stock.stockFullId].day;
+		myKList = resData.data[stockFullId].day;
     }
 	myKList = myKList || [];
 
 	let todayStr = new Date().toISOString().substring(0, 10);
 	let endStr = myKList && myKList.length && myKList[myKList.length - 1][0];
 	if (endStr && todayStr > endStr && todayStr <= end) {
-		let todayKData = await requestToday(stock.stockFullId);
+		let todayKData = await requestToday(stockFullId);
 		if (todayKData[0] > endStr) {
 			myKList.push(todayKData);
 		}

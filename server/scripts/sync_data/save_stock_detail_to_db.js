@@ -1,13 +1,19 @@
 import bluebird from 'bluebird';
+import { fileURLToPath } from 'url';
 import * as mongo from '../../database/mongo.js';
 import * as stockService from '../../service/stock.js';
 import { requestStockDetail } from '../../util/stock_util.js';
 
+const __filename = fileURLToPath(import.meta.url);
+
+let logger;
+
 /**
  * 把所有股票的详细信息存入数据库，需要先更新 server/data/all_original_stocks.json
  */
-async function main() {
+export async function exec(option) {
     try {
+        logger = option && option.logger || defaultLogger;
         const allStocks = await stockService.getAllStocksFromFile();
         const db = await mongo.getDB();
         const collection = db.collection('stock_detail');
@@ -29,12 +35,16 @@ async function main() {
             };
             const result = await collection.updateOne(filter, updateDoc, { upsert: true });
 
-            console.log('📝 更新成功:', index, ' result.upsertedId', result.upsertedId);
+            let logMsg = '📝 更新成功: ' + index + ' result.upsertedId ' + result.upsertedId;
+            console.log(logMsg);
             console.log();
+            logger.info(logMsg);
 
         }, { concurrency: 20 });
 
-        console.log(`一共更新了 ${allStocks.length} 条数据`);
+        let logMsg = `一共更新了 ${allStocks.length} 条数据`;
+        console.log(logMsg);
+        logger.info(logMsg);
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
@@ -42,4 +52,6 @@ async function main() {
     }
 }
 
-await main();
+if (process.argv[1] === __filename) {
+    await exec();
+}

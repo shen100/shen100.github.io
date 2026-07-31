@@ -1,21 +1,28 @@
+import { fileURLToPath } from 'url';
 import bluebird from 'bluebird';
 import * as mongo from '../../database/mongo.js';
 import * as stockService from '../../service/stock.js';
-import { requestDayK } from '../../util/stock_util.js';
+import * as defaultLogger from '../../util/logger.js';
+import { requestDayKLine } from '../../util/stock_util.js';
+
+const __filename = fileURLToPath(import.meta.url);
 
 let startStr = '2024-01-01';
 let endStr = new Date().toISOString().substring(0, 10); // '2027-01-01';
 
+let logger;
+
 /**
  * 把所有股票的历史K线(日线)存入数据库, 可以指定时间 startStr, endStr
  */
-async function main() {
+export async function exec(option) {
     try {
+        logger = option && option.logger || defaultLogger;
         const allStocks = await stockService.getAllStocksFromDB();
         const db = await mongo.getDB();
         const collection = db.collection('kline_day');
         await bluebird.map(allStocks, async function (stockData, index) {
-            let myKList = await requestDayK(stockData, startStr, endStr, 1000);
+            let myKList = await requestDayKLine(stockData.stockFullId, startStr, endStr, 1000);
             let kList = myKList.map((item) => {
                 const saveData = {
                     date: item[0],
@@ -53,12 +60,16 @@ async function main() {
                 }
             };
             const result = await collection.updateOne(filter, updateDoc, { upsert: true });
-            console.log('📝 更新成功 index ', index, ' result.upsertedId', result.upsertedId);
+            let logMsg = '📝 更新成功 index ' + index + ' result.upsertedId ' + result.upsertedId;
+            console.log(logMsg);
+            logger.info(logMsg);
 
         }, { concurrency: 20 });
 
-        console.log(`一共更新了 ${allStocks.length} 条数据`);
+        let logMsg = `一共更新了 ${allStocks.length} 条数据`;
+        console.log(logMsg);
         console.log();
+        logger.info(logMsg);
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
@@ -66,4 +77,6 @@ async function main() {
     }
 }
 
-await main();
+if (process.argv[1] === __filename) {
+    await exec();
+}

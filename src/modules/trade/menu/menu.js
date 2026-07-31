@@ -47,6 +47,10 @@ export default {
             path: '/trade/my'
         },
         {
+            title: '任务',
+            path: '/trade/task'
+        },
+        {
             title: '工具',
             path: '/trade/tool'
         },
