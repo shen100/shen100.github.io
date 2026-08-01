@@ -7,11 +7,11 @@
                 </Select>
                 <Button type="primary" @click="onSubmit" style="margin-left: 10px;">执行</Button>
             </div>
-            <div class="task-description">
+            <div v-if="data.task" class="task-description">
                 <span class="desc-label">任务描述: </span>
                 <span>{{ description }}</span>
             </div>
-            <div class="task-description">
+            <div v-if="data.task" class="task-description">
                 <span class="desc-label">最后执行: </span>
                 <span>{{ lastExecTimeStr }}</span>
             </div>

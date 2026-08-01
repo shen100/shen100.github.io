@@ -38,20 +38,20 @@ export default {
         //     title: '持仓K线',
         //     path: '/trade/invested_kcharts'
         // },
+        // {
+        //     title: '交易流水',
+        //     path: '/trade/trans'
+        // },
+        // {
+        //     title: '盈亏排行',
+        //     path: '/trade/profit'
+        // },
+        // {
+        //     title: '账户统计',
+        //     path: '/trade/my'
+        // },
         {
-            title: '交易流水',
-            path: '/trade/trans'
-        },
-        {
-            title: '盈亏排行',
-            path: '/trade/profit'
-        },
-        {
-            title: '账户统计',
-            path: '/trade/my'
-        },
-        {
-            title: '任务',
+            title: '定时任务',
             path: '/trade/task'
         },
         {
