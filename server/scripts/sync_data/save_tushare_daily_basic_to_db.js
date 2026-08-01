@@ -1,8 +1,19 @@
 import axios from 'axios';
+import { fileURLToPath } from 'url';
 import * as mongo from '../../database/mongo.js';
+import * as defaultLogger from '../../util/logger.js';
 import * as stockService from '../../service/stock.js';
 import { formatLocalYMD } from '../../util/date.js';
 import { convertStockFullIdToTsCode } from '../../util/tushare_util.js';
+
+const __filename = fileURLToPath(import.meta.url);
+
+let isMain = false;
+let logger;
+
+if (process.argv[1] === __filename) {
+    isMain = true;
+}
 
 let allStocks = await stockService.getAllStocksFromDB();
 
@@ -48,7 +59,8 @@ async function requestDailyBasic(stock) {
 	}
 }
 
-async function requestAllDailyBasic() {
+async function requestAllDailyBasic(option) {
+	logger = option && option.logger || defaultLogger;
 	const db = await mongo.getDB();
     const collection = db.collection('tushare_daily_basic');
 	let concurrence = 200;
@@ -79,7 +91,9 @@ async function requestAllDailyBasic() {
                 }
             };
             const result = await collection.updateOne(filter, updateDoc, { upsert: true });
-            console.log('📝 更新成功 stockFullId ', stock.stockFullId, ' result.upsertedId', result.upsertedId);
+			let logMsg = '📝 更新成功 stockFullId ' + stock.stockFullId + ' result.upsertedId ' + result.upsertedId;
+			console.log(logMsg);
+			logger.info(logMsg);
 		}
 		let endTime = new Date().getTime();
 		let timeout = 60 * 1000 - (endTime - startTime);
@@ -94,17 +108,23 @@ async function requestAllDailyBasic() {
 /**
  * 把每个公司每日的市值存入数据库，用来计算整个大盘每日的总市值
  */
-async function main() {
+export async function exec(option) {
     try {
 		let startTime = Date.now();
-        await requestAllDailyBasic();
+        await requestAllDailyBasic(option);
 		let endTime = Date.now();
-		console.log(`总用时 ${(endTime - startTime) / 1000 / 60} 分`);
+		let logMsg = `总用时 ${(endTime - startTime) / 1000 / 60} 分`;
+		console.log(logMsg);
+		logger.info(logMsg);
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
-        await mongo.close();
+		if (isMain) {
+        	await mongo.close();
+		}
     }
 }
 
-await main();
+if (isMain) {
+	await exec();
+}

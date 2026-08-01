@@ -10,7 +10,12 @@ const __filename = fileURLToPath(import.meta.url);
 let startStr = '2024-01-01';
 let endStr = new Date().toISOString().substring(0, 10); // '2027-01-01';
 
+let isMain = false;
 let logger;
+
+if (process.argv[1] === __filename) {
+    isMain = true;
+}
 
 /**
  * 把所有股票的历史K线(日线)存入数据库, 可以指定时间 startStr, endStr
@@ -66,6 +71,12 @@ export async function exec(option) {
 
         }, { concurrency: 20 });
 
+        const taskExecCol = db.collection('task_exec_history');
+        await taskExecCol.insertOne({
+            taskName: 'save_kline_day_to_db',
+            createdAt: new Date()
+        });
+
         let logMsg = `一共更新了 ${allStocks.length} 条数据`;
         console.log(logMsg);
         console.log();
@@ -73,10 +84,12 @@ export async function exec(option) {
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
-        await mongo.close();
+        if (isMain) {
+            await mongo.close();
+        }
     }
 }
 
-if (process.argv[1] === __filename) {
+if (isMain) {
     await exec();
 }

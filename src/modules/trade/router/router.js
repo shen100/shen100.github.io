@@ -7,6 +7,7 @@ import TradeLocalStorage from '../views/tool/trade_Local_storage.vue';
 import TradeNameToJson from '../views/tool/trade_name_to_json.vue';
 import StockCharts from '../views/stock_kcharts.vue';
 import TradeTrail from '../views/trade_trail.vue';
+import DailyCheckIn from '../views/daily_check_in.vue';
 import BuyPointCalculator from '../views/buy_point_calculator.vue';
 import BuyPointCalculatorDetail from '../views/buy_point_calculator_detail.vue';
 import Task from '../views/task.vue';
@@ -86,6 +87,11 @@ const routeList = [
         path: '/trade/task',
         name: 'tradeTask',
         component: Task,
+    },
+    {
+        path: '/trade/dailycheckin',
+        name: 'tradeDailyCheckIn',
+        component: DailyCheckIn,
     },
     {
         path: '/trade/tool/localstorage',

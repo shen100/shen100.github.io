@@ -5,6 +5,7 @@ import * as concept_sector from '../controller/concept_sector/concept_sector.js'
 import * as stock from '../controller/stock/stock.js';
 import * as kline from '../controller/stock/kline.js';
 import * as task from '../controller/task/task.js';
+import * as todo_list from '../controller/task/todo_list.js';
 
 export function init(app) {
     app.get('/api/tushare/all_daily_basic', tushare.queryAllDailyBasic);
@@ -22,5 +23,10 @@ export function init(app) {
     app.post('/api/stocks/get_stocks_by_names', stock.queryStocksByNames);
     app.post('/api/stocks/get_stocks_by_fullids', stock.queryStocksByFullIds);
 
+    app.get('/api/tasks/last_history', task.queryLastHistory);
     app.post('/api/tasks/exec', task.exec);
+
+    app.get('/api/todo/today', todo_list.today);
+    app.get('/api/todo/get_daily_todo_count', todo_list.getDailyFinishedTaskCount);
+    app.post('/api/todo/done', todo_list.done);
 }

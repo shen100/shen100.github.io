@@ -1,12 +1,18 @@
 import bluebird from 'bluebird';
 import { fileURLToPath } from 'url';
 import * as mongo from '../../database/mongo.js';
+import * as defaultLogger from '../../util/logger.js';
 import * as stockService from '../../service/stock.js';
 import { requestStockDetail } from '../../util/stock_util.js';
 
 const __filename = fileURLToPath(import.meta.url);
 
+let isMain = false;
 let logger;
+
+if (process.argv[1] === __filename) {
+    isMain = true;
+}
 
 /**
  * 把所有股票的详细信息存入数据库，需要先更新 server/data/all_original_stocks.json
@@ -42,16 +48,24 @@ export async function exec(option) {
 
         }, { concurrency: 20 });
 
+        const taskExecCol = db.collection('task_exec_history');
+        await taskExecCol.insertOne({
+            taskName: 'save_stock_detail_to_db',
+            createdAt: new Date()
+        });
+
         let logMsg = `一共更新了 ${allStocks.length} 条数据`;
         console.log(logMsg);
         logger.info(logMsg);
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
-        await mongo.close();
+        if (isMain) {
+            await mongo.close();
+        }
     }
 }
 
-if (process.argv[1] === __filename) {
+if (isMain) {
     await exec();
 }
