@@ -1,21 +1,21 @@
 <template>
 	<template v-if="!props.isNewPriceMode">
 		<div class="kchart-container">
-			<div class="stock-name" @mouseleave="onStockNameMouseLeave">
+			<div class="stock-name">
 				<div class="stock-name-left-box"></div>
 				<div class="stock-name-space"></div>
-				<div class="stock-name-txt" @mouseenter="onStockNameMouseEnter">
+				<div class="stock-name-txt">
 					<a class="stock-name-link" :href="`https://xueqiu.com/S/${data.stock && data.stock.stockFullId}`" target="_blank">
 						{{ data.stockName }}
 					</a>
-					{{ data.stockData ? `&nbsp;(总市值&nbsp;${zongShiZhi})` : '' }}
+					{{ data.stockDetail ? `&nbsp;(总市值&nbsp;${zongShiZhi})` : '' }}
 					<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice.toFixed(2) }}</span>
 					<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(2) : ''}}</span>
-					<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
+					<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{data.dtRate > 0 ? '+' : ''}}{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
 					<template v-if="props.kChartLocalKey !== 'tradeAllFullIdStocks'">
-						<span v-if="data.stock && currentDownRate" class="stop-rate-label">参考跌幅 {{ currentDownRate }}</span>
-						<span v-if="data.stock && allowMaxDownRate" class="stop-rate-label">最多可跌 {{  allowMaxDownRate }}</span>
-						<span v-if="data.stock && stopRate" class="stop-rate-label">止损 {{ stopRate }}</span>
+						<span v-if="data.stock && currentDownRate" class="stop-rate-label">当前参考跌幅 {{ currentDownRate }}</span>
+						<span v-if="data.stock && allowMaxDownRate" class="stop-rate-label">止损参考跌幅 {{  allowMaxDownRate }}</span>
+						<span v-if="data.stock && stopRate" class="stop-rate-label">实际止损 {{ stopRate }}</span>
 						<span v-if="data.stock && chiCangShiZhi" class="stop-rate-label">持仓市值 {{ chiCangShiZhi.toLocaleString() }}</span>
 						<span v-if="data.stock && props.kChartLocalKey === 'tradeTrail'" class="stop-rate-label">买入金额 {{ maiRuJinE.toLocaleString() }}</span>
 						<span v-if="data.stock && isSoldOut" class="stop-rate-label">卖出价格 {{  sellPrice.toFixed(4) }}</span>
@@ -44,10 +44,10 @@
 			
 			<template v-if="data.activeKItemData && data.activeKItemData.tradeAction">
 				<div v-if="data.activeKItemData.tradeAction.type === 'buy'" class="kchart-trade-buy-or-sell">
-					买入 {{data.activeKItemData.tradeAction.price}} X {{data.activeKItemData.tradeAction.count}} 股
+					买入 {{data.activeKItemData.tradeAction.price.toFixed(4)}} X {{data.activeKItemData.tradeAction.count}} 股
 				</div>
 				<div v-else-if="data.activeKItemData.tradeAction.type === 'sell'" class="kchart-trade-buy-or-sell" style="background-color: #5287ee;">
-					卖出 {{data.activeKItemData.tradeAction.price}} X {{data.activeKItemData.tradeAction.count}} 股
+					卖出 {{data.activeKItemData.tradeAction.price.toFixed(4)}} X {{data.activeKItemData.tradeAction.count}} 股
 				</div>
 			</template>
 
@@ -79,6 +79,7 @@
 					:highPrice="item[3]"
 					:lowPrice="item[4]"
 					:volume="item[5]"
+					:amount="item[8]"
 					:lowPriceInAll="data.lowPriceInAll"
 					:highPriceInAll="data.highPriceInAll"
 					:candleMaxHeight="data.candleMaxHeight"
@@ -103,6 +104,7 @@
 					:lowPriceInAll="item.lowPriceInAll"
 					:nextPrice="item.nextPrice"
 					:volume="item.volume"
+					:amount="item.amount"
 					:maxHeight="data.candleMaxHeight"
 					@mouse-over="(candleData) => onMinuteLineMouseOver(i, candleData)"
 					@mouse-out="() => onMinuteLineMouseOut(i)"
@@ -137,10 +139,8 @@
 </template>
 
 <script setup>
-import axios from 'axios';
 import { onMounted, ref, computed } from 'vue'
-import { findFromRight } from '../../../util/str';
-import * as stockUtil from '../../../util/stock';
+import * as stockUtil from '../../../util/stock_util';
 import StockNewPrice from '../stock_new_price.vue';
 import MinuteLine from './minute_line.vue';
 import Candle from './candle.vue';
@@ -173,11 +173,11 @@ let data = ref({
 	dataLoaded: false,
 	type: 'day',
 	stock: null, // { "stockFullId": "sz000858", "stockId": "000858", "stockName": "五粮液", highPrice: 100, stopPrice: 90, tradeActions: [] }
-	stockData: null, //  { stockId: '000858', zongShiZhi: '4623.77亿' }
+	stockDetail: null, //  { stockId: '000858', zongShiZhi: '4623.77亿' }
 	stockName: '',
-	highPriceY: -1, // 前一最高价
-	avgCostY: -1, // 成本价
-	stopPriceY: -1, // 止损价
+	highPriceY: -1, // 最高参考价的 Y 坐标
+	avgCostY: -1, // 平均成本价的 Y 坐标
+	stopPriceY: -1, // 止损价的 Y 坐标
     lowPriceInAll: 0,
 	highPriceInAll: 0,
     candleMaxHeight: 280,
@@ -192,26 +192,25 @@ let data = ref({
     yAxis3: 0,
     yAxis4: 0,
     yAxis5: 0,
-	yAxisPriceLine: 0,
-	yAxisPriceLinePrice: 0,
+	yAxisPriceLine: 0, // 鼠标滑动的过程中，鼠标光标位置水平线的 Y 坐标
+	yAxisPriceLinePrice: 0, // 鼠标滑动的过程中，鼠标光标位置水平线对应的价格
 	isMouseMoveOnKItem: false, // 鼠标在K线图的蜡烛上滑动，或分时图的分时点上滑动
+	activeKItemData: null, // 鼠标在K线图的蜡烛上滑动，或分时图的分时点上滑动，对应的数据
     yAxisText1: '',
     yAxisText2: '',
     yAxisText3: '',
     yAxisText4: '',
     yAxisText5: '',
-	activeKItemData: null,
-	addToTrackingBtnVisible: false,
-	dtPriceUpdated: false,
-	dtPrice: 0,
-	dtRate: 0,
-	curPrice: 0,
-	lastPriceUpColor: '',
+	dtPrice: 0, // 价格改变量， 如 +0.81
+	dtPriceUpdated: false, // 价格改变量更新了
+	dtRate: 0, // 价格涨幅
+	curPrice: 0, // 当前最新价
+	lastPriceUpColor: '', // 价格涨跌的颜色
 	editModalVisible: false,
 	addPotentialModalVisible: false,
 	removePotentialModalVisible: false,
 	askAIModalVisible: false,
-	minuteList: []
+	minuteList: [] // 分时点数据
 });
 
 onMounted(async () => {
@@ -235,10 +234,10 @@ function getTradeAction(date) {
 }
 
 const zongShiZhi = computed(() => {
-	if (data.value.stockData && data.value.stockData.zongShiZhi > 10000) {
-		return (data.value.stockData.zongShiZhi / 10000).toFixed(2) + '万亿';
+	if (data.value.stockDetail && data.value.stockDetail.zongShiZhi > 10000) {
+		return (data.value.stockDetail.zongShiZhi / 10000).toFixed(2) + '万亿';
 	}
-	return data.value.stockData ? data.value.stockData.zongShiZhi + '亿' : '';
+	return data.value.stockDetail ? data.value.stockDetail.zongShiZhi + '亿' : '';
 })
 
 const avgCost = computed(() => {
@@ -263,22 +262,16 @@ const avgCost = computed(() => {
 	return Number(amount / count);
 })
 
+// 相对于最高参考价的涨跌幅
 const currentDownRate = computed(() => {
 	if (!data.value.stock || !data.value.stock.highPrice) {
 		return '';
 	}
-	let rate = (data.value.stock.highPrice - data.value.curPrice) / data.value.stock.highPrice * 100;
+	let rate = -(data.value.stock.highPrice - data.value.curPrice) / data.value.stock.highPrice * 100;
 	return rate.toFixed(2) + '%'
 })
 
-const stopRate = computed(() => {
-	if (!data.value.stock || !(avgCost.value > 0) || !data.value.stock.stopPrice) {
-		return '';
-	}
-	let rate = (avgCost.value - data.value.stock.stopPrice) / avgCost.value * 100;
-	return rate.toFixed(2) + '%'
-});
-
+// 持仓市值
 const chiCangShiZhi = computed(() => {
 	if (!(data.value.stock && data.value.stock.tradeActions && data.value.stock.tradeActions.length)) {
 		return '';
@@ -298,6 +291,7 @@ const chiCangShiZhi = computed(() => {
 	return '';
 });
 
+// 买入金额
 const maiRuJinE = computed(() => {
 	if (!(data.value.stock && data.value.stock.tradeActions && data.value.stock.tradeActions.length)) {
 		return 0;
@@ -312,6 +306,8 @@ const maiRuJinE = computed(() => {
 	return buyAmount;
 });
 
+
+// 利润
 const profitRate = computed(() => {
 	if (!(data.value.stock && data.value.stock.tradeActions && data.value.stock.tradeActions.length)) {
 		return '';
@@ -343,6 +339,7 @@ const profitRateColor = computed(() => {
 	return '#ee2500';
 });
 
+// 是否卖完了
 const isSoldOut = computed(() => {
 	if (!(data.value.stock && data.value.stock.tradeActions && data.value.stock.tradeActions.length)) {
 		return false;
@@ -363,6 +360,7 @@ const isSoldOut = computed(() => {
 	return false;
 });
 
+// 卖出价格(平均卖出价格)
 const sellPrice = computed(() => {
 	if (!(data.value.stock && data.value.stock.tradeActions && data.value.stock.tradeActions.length)) {
 		return '';
@@ -379,122 +377,98 @@ const sellPrice = computed(() => {
 	return sellAmount / sellCount;
 })
 
+// 实际止损比率(相对于平均成本)
+const stopRate = computed(() => {
+	if (!data.value.stock || !(avgCost.value > 0) || !data.value.stock.stopPrice) {
+		return '';
+	}
+	let rate = -(avgCost.value - data.value.stock.stopPrice) / avgCost.value * 100;
+	return rate.toFixed(2) + '%'
+});
+
+// 相对于最高参考价 的 止损比率
 const allowMaxDownRate = computed(() => {
 	if (!data.value.stock || !data.value.stock.stopPrice || !data.value.stock.highPrice) {
 		return '';
 	}
-	let rate = (data.value.stock.highPrice - data.value.stock.stopPrice) / data.value.stock.highPrice * 100;
+	let rate = -(data.value.stock.highPrice - data.value.stock.stopPrice) / data.value.stock.highPrice * 100;
 	return rate.toFixed(2) + '%'
 })
 
+// 是否允许加入候选股
 const allowAddToPotential = computed(() => {
 	let arr = [ 'tradeAllFullIdStocks', 'tradeCustomStocks', 'tradeStocksByStrategy1', 'tradeStocksByStrategy2' ];
 	return arr.indexOf(props.kChartLocalKey) >= 0;
 })
 
-function resetData(stock, start, end, count) {
+function resetData(stock, start, end) {
 	data.value.dataLoaded = false;
 	data.value.stock = stock;
 	data.value.highPriceY = -1;
 	data.value.avgCostY = -1;
 	data.value.stopPriceY = -1;
-	data.value.stockData = null;
+	data.value.stockDetail = null;
 	data.value.stockName = stock.stockName;
 	data.value.myKList = [];
 	data.value.start = start;
     data.value.end = end;
 }
 
-async function requestStockDetail(stock) {
-	if (data.value.stockData && data.value.stockData.stockId === stock.stockId) {
-		return;
-	}
-	let url = `https://sqt.gtimg.cn/?q=${stock.stockFullId}&fmt=json&app=wzq&t=${Date.now()}`;
-    let res = await axios.get(url);
-	if (!(res.data && res.data[stock.stockFullId])) {
-		return;
-	}
-	let arr = res.data[stock.stockFullId] || [];
-	data.value.stockData = {
-		stockId: stock.stockId,
-		zongShiZhi: Number(arr[45] || '0').toFixed(2), // 总市值
-	}
-}
-
 async function requestMinuteK(stock, start, end, count) {
-	resetData(stock, start, end, count);
-	requestStockDetail(stock);
-
-	let url = `https://web.ifzq.gtimg.cn/appstock/app/minute/query?code=${stock.stockFullId}`;
-	let res;
-
-	if ([ '^KS11' ].indexOf(stock.stockFullId) >= 0) {
-		res = await stockUtil.requestMinuteK(stock.stockFullId);
-	} else {
-		res = await axios.get(url);
-	}
-
-	if (!(res.data && res.data.data)) {
-		data.value.dataLoaded = true;
-		return;
-    }
-	data.value.dataLoaded = true;
-
-	const minuteList = [];
-	const resList = res.data.data[stock.stockFullId].data.data;
-	const stockInfo = res.data.data[stock.stockFullId].qt[stock.stockFullId];
-	console.log('stockInfo', stockInfo);
-	const prevDayClosePrice = stockInfo[4];
-
-	let dateStr = res.data.data[stock.stockFullId].data.date;
-	let date = `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}`;
-	let highPriceInAll = -1;
-	let lowPriceInAll = 1000000;
-	for (let i = 0; i < resList.length; i++) {
-		let arr = resList[i].split(' ');
-		let minute = arr[0].slice(0, 2) + ':' + arr[0].slice(2); // 转成 09:30
-		let price = Number(arr[1]); // 当前分钟最新成交价格
-		let sumVolume = Number(arr[2]); // 开盘至当前分钟累计成交总量;
-		if (price < lowPriceInAll) {
-			lowPriceInAll = price;
-		}
-		if (price > highPriceInAll) {
-			highPriceInAll = price;
-		}
-		// 和东方财富分时的成交量数据是一致的，和招商证券，雪球分时的成交量数据不一致
-		let volume = i === 0 ? sumVolume: (sumVolume - minuteList[i - 1].sumVolume);
-		minuteList.push({
-			time: date + ' ' + minute,
-			minute,
-			prevDayClosePrice,
-			price, // 当前分钟最新成交价格
-			openPrice: i === 0 ? prevDayClosePrice: minuteList[i - 1].price,
-			closePrice: price,
-			volume,
-			sumVolume,
-			amount: Number(arr[3]) // 开盘至当前分钟累计成交总金额
-		});
-	}
-	for (let i = 0; i < minuteList.length; i++) {
-		minuteList[i].highPriceInAll = highPriceInAll;
-		minuteList[i].lowPriceInAll = lowPriceInAll;
-		if (i < minuteList.length - 1) {
-			minuteList[i].nextPrice = minuteList[i + 1].price;
-		}
-	}
-	data.value.minuteList = minuteList;
-	data.value.curPrice = Number(stockInfo[3]);
-
-	// console.log('minuteList', minuteList);
-	updateMinuteChart('minute', { prevDayClosePrice });
-}
-
-async function requestDayK(stock, start, end, count) {
-	resetData(stock, start, end, count);
+	resetData(stock, start, end);
 	data.value.dataLoaded = false;
 	const tasks = await Promise.all([
 		stockUtil.requestStockDetail(stock),
-		stockUtil.requestDayK(stock, start, end, count)
+		stockUtil.requestMinuteK(stock.stockFullId)
+	]);
+	data.value.dataLoaded = true;
+	data.value.stockDetail = tasks[0];
+	data.value.minuteList = tasks[1].minuteList;
+	data.value.curPrice = tasks[1].curPrice;
+	updateMinuteChart('minute', { prevDayClosePrice: tasks[1].prevDayClosePrice });
+}
+
+function updateMinuteChart(type, option) {
+	data.value.type = type;
+	data.value.volumeList = [];
+	data.value.maxVolume = 0;
+	data.value.minVolume = -1;
+	const minuteList = data.value.minuteList;
+    for (let i = 0; i < minuteList.length; i++) {
+		data.value.volumeList.push({
+			time: minuteList[i].time,
+			volume: minuteList[i].volume,
+			amount: minuteList[i].amount,
+			openPrice: minuteList[i].openPrice,
+			closePrice: minuteList[i].closePrice,
+		});
+
+		if (minuteList[i].volume > data.value.maxVolume) {
+			data.value.maxVolume = minuteList[i].volume;
+		}
+		if (minuteList[i].volume < data.value.minVolume || data.value.minVolume === -1) {
+			data.value.minVolume = minuteList[i].volume;
+		}
+    }
+
+	data.value.dtPriceUpdated = true;
+	data.value.dtPrice = data.value.curPrice - option.prevDayClosePrice;
+	data.value.dtRate = data.value.dtPrice / option.prevDayClosePrice;
+	if (data.value.curPrice > option.prevDayClosePrice) {
+		data.value.lastPriceUpColor = '#ee2500'
+	} else if (data.value.curPrice === option.prevDayClosePrice) {
+		data.value.lastPriceUpColor = '#868686';
+	} else {
+		data.value.lastPriceUpColor = '#02b33d';
+	}
+}
+
+async function requestDayK(stock, start, end, count) {
+	resetData(stock, start, end);
+	data.value.dataLoaded = false;
+	const tasks = await Promise.all([
+		stockUtil.requestStockDetail(stock),
+		stockUtil.requestDayK(stock.stockFullId, start, end, count)
 	]);
 	data.value.dataLoaded = true;
 	updateKListData(tasks[0], tasks[1]);
@@ -502,11 +476,11 @@ async function requestDayK(stock, start, end, count) {
 }
 
 async function requestWeekK(stock, start, end, count) {
-	resetData(stock, start, end, count);
+	resetData(stock, start, end);
 	data.value.dataLoaded = false;
 	const tasks = await Promise.all([
 		stockUtil.requestStockDetail(stock),
-		stockUtil.requestWeekK(stock, start, end, count)
+		stockUtil.requestWeekK(stock.stockFullId, start, end, count)
 	]);
 	data.value.dataLoaded = true;
 	updateKListData(tasks[0], tasks[1]);
@@ -514,11 +488,11 @@ async function requestWeekK(stock, start, end, count) {
 }
 
 async function requestMonthK(stock, start, end, count) {
-	resetData(stock, start, end, count);
+	resetData(stock, start, end);
 	data.value.dataLoaded = false;
 	const tasks = await Promise.all([
 		stockUtil.requestStockDetail(stock),
-		stockUtil.requestMonthK(stock, start, end, count)
+		stockUtil.requestMonthK(stock.stockFullId, start, end, count)
 	]);
 	data.value.dataLoaded = true;
 	updateKListData(tasks[0], tasks[1]);
@@ -526,11 +500,11 @@ async function requestMonthK(stock, start, end, count) {
 }
 
 async function requestYearK(stock, start, end, count) {
-	resetData(stock, start, end, count);
+	resetData(stock, start, end);
 	data.value.dataLoaded = false;
 	const tasks = await Promise.all([
 		stockUtil.requestStockDetail(stock),
-		stockUtil.requestYearK(stock, start, end, count)
+		stockUtil.requestYearK(stock.stockFullId, start, end, count)
 	]);
 	data.value.dataLoaded = true;
 	updateKListData(tasks[0], tasks[1]);
@@ -538,7 +512,7 @@ async function requestYearK(stock, start, end, count) {
 }
 
 function updateKListData(stockDetail, myKList) {
-	data.value.stockData = {
+	data.value.stockDetail = {
 		stockId: stockDetail.stockId,
 		zongShiZhi: stockDetail.zongShiZhi.toFixed(2), // 总市值
 	};
@@ -556,49 +530,14 @@ function updateKListData(stockDetail, myKList) {
 	data.value.myKList = myKList;
 }
 
+ // 价格涨幅
 function getDtRate() {
 	return data.value.dtRate;
-}
-
-function updateMinuteChart(type, option) {
-	data.value.type = type;
-	data.value.volumeList = [];
-	data.value.maxVolume = 0;
-	data.value.minVolume = -1;
-	const minuteList = data.value.minuteList;
-    for (let i = 0; i < minuteList.length; i++) {
-		data.value.volumeList.push({
-			time: minuteList[i].time,
-			volume: minuteList[i].volume,
-			openPrice: minuteList[i].openPrice,
-			closePrice: minuteList[i].closePrice,
-		});
-
-		if (minuteList[i].volume > data.value.maxVolume) {
-			data.value.maxVolume = minuteList[i].volume;
-		}
-		if (minuteList[i].volume < data.value.minVolume || data.value.minVolume === -1) {
-			data.value.minVolume = minuteList[i].volume;
-		}
-    }
-
-	data.value.dtPriceUpdated = true;
-	data.value.dtPrice = data.value.curPrice - option.prevDayClosePrice;
-	data.value.dtRate = data.value.dtPrice / option.prevDayClosePrice;
-	console.log(data.value.curPrice, option.prevDayClosePrice);
-	if (data.value.curPrice > option.prevDayClosePrice) {
-		data.value.lastPriceUpColor = '#ee2500'
-	} else if (data.value.curPrice === option.prevDayClosePrice) {
-		data.value.lastPriceUpColor = '#868686';
-	} else {
-		data.value.lastPriceUpColor = '#02b33d';
-	}
 }
 
 function updateChart(type) {
 	let lowPriceInAll = 10000000;
 	let highPriceInAll = -10000000;
-
     data.value.type = type;
 
 	const myKList = data.value.myKList;
@@ -623,12 +562,12 @@ function updateChart(type) {
 	data.value.dtPriceUpdated = false;
 	if (myKList.length > 1) {
 		data.value.dtPriceUpdated = true;
-		let item1 = myKList[myKList.length - 1];
-		let item2 = myKList[myKList.length - 2];
-		data.value.curPrice = item1[2];
-		data.value.dtPrice = item1[2] - item2[2];
-		data.value.dtRate = data.value.dtPrice / item2[2];
-		if (item1[2] > item2[2]) {
+		let item1 = myKList[myKList.length - 2];
+		let item2 = myKList[myKList.length - 1];
+		data.value.curPrice = item2[2];
+		data.value.dtPrice = item2[2] - item1[2];
+		data.value.dtRate = data.value.dtPrice / item1[2];
+		if (item2[2] > item1[2]) {
 			data.value.lastPriceUpColor = '#ee2500'
 		} else if (item1[2] === item2[2]) {
 			data.value.lastPriceUpColor = '#868686';
@@ -678,10 +617,12 @@ function onCandleMouseOver(i, candleData) {
 	let theData = {
 		...candleData,
 		index: i,
+		// 元素布局宽度 = 内容宽度 + padding + border，不含 margin、滚动条（部分浏览器）
 		containerWidth: candlesContainerRef.value.offsetWidth,
 		scrollLeft: candlesContainerRef.value.scrollLeft
 	};
 	if (data.value.myKList && data.value.myKList[i - 1]) {
+		// i 的 前一个交易日的收盘价
 		theData.prevClosePrice = data.value.myKList[i - 1][2]
 	}
 	data.value.activeKItemData = theData;
@@ -706,6 +647,7 @@ function onMinuteLineMouseOver(i, minuteLineData) {
 		scrollLeft: minuteLinesContainerRef.value.scrollLeft
 	};
 	if (data.value.minuteList && data.value.minuteList[i - 1]) {
+		// i 的 前一个分时点的收盘价
 		theData.prevClosePrice = data.value.minuteList[i - 1].price;
 	}
 	data.value.activeKItemData = theData;
@@ -774,14 +716,6 @@ function onCandlesContainerScroll(event) {
 
 function onMinuteLinesContainerScroll(event) {
 	volumeRef.value.setScrollLeft(event.target.scrollLeft);
-}
-
-function onStockNameMouseEnter() {
-	data.value.addToTrackingBtnVisible = true;
-}
-
-function onStockNameMouseLeave() {
-	data.value.addToTrackingBtnVisible = false;
 }
 
 function onShowEditModal() {

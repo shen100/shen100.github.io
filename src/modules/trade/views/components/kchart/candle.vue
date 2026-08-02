@@ -32,6 +32,7 @@ const props = defineProps([
     'openPrice',
     'closePrice',
     'volume',
+    'amount',
     'lowPriceInAll',
     'highPriceInAll',
     'candleMaxHeight',
@@ -192,6 +193,7 @@ function getCandleData() {
         openPrice: props.openPrice,
         closePrice: props.closePrice,
         volume: props.volume,
+        amount: props.amount,
         tradeAction: props.tradeAction,
     }
 }

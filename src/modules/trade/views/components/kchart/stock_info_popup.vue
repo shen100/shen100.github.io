@@ -45,6 +45,16 @@
             <div class="space"></div>
             <div>{{ volume }}</div>
         </div>
+        <div class="stock-info-popup-txt-box">
+            <div>成交量2</div>
+            <div class="space"></div>
+            <div>{{ props.info?.volume }}</div>
+        </div>
+        <div class="stock-info-popup-txt-box">
+            <div>成交额</div>
+            <div class="space"></div>
+            <div>{{ amount }}</div>
+        </div>
     </div>
 </template>
 
@@ -78,14 +88,26 @@ const volume = computed({
         if (props.info && props.info.kLineType === 'minute') {
             v = v / 100;
         }
+        // 小于 1 万股
         if (v < 10000) {
-            return parseInt(v) + '手';
+            return parseInt(v) + '股';
         }
-        // 大于 1亿 手
+        // 大于 1亿 股
         if (v > (10000 * 10000)) {
-            return (v / 10000 / 10000).toFixed(2) + '亿手'
+            return (v / 10000 / 10000).toFixed(2) + '亿股'
         }
-        return (v / 10000).toFixed(2) + '万手';
+        return (v / 10000).toFixed(2) + '万股';
+    }
+});
+
+const amount = computed({
+    get() {
+        let amt = props.info.amount;
+        // 大于 1亿 元
+        if (amt > 10000) {
+            return (amt / 10000).toFixed(2) + '亿'
+        }
+        return amt.toFixed(2) + '万';
     }
 })
 

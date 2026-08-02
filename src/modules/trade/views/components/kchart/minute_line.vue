@@ -26,6 +26,7 @@ const props = defineProps([
     'time',
     'minute',
     'volume',
+    'amount',
     'maxHeight'
 ]);
 
@@ -76,6 +77,7 @@ function getMinuteData() {
         openPrice: props.price,
         closePrice: props.price,
         volume: props.volume,
+        amount: props.amount,
         tradeAction: [],
     }
 }

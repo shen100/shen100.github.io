@@ -54,9 +54,8 @@ import { nextTick, onMounted, ref, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import KChart from './kchart.vue';
 import { formatLocalYMD, parseLocalYMDString } from '../../../util/date';
-import { replaceAllSpace, trim } from '../../../util/str';
+import { trim } from '../../../util/str';
 import StocksUnionModal from './stocks_union_modal.vue';
-
 
 const route = useRoute()
 
@@ -142,14 +141,14 @@ let data = ref({
         stockInput: '',
         filterShiZhi: {
             minValue: -1,
-            maxValue: 1000000,
+            maxValue: 10000 * 10000,
             value: '-1'
         }
     },
     selects: [
         {
             value: '-1',
-            range: [-1, 1000000],
+            range: [-1, 10000 * 10000],
             label: '不过滤市值'
         },
         {
@@ -184,15 +183,13 @@ let data = ref({
         },
         {
             value: '6',
-            range: [10000, 1000000],
+            range: [10000, 10000 * 10000],
             label: '>= 万亿'
         }
     ],
     selectShiZhiIndex: '-1',
     isInited: false
 })
-
-console.log('-------------- init~~~', JSON.stringify(data.value.myFilterData));
 
 function onLocalKeyChange(key) {
     localStorage.setItem('tradeKChartLocalKey', key)
@@ -206,12 +203,8 @@ onMounted(async () => {
             break;
         }
     }
-    console.log('onMounted');
     nextTick(() => {
-        console.log('nextTick', data.value.myFilterData?.filterShiZhi.value);
         data.value.selectShiZhiIndex = data.value.myFilterData?.filterShiZhi.value;
-        console.log('selectShiZhiIndex', data.value.selectShiZhiIndex);
-
         data.value.kChartLocalKey = localStorage.getItem('tradeKChartLocalKey');
         data.value.type = props.type || data.value.type;
         data.value.start = props.start || data.value.start;
@@ -266,23 +259,10 @@ watch(
 )
 
 watch(() => props.filterData, (newVal) => {
-    console.log('watch props.filterData',  JSON.stringify(props.filterData));
     if (newVal) {
         data.value.myFilterData = newVal;
     }
 })
-
-
-// watch(() => props.filterData?.stockInput, (newVal) => {
-//     data.value.myFilterData.stockInput = newVal || '';
-// })
-
-// watch(() => props.filterData?.filterShiZhi, (newVal) => {
-//     console.log('--------------2222', newVal);
-//     // data.value.myFilterData.filterShiZhi = newVal || { minValue: -1, maxValue: 1000000, value: '-1' };
-
-//     // console.log('--------------2222', data.value.myFilterData.filterShiZhi.value);
-// })
 
 function onStartDateChange(dateStr, dateType, type) {
     data.value.start = dateStr;
@@ -369,7 +349,6 @@ async function onRequest(type, stocks) {
 }
 
 function onSearch() {
-    console.log('data.value.myFilterData.stockInput', data.value.myFilterData.stockInput);
     data.value.myFilterData.stockInput = trim(data.value.myFilterData.stockInput || '');
     emit('stock-search', data.value.myFilterData);
 }
@@ -420,7 +399,7 @@ async function isNewPriceModeChange(value) {
                     return;
                 }
                 dtRateMap[stock.stockId] = {
-                    dtRate: el.getDtRate()
+                    dtRate: el.getDtRate() // 相对于前一个交易日的涨幅
                 };
             }
         });
@@ -432,7 +411,6 @@ async function isNewPriceModeChange(value) {
 }
 
 function onSelectShiZhiChange(selectShiZhiIndex) {
-    console.log('onSelectShiZhiChange', selectShiZhiIndex,  JSON.stringify(data.value.myFilterData));
     for (let i = 0; i < data.value.selects.length; i++) {
         if (data.value.selects[i].value === selectShiZhiIndex) {
             data.value.myFilterData.filterShiZhi = {

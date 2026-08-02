@@ -45,17 +45,71 @@ async function requestStockDetailByServer(stock, start, end, count) {
 }
 
 export async function requestMinuteK(stockFullId) {
-	let url = config.url + `/api/stocks/kline/minute?stockFullId=${stockFullId}`;
-	let res = await axios.get(url);
-	return res;
+	let res;
+	if ([ '^KS11' ].indexOf(stockFullId) >= 0) {
+		let url = config.url + `/api/stocks/kline/minute?stockFullId=${stockFullId}`;
+		res = await axios.get(url);
+	} else {
+		let url = `https://web.ifzq.gtimg.cn/appstock/app/minute/query?code=${stockFullId}`;
+		res = await axios.get(url);
+	}
+
+	const minuteList = [];
+	const resList = res.data.data[stockFullId].data.data;
+	const stockInfo = res.data.data[stockFullId].qt[stockFullId];
+	console.log('stockInfo', stockInfo);
+	const prevDayClosePrice = Number(stockInfo[4]);
+
+	let dateStr = res.data.data[stockFullId].data.date;
+	let date = `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}`;
+	let highPriceInAll = -1;
+	let lowPriceInAll = 1000000;
+	for (let i = 0; i < resList.length; i++) {
+		let arr = resList[i].split(' ');
+		let minute = arr[0].slice(0, 2) + ':' + arr[0].slice(2); // 转成 09:30
+		let price = Number(arr[1]); // 当前分钟最新成交价格
+		let sumVolume = Number(arr[2]); // 开盘至当前分钟累计成交总量;
+		if (price < lowPriceInAll) {
+			lowPriceInAll = price;
+		}
+		if (price > highPriceInAll) {
+			highPriceInAll = price;
+		}
+		// 和东方财富分时的成交量数据是一致的，和招商证券，雪球分时的成交量数据不一致
+		let volume = i === 0 ? sumVolume: (sumVolume - minuteList[i - 1].sumVolume);
+		minuteList.push({
+			time: date + ' ' + minute,
+			minute,
+			prevDayClosePrice,
+			price, // 当前分钟最新成交价格
+			openPrice: i === 0 ? prevDayClosePrice : minuteList[i - 1].price,
+			closePrice: price,
+			volume,
+			sumVolume,
+			amount: Number(arr[3]) // 开盘至当前分钟累计成交总金额
+		});
+	}
+	for (let i = 0; i < minuteList.length; i++) {
+		minuteList[i].highPriceInAll = highPriceInAll;
+		minuteList[i].lowPriceInAll = lowPriceInAll;
+		if (i < minuteList.length - 1) {
+			minuteList[i].nextPrice = minuteList[i + 1].price;
+		}
+	}
+
+	return {
+		minuteList,
+		curPrice: Number(stockInfo[3]),
+		prevDayClosePrice
+	}
 }
 
-export async function requestDayK(stock, start, end, count) {
-	if ([ '^KS11' ].indexOf(stock.stockFullId) >= 0) {
-		return await requestDayKByServer(stock, start, end, count);
+export async function requestDayK(stockFullId, start, end, count) {
+	if ([ '^KS11' ].indexOf(stockFullId) >= 0) {
+		return await requestDayKByServer(stockFullId, start, end, count);
 	}
 	let url = "https://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get?_var=kline_dayqfq&param="
-	url += (stock.stockFullId + ",day," + start + "," + end + "," + count + ",qfq");
+	url += (stockFullId + ",day," + start + "," + end + "," + count + ",qfq");
 	let res = await axios.get(url);
 	let str = res.data.replace('kline_dayqfq=', '');
 	let resData = JSON.parse(str);
@@ -70,17 +124,17 @@ export async function requestDayK(stock, start, end, count) {
 	]
     */
 	let myKList = [];
-	if (resData.data[stock.stockFullId]['qfqday']) {
-		myKList = resData.data[stock.stockFullId].qfqday;
+	if (resData.data[stockFullId]['qfqday']) {
+		myKList = resData.data[stockFullId].qfqday;
     } else {
-		myKList = resData.data[stock.stockFullId].day;
+		myKList = resData.data[stockFullId].day;
     }
 	myKList = myKList || [];
 
 	let todayStr = new Date().toISOString().substring(0, 10);
 	let endStr = myKList && myKList.length && myKList[myKList.length - 1][0];
 	if (endStr && todayStr > endStr && todayStr <= end) {
-		let todayKData = await requestToday(stock.stockFullId);
+		let todayKData = await requestToday(stockFullId);
 		if (todayKData[0] > endStr) {
 			myKList.push(todayKData);
 		}
@@ -101,8 +155,8 @@ export async function requestDayK(stock, start, end, count) {
 	return myKList;
 }
 
-async function requestDayKByServer(stock, start, end, count) {
-	let url = config.url + `/api/stocks/kline/day?stockFullId=${stock.stockFullId}&start=${start}&end=${end}&count=${count}`;
+async function requestDayKByServer(stockFullId, start, end, count) {
+	let url = config.url + `/api/stocks/kline/day?stockFullId=${stockFullId}&start=${start}&end=${end}&count=${count}`;
 	let res = await axios.get(url);
 	let myKList = res.data.data.kList;
 	return myKList;
@@ -153,55 +207,47 @@ async function requestToday(stockFullId) {
 
 function castKListToNumbers(myKList) {
     for (let i = 0; i < myKList.length; i++) {
-        myKList[i][1] = Number(myKList[i][1]); // 开盘价
-        myKList[i][2] = Number(myKList[i][2]); // 收盘价
-        myKList[i][3] = Number(myKList[i][3]); // 最高价
-        myKList[i][4] = Number(myKList[i][4]); // 最低价
-        myKList[i][5] = Number(myKList[i][5]); // 成交量(总手)
+		let openPrice  = Number(myKList[i][1]); // 开盘价
+		let closePrice = Number(myKList[i][2]); // 收盘价
+		let highPrice  = Number(myKList[i][3]); // 最高价
+		let lowPrice   = Number(myKList[i][4]); // 最低价
+		let volume     = Number(myKList[i][5]); // 成交量
+		let amount     = Number(myKList[i][8]); // 成交额(竞)，单位 万
+		
+        myKList[i][1] = openPrice;
+        myKList[i][2] = closePrice;
+        myKList[i][3] = highPrice;
+        myKList[i][4] = lowPrice;
+        myKList[i][5] = volume;
 		myKList[i][6] = myKList[i][6];
 		myKList[i][7] = Number(myKList[i][7]); // 换手率
-		myKList[i][8] = Number(myKList[i][8]); // 成交额(竞)，单位 万
+		myKList[i][8] = amount;
+
+		// 普通股成交量返回的是手，科创板的股票返回的是股
+		let avgPrice = (openPrice + closePrice + highPrice + lowPrice) / 4;
+		let amount1 = avgPrice * volume;
+		let amount2 = avgPrice * volume * 100;
+		let amountYuan = amount * 10000; // 单位是万， 乘以 10000 转成元
+		let dt1 = Math.abs(amount1 - amountYuan);
+		let dt2 = Math.abs(amount2 - amountYuan);
+		if (dt2 < dt1) {
+			// dt2 更接近真实的成交额，成交量统一转为股，而不是手
+			volume = volume * 100;
+			myKList[i][5] = volume;
+		}
     }
 }
 
-export async function requestWeekK(stock, start, end, count) {
-	resetData(stock, start, end, count);
-	requestStockDetail(stock);
+export async function requestWeekK(stockFullId, start, end, count) {
 	let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
-	url += (stock.stockFullId + ",week," + start + "," + end + "," + count + ",qfq");
-	let res = await axios.get(url);
-	
-	if (!(res.data && res.data.data)) {
-		data.value.dataLoaded = true;
-		return;
-    }
-		
-	let myKList = [];
-    if (res.data.data[stock.stockFullId]['qfqweek']) {
-		myKList = res.data.data[stock.stockFullId].qfqweek;
-    } else {
-		myKList = res.data.data[stock.stockFullId].week;
-    }
-		
-	let dates = []
-	for (let i = 0; i < myKList.length; i++) {
-		dates.push(myKList[i][0]); // 之前请求成交量用了dates
-    }
-	updateKListData(myKList);
-	updateChart("week");
-}
-
-export async function requestMonthK(stock, start, end, count) {
-	let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=";
-	url += (stock.stockFullId + ",month," + start + "," + end + "," + count + ",qfq");
-
+	url += (stockFullId + ",week," + start + "," + end + "," + count + ",qfq");
 	let res = await axios.get(url);
 		
 	let myKList = [];
-    if (res.data.data[stock.stockFullId]['qfqmonth']) {
-		myKList = res.data.data[stock.stockFullId].qfqmonth;
+    if (res.data.data[stockFullId]['qfqweek']) {
+		myKList = res.data.data[stockFullId].qfqweek;
     } else {
-		myKList = res.data.data[stock.stockFullId].month;
+		myKList = res.data.data[stockFullId].week;
     }
 		
 	let dates = []
@@ -212,24 +258,38 @@ export async function requestMonthK(stock, start, end, count) {
 	return myKList;
 }
 
-export async function requestYearK(stock, start, end, count) {
-	resetData(stock, start, end, count);
-	requestStockDetail(stock);
-	let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
-	url += (stock.stockFullId + ",month," + start + "," + end + "," + count + ",qfq");
+export async function requestMonthK(stockFullId, start, end, count) {
+	let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=";
+	url += (stockFullId + ",month," + start + "," + end + "," + count + ",qfq");
 
 	let res = await axios.get(url);
-	
-	if (!(res.data && res.data.data)) {
-		data.value.dataLoaded = true;
-		return;
+		
+	let myKList = [];
+    if (res.data.data[stockFullId]['qfqmonth']) {
+		myKList = res.data.data[stockFullId].qfqmonth;
+    } else {
+		myKList = res.data.data[stockFullId].month;
     }
 		
+	let dates = []
+	for (let i = 0; i < myKList.length; i++) {
+		dates.push(myKList[i][0]); // 之前请求成交量用了dates
+    }
+	castKListToNumbers(myKList);
+	return myKList;
+}
+
+export async function requestYearK(stockFullId, start, end, count) {
+	let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
+	url += (stockFullId + ",month," + start + "," + end + "," + count + ",qfq");
+
+	let res = await axios.get(url);
+		
     let monthData;
-    if (res.data.data[stock.stockFullId]['qfqmonth']) {
-		monthData = res.data.data[stock.stockFullId].qfqmonth;
+    if (res.data.data[stockFullId]['qfqmonth']) {
+		monthData = res.data.data[stockFullId].qfqmonth;
     } else {
-		monthData = res.data.data[stock.stockFullId].month;
+		monthData = res.data.data[stockFullId].month;
     }
 		
 	let yearMap = {};
@@ -303,6 +363,6 @@ export async function requestYearK(stock, start, end, count) {
     for (let i = 0; i < myKList.length; i++) {
 		dates.push(myKList[i][0]); // 之前请求成交量用了dates
     }
-	updateKListData(myKList);
-	updateChart("year")
+	castKListToNumbers(myKList);
+	return myKList;
 }
