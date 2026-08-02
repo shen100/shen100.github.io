@@ -22,10 +22,10 @@ export async function today(req, res) {
             label: '看大盘总市值'
         },
         {
-            label: '资金流向'
+            label: '看资金流向'
         },
         {
-            label: '每日上涨股票数'
+            label: '看每日暴涨暴跌数'
         },
         {
             label: '每日3组俯卧撑, 一组5个'

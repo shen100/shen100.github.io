@@ -192,17 +192,10 @@ export async function requestWeekK(stock, start, end, count) {
 }
 
 export async function requestMonthK(stock, start, end, count) {
-	resetData(stock, start, end, count);
-	requestStockDetail(stock);
 	let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=";
 	url += (stock.stockFullId + ",month," + start + "," + end + "," + count + ",qfq");
 
 	let res = await axios.get(url);
-	
-	if (!(res.data && res.data.data)) {
-		data.value.dataLoaded = true;
-		return;
-    }
 		
 	let myKList = [];
     if (res.data.data[stock.stockFullId]['qfqmonth']) {
@@ -215,8 +208,8 @@ export async function requestMonthK(stock, start, end, count) {
 	for (let i = 0; i < myKList.length; i++) {
 		dates.push(myKList[i][0]); // 之前请求成交量用了dates
     }
-	updateKListData(myKList);
-	updateChart("month")
+	castKListToNumbers(myKList);
+	return myKList;
 }
 
 export async function requestYearK(stock, start, end, count) {

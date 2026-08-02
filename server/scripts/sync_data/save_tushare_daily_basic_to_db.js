@@ -91,7 +91,7 @@ async function requestAllDailyBasic(option) {
                 }
             };
             const result = await collection.updateOne(filter, updateDoc, { upsert: true });
-			let logMsg = '📝 更新成功 stockFullId ' + stock.stockFullId + ' result.upsertedId ' + result.upsertedId;
+			let logMsg = `📝 更新成功 index ${i} stockFullId ${stock.stockFullId} result.upsertedId ${result.upsertedId}`;
 			console.log(logMsg);
 			logger.info(logMsg);
 		}
@@ -112,6 +112,14 @@ export async function exec(option) {
     try {
 		let startTime = Date.now();
         await requestAllDailyBasic(option);
+
+		const db = await mongo.getDB();
+		const taskExecCol = db.collection('task_exec_history');
+        await taskExecCol.insertOne({
+            taskName: 'save_tushare_daily_basic_to_db',
+            createdAt: new Date()
+        });
+
 		let endTime = Date.now();
 		let logMsg = `总用时 ${(endTime - startTime) / 1000 / 60} 分`;
 		console.log(logMsg);

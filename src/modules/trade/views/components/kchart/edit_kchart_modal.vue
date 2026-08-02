@@ -5,7 +5,6 @@
 		:title="`编辑 ${props.stock?.stockName} 的K线`" :width="600">
 		<Form :label-width="100">
             <FormItem label="标星">
-                <!-- <Radio v-model="data.editModelData.isStar">⭐️</Radio> -->
                 <Checkbox v-model="data.editModelData.isStar">⭐️</Checkbox>
 			</FormItem>
 			<FormItem label="最高参考价">
@@ -139,46 +138,48 @@ function onOK() {
     let stocks = JSON.parse(localStorage.getItem(kChartLocalKey) || '[]');
 
 	for (let i = 0; i < stocks.length; i++) {
-        if (props.stock && props.stock.stockFullId === stocks[i].stockFullId) {
-            let tradeActions = [];
-            for (let j = 0; j < data.value.editModelData.tradeActions.length; j++) {
-                let tAction = data.value.editModelData.tradeActions[j];
-                if (!tAction.date) {
-                    Message.error({
-                        duration: 10,
-                        content: '无效的时间'
-                    });
-                    return
-                }
-                if (!(tAction.price > 0)) {
-                    Message.error({
-                        duration: 10,
-                        content: '无效的价格'
-                    });
-                    return
-                }
-                if (!(tAction.count > 0)) {
-                    Message.error({
-                        duration: 10,
-                        content: '无效的股数'
-                    });
-                    return
-                }
-                let timestamp = tAction.date.getTime();
-                timestamp += 8 * 3600 * 1000;
-                tradeActions.push({
-                    ...tAction,
-                    date: new Date(timestamp).toISOString().substring(0, 10)
-                });
-            }
-            stocks[i].highPrice = data.value.editModelData.highPrice;
-            stocks[i].stopPrice = data.value.editModelData.stopPrice;
-            stocks[i].isStar = data.value.editModelData.isStar;
-            stocks[i].tradeActions = tradeActions;
-            localStorage.setItem(kChartLocalKey, JSON.stringify(stocks, null, 4));
-            location.reload();
-            break;
+        if (!(props.stock && props.stock.stockFullId === stocks[i].stockFullId)) {
+            continue;
         }
+
+        let tradeActions = [];
+        for (let j = 0; j < data.value.editModelData.tradeActions.length; j++) {
+            let tAction = data.value.editModelData.tradeActions[j];
+            if (!tAction.date) {
+                Message.error({
+                    duration: 10,
+                    content: '无效的时间'
+                });
+                return
+            }
+            if (!(tAction.price > 0)) {
+                Message.error({
+                    duration: 10,
+                    content: '无效的价格'
+                });
+                return
+            }
+            if (!(tAction.count > 0)) {
+                Message.error({
+                    duration: 10,
+                    content: '无效的股数'
+                });
+                return
+            }
+            let timestamp = tAction.date.getTime();
+            timestamp += 8 * 3600 * 1000;
+            tradeActions.push({
+                ...tAction,
+                date: new Date(timestamp).toISOString().substring(0, 10)
+            });
+        }
+        stocks[i].highPrice = data.value.editModelData.highPrice;
+        stocks[i].stopPrice = data.value.editModelData.stopPrice;
+        stocks[i].isStar = data.value.editModelData.isStar;
+        stocks[i].tradeActions = tradeActions;
+        localStorage.setItem(kChartLocalKey, JSON.stringify(stocks, null, 4));
+        location.reload();
+        break;
 	}
 }
 

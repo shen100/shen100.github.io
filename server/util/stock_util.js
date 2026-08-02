@@ -186,8 +186,17 @@ export async function requestYahooDayKLine(stockFullIdId, startStr, endStr) {
 }
 
 export async function requestYahooMinuteKLine(stockFullIdId, interval = '1m') {
-	const start = new Date(Date.now() - 1 * 24 * 3600 * 1000);
-	const end = new Date();
+	let end = new Date();
+	if (end.getDay() === 6) {
+		// 如果是星期六，那 end 改为 星期六的 0 点 0 分
+		end.setHours(0, 0, 0, 0);
+	}
+	if (end.getDay() === 0) {
+		// 如果是星期日，那 end 改为 星期六的 0 点 0 分
+		end = new Date(Date.now() - 24 * 3600 * 1000);
+		end.setHours(0, 0, 0, 0);
+	}
+	const start = new Date(end.getTime() - 8 * 24 * 3600 * 1000);
 
 	const tasks = await Promise.all([
 		// 获取分时
@@ -219,6 +228,9 @@ export async function requestYahooMinuteKLine(stockFullIdId, interval = '1m') {
 	const quotes = minuteRes.quotes || [];
 
 	let latestData = quotes[quotes.length - 1];
+	if (!latestData) {
+		console.log();
+	}
 	let latestDate = formatLocalYMD(latestData.date);
 	console.log();
 	let kLineList = quotes.filter(item => item.date.getDate() === latestData.date.getDate());

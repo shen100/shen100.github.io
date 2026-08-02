@@ -3,10 +3,6 @@ export default {
     icon: 'logo-usd',
     children: [
         {
-            title: '每日打卡',
-            path: '/trade/dailycheckin'
-        },
-        {
             title: '数据看板',
             path: '/trade/dashboard'
         },
@@ -53,6 +49,10 @@ export default {
         {
             title: '定时任务',
             path: '/trade/task'
+        },
+        {
+            title: '每日打卡',
+            path: '/trade/dailycheckin'
         },
         {
             title: '工具',

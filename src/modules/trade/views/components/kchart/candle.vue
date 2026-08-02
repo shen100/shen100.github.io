@@ -4,15 +4,15 @@
         @mouseenter="onMouseOver"
         @mouseleave="onMouseOut"
         @mousemove="onMouseMove" class="candle-container" :style="{minWidth: `${data.boxWidth + 2}px`}">
-        <div class="candle-line" :style="candlelineStyle"></div>
+        <div class="candle-line" :style="candleLineStyle"></div>
         <div class="candle-box" :style="candleBoxStyle">
             <div :style="candleInnerBoxStyle"></div>
         </div>
         <div v-if="data.isMouseOver" class="full-line" :style="{left: `${data.lineX}px`}"></div>
 
-        <div v-if="isBuyOrSell" class="candle-line candle-trade-line" :style="candleTradelineStyle"></div>
-        <div v-if="isBuyOrSell" class="candle-box candle-trade-small-box" :style="candleTradeSmallBoxStyle"></div>
-        <div v-if="isBuyOrSell" class="candle-box candle-trade-box" :style="candleTradeBoxStyle">
+        <div v-if="isBuyOrSell" class="candle-line" :style="candleTradelineStyle"></div>
+        <div v-if="isBuyOrSell" class="candle-box" :style="candleTradeSmallBoxStyle"></div>
+        <div v-if="isBuyOrSell" class="candle-box" :style="candleTradeBoxStyle">
             <div class="candle-trade-box-txt">{{ props.tradeAction.type === 'buy' ? 'B' : 'S' }}</div>
         </div>
     </div>
@@ -24,7 +24,7 @@ import { Message } from 'view-ui-plus'
 
 const props = defineProps([
     'stockId',
-    'stockHighPrice',
+    'stockHighPrice', // 当前股票设置的最高参考价，可以和其他价格对比下涨跌幅
     'kLineType', // minute, day, week, month, year
     'date',
     'lowPrice',
@@ -54,7 +54,7 @@ let data = ref({
     isMouseOver: false,
 });
 
-const candlelineStyle = computed(() => {
+const candleLineStyle = computed(() => {
     let backgroundColor = '';
     if (props.closePrice > props.openPrice) {
         backgroundColor = '#ee2500';
@@ -216,6 +216,7 @@ function onMouseOut() {
 
 function onMouseMove(event) {
     if (event.target === event.currentTarget) {
+        // event.offsetY 鼠标相对于【当前绑定事件元素左上角】的垂直坐标（Y 值）
         let y = Math.min(event.offsetY, props.candleMaxHeight);
         let priceDt = props.highPriceInAll - props.lowPriceInAll;
         let price = props.highPriceInAll - (y / props.candleMaxHeight * priceDt);
@@ -255,12 +256,12 @@ defineExpose({ getCandleData, setMouseOver, setMouseOut });
     margin-right: 0;
 }
 
-.candle-box {
+.candle-line {
     position: absolute;
     pointer-events: none;
 }
 
-.candle-line {
+.candle-box {
     position: absolute;
     pointer-events: none;
 }
@@ -270,15 +271,6 @@ defineExpose({ getCandleData, setMouseOver, setMouseOut });
     border-left: 1px dashed #cecece;
     height: 100%;
     pointer-events: none;
-}
-
-.candle-trade-line {
-}
-
-.candle-trade-small-box {
-}
-
-.candle-trade-box {
 }
 
 .candle-trade-box-txt {

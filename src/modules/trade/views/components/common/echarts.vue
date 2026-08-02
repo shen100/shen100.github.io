@@ -49,13 +49,6 @@ const resizeChart = () => {
 }
 
 function onChartClick(params) {
-    // alert(
-    //             '点击了：' + params.name + '\n' +
-    //             'index：' + params.data.selectIndex + '\n' +
-    //             '数值：' + params.value + '\n' +
-    //             '占比：' + params.percent + '%'
-    //         );
-    //         console.log('点击事件触发：', params);
     emit('click', params);
 }
 

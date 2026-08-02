@@ -87,7 +87,7 @@ async function init() {
             stockInput: '',
             filterShiZhi: {
                 minValue: -1,
-                maxValue: 1000000,
+                maxValue: 10000 * 10000,
                 value: '-1'
             }
         };
@@ -109,7 +109,7 @@ async function init() {
         kChartLocalKey = 'tradeCustomStocks'
     } else {
         // 地址栏没有传 uuid， 但本地存的 tradeKChartLocalKey 为 tradeCustomStocks
-        // 因为，没有在本地存 key 为 tradeCustomStocks 对应的数据(在地址栏传的 股票数据(用uuid 获取股票数据) 可能每次不一样)， 
+        // 因为，没有在本地存 key 为 tradeCustomStocks 对应的数据(在地址栏传uuid 获取股票数据, 可能每次获取的股票不一样)， 
         // 所以将 tradeKChartLocalKey 设为 tradeAllFullIdStocks
         if (kChartLocalKey === 'tradeCustomStocks') {
             kChartLocalKey = 'tradeAllFullIdStocks';
