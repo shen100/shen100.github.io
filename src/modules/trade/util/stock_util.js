@@ -50,6 +50,7 @@ export async function requestMinuteK(stockFullId) {
 		let url = config.url + `/api/stocks/kline/minute?stockFullId=${stockFullId}`;
 		res = await axios.get(url);
 	} else {
+		// https://www.cnblogs.com/soarowl/p/20516538
 		let url = `https://web.ifzq.gtimg.cn/appstock/app/minute/query?code=${stockFullId}`;
 		res = await axios.get(url);
 	}
@@ -68,15 +69,30 @@ export async function requestMinuteK(stockFullId) {
 		let arr = resList[i].split(' ');
 		let minute = arr[0].slice(0, 2) + ':' + arr[0].slice(2); // 转成 09:30
 		let price = Number(arr[1]); // 当前分钟最新成交价格
-		let sumVolume = Number(arr[2]); // 开盘至当前分钟累计成交总量;
+		let sumVolume = Number(arr[2]); // 开盘至当前分钟累计成交总量
+		let sumAmount = Number(arr[3]) / 10000; // 开盘至当前分钟累计成交总金额 ( 接口返回的是元，转成万)
+		// 和东方财富分时的成交量数据是一致的，和招商证券，雪球分时的成交量数据不一致
+		let volume = i === 0 ? sumVolume: (sumVolume - minuteList[i - 1].sumVolume);
+		let amount = i === 0 ? sumAmount: (sumAmount - minuteList[i - 1].sumAmount);
+
+		// 普通股成交量返回的是手，科创板的股票返回的是股
+		let avgPrice = price; // (openPrice + closePrice + highPrice + lowPrice) / 4;
+		let amount1 = avgPrice * volume;
+		let amount2 = avgPrice * volume * 100;
+		let amountYuan = amount * 10000; // 单位是万， 乘以 10000 转成元
+		let dt1 = Math.abs(amount1 - amountYuan);
+		let dt2 = Math.abs(amount2 - amountYuan);
+		if (dt2 < dt1) {
+			// dt2 更接近真实的成交额，成交量统一转为股，而不是手
+			volume = volume * 100;
+		}
+
 		if (price < lowPriceInAll) {
 			lowPriceInAll = price;
 		}
 		if (price > highPriceInAll) {
 			highPriceInAll = price;
 		}
-		// 和东方财富分时的成交量数据是一致的，和招商证券，雪球分时的成交量数据不一致
-		let volume = i === 0 ? sumVolume: (sumVolume - minuteList[i - 1].sumVolume);
 		minuteList.push({
 			time: date + ' ' + minute,
 			minute,
@@ -86,7 +102,8 @@ export async function requestMinuteK(stockFullId) {
 			closePrice: price,
 			volume,
 			sumVolume,
-			amount: Number(arr[3]) // 开盘至当前分钟累计成交总金额
+			amount,
+			sumAmount
 		});
 	}
 	for (let i = 0; i < minuteList.length; i++) {

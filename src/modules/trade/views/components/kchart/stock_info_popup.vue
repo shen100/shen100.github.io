@@ -85,9 +85,6 @@ const upDownRate = computed({
 const volume = computed({
     get() {
         let v = props.info.volume;
-        if (props.info && props.info.kLineType === 'minute') {
-            v = v / 100;
-        }
         // 小于 1 万股
         if (v < 10000) {
             return parseInt(v) + '股';

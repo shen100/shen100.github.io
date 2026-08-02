@@ -98,9 +98,21 @@ function onMouseMove(event) {
         let y = Math.min(event.offsetY, kChartVolumeHeight);
 		// 画成交量的图时，底部是从 0 开始的， minVolume 没用到 
         let yAxisVolumeValue = ((1 - y / kChartVolumeHeight) * props.maxVolume);
-        data.value.yAxisVolumeValue = (yAxisVolumeValue / 10000).toFixed(2) + '万手';
+        data.value.yAxisVolumeValue =  getVolumeStr(yAxisVolumeValue);
         data.value.yAxisVolumeLineY = y;
     }   
+}
+
+function getVolumeStr(volumeValue) {
+	// 小于 1 万股
+	if (volumeValue < 10000) {
+		return parseInt(volumeValue) + '股';
+	}
+	// 大于 1亿 股
+	if (volumeValue > (10000 * 10000)) {
+		return (volumeValue / 10000 / 10000).toFixed(2) + '亿股'
+	}
+	return (volumeValue / 10000).toFixed(2) + '万股';
 }
 
 function onScroll(event) {
