@@ -120,7 +120,6 @@ defineExpose({ getMinuteData, setMouseOver, setMouseOut });
     vertical-align: top;
     margin-right: 0;
     min-width: 4px;
-    background-color: #e2e2e2;
 }
 
 .minute-line {

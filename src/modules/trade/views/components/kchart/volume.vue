@@ -1,6 +1,6 @@
 <template>
 	<div class="kchart-volume">
-		<div ref="kchartVolumeListRef" @scroll="onScroll" class="kchart-volume-list">
+		<div ref="kChartVolumeListRef" @scroll="onScroll" class="kchart-volume-list">
 			<div v-for="(item, i) in props.volumeList" :key="i" class="kchart-volume-item-box"
 				:style="{'min-width': volumeItemBoxMinWidth}"
                 @mouseenter="onMouseOver(i)"
@@ -31,7 +31,7 @@ const props = defineProps([
 
 const emit = defineEmits(['mouse-over', 'mouse-out', 'mouse-move', 'scroll']);
 
-let kchartVolumeListRef = ref(null);
+let kChartVolumeListRef = ref(null);
 
 let data = ref({
     isMouseOver: false,
@@ -72,17 +72,8 @@ function getVolumeItemHeight(item) {
 }
 
 function getVolumeItemColor(item) {
-	// console.log('getVolumeItemColor', JSON.stringify(item));
 	let openPrice = item.openPrice;
 	let closePrice = item.closePrice;
-	// if (closePrice > openPrice) {
-    //     return '#ee2500';
-    // } else if (closePrice === openPrice) {
-    //     return '#868686';
-    // } else {
-    //     return '#02b33d';
-    // }
-
 	if (closePrice < openPrice) {
         return '#02b33d';
     } else {
@@ -103,7 +94,9 @@ function onMouseOut(index) {
 function onMouseMove(event) {
     if (event.target === event.currentTarget) {
         let kChartVolumeHeight = 100;
+		// event.offsetY 鼠标相对于【当前绑定事件元素左上角】的垂直坐标（Y 值）
         let y = Math.min(event.offsetY, kChartVolumeHeight);
+		// 画成交量的图时，底部是从 0 开始的， minVolume 没用到 
         let yAxisVolumeValue = ((1 - y / kChartVolumeHeight) * props.maxVolume);
         data.value.yAxisVolumeValue = (yAxisVolumeValue / 10000).toFixed(2) + '万手';
         data.value.yAxisVolumeLineY = y;
@@ -115,7 +108,7 @@ function onScroll(event) {
 }
 
 function setScrollLeft(scrollLeft) {
-	kchartVolumeListRef.value.scrollLeft = scrollLeft;
+	kChartVolumeListRef.value.scrollLeft = scrollLeft;
 }
 
 defineExpose({ setScrollLeft });
@@ -140,14 +133,11 @@ defineExpose({ setScrollLeft });
 }
 
 .kchart-volume-item-box {
-	min-width: 9px;
 	height: 100px;
-	/* background-color: #eee; */
 	position: relative;
 }
 
 .kchart-volume-item {
-	width: 7px;
 	background-color: #f00;
 	position: absolute;
 	left: 0;
@@ -160,9 +150,7 @@ defineExpose({ setScrollLeft });
     border-left: 1px dashed #cecece;
     height: 100%;
     pointer-events: none;
-	left: 3px;
 }
-
 
 .y-axis-price-line {
 	position: absolute;
