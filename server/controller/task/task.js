@@ -7,6 +7,7 @@ import config from '../../config/config.js';
 import * as save_kline_day_to_db from '../../scripts/sync_data/save_kline_day_to_db.js';
 import * as save_stock_detail_to_db from '../../scripts/sync_data/save_stock_detail_to_db.js';
 import * as save_tushare_daily_basic_to_db from '../../scripts/sync_data/save_tushare_daily_basic_to_db.js';
+import * as stat_money_flow from '../../scripts/statistics/stat_money_flow.js';
 
 export async function exec(req, res) {
     let task = req.body.task;
@@ -19,6 +20,8 @@ export async function exec(req, res) {
         await save_stock_detail_to_db.exec({ logger: socketClientLogger });
     } else if (task === 'save_tushare_daily_basic_to_db') {
         await save_tushare_daily_basic_to_db.exec({ logger: socketClientLogger });
+    } else if (task === 'stat_money_flow') {
+        await stat_money_flow.exec({ logger: socketClientLogger });
     }
 
     res.json({

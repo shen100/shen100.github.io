@@ -2,8 +2,15 @@
     <div class="task-box">
         <Card style="flex: 1; min-height: 500px;">
             <div>
+                <span>任务分组</span>
+                <Select v-model="data.groupName" @on-change="onGroupChange" style="width: 420px">
+                    <Option v-for="item in data.groups" :value="item.groupName" :key="item.groupName">{{ item.groupName }}</Option>
+                </Select>
+            </div>
+            <div>
+                <span>任务</span>
                 <Select v-model="data.task" @on-change="onChange" style="width: 420px">
-                    <Option v-for="item in data.tasks" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                    <Option v-for="item in tasks" :value="item.value" :key="item.value">{{ item.label }}</Option>
                 </Select>
                 <Button type="primary" @click="onSubmit" style="margin-left: 10px;">执行</Button>
             </div>
@@ -15,6 +22,7 @@
                 <span class="desc-label">最后执行: </span>
                 <span>{{ lastExecTimeStr }}</span>
             </div>
+
         </Card>
         <Card style="flex: 1; min-height: 500px;">
             <div :key="i" v-for="(msg, i) in data.logList">{{ msg }}</div>
@@ -35,29 +43,72 @@ import config from '../config/config.js';
 import { Card } from 'view-ui-plus';
 
 let data = ref({
-    task: '',
-    lastExecTime: null,
-    tasks: [
+    groupName: '',
+    groups: [
         {
-            value: 'save_kline_day_to_db',
-            label: 'save_kline_day_to_db',
-            desc: '把所有股票的历史K线(日线)存入数据库'
+            groupName: '同步数据源',
+            tasks: [
+                {
+                    value: 'save_kline_day_to_db',
+                    label: 'save_kline_day_to_db',
+                    desc: '把所有股票的历史K线(日线)存入数据库'
+                },
+                {
+                    value: 'save_stock_detail_to_db',
+                    label: 'save_stock_detail_to_db',
+                    desc: '把所有股票的详细信息存入数据库'
+                },
+                {
+                    value: 'save_tushare_daily_basic_to_db',
+                    label: 'save_tushare_daily_basic_to_db',
+                    desc: '把每个公司每日的市值存入数据库'
+                },
+            ]
         },
         {
-            value: 'save_stock_detail_to_db',
-            label: 'save_stock_detail_to_db',
-            desc: '把所有股票的详细信息存入数据库'
-        },
-        {
-            value: 'save_tushare_daily_basic_to_db',
-            label: 'save_tushare_daily_basic_to_db',
-            desc: '把每个公司每日的市值存入数据库'
+            groupName: '数据分析',
+            tasks: [
+                {
+                    value: 'stat_money_flow',
+                    label: 'stat_money_flow',
+                    desc: '统计概念板块的资金流向'
+                }
+            ]
         }
     ],
+    task: '',
+    lastExecTime: null,
     socket: null,
     socketId: '',
     logList: []
-})
+});
+
+const tasks = computed(() => {
+    for (let i = 0; i < data.value.groups.length; i++) {
+        if (data.value.groups[i].groupName === data.value.groupName) {
+            return data.value.groups[i].tasks;
+        }
+    }
+    return [];
+});
+
+const description = computed(() => {
+    console.log(JSON.parse(JSON.stringify(tasks.value)));
+    console.log('data.value.task', data.value.task);
+    for (let i = 0; i < tasks.value.length; i++) {
+        if (tasks.value[i].value === data.value.task) {
+            return tasks.value[i].desc;
+        }
+    }
+    return '';
+});
+
+const lastExecTimeStr = computed(() => {
+    if (!data.value.lastExecTime) {
+        return '';
+    }
+    return formatLocalYMDHMS(data.value.lastExecTime);
+});
 
 onMounted(async () => {
     data.value.socket = io('http://127.0.0.1:3000');
@@ -73,23 +124,13 @@ function printLog(message) {
     data.value.logList.unshift(message);
 }
 
-const description = computed(() => {
-    for (let i = 0; i < data.value.tasks.length; i++) {
-        if (data.value.tasks[i].value === data.value.task) {
-            return data.value.tasks[i].desc;
-        }
-    }
-    return '';
-});
+function onGroupChange(a) {
+    console.log(a);
+    console.log(123, data.value.groupName);
+    data.value.task = '';
+}
 
-const lastExecTimeStr = computed(() => {
-    if (!data.value.lastExecTime) {
-        return '';
-    }
-    return formatLocalYMDHMS(data.value.lastExecTime);
-});
-
-async function onChange(value) {
+async function onChange() {
     const res = await axios({
 		method: 'get',
 		url: config.url + '/api/tasks/last_history?task=' + data.value.task

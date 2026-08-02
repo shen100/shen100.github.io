@@ -1,5 +1,16 @@
+import { fileURLToPath } from 'url';
 import * as mongo from '../../database/mongo.js';
 import { conceptSectors } from '../../data/concept_sector.js';
+import * as defaultLogger from '../../util/logger.js';
+
+const __filename = fileURLToPath(import.meta.url);
+
+let isMain = false;
+let logger;
+
+if (process.argv[1] === __filename) {
+    isMain = true;
+}
 
 function findConceptSectors(stock) {
     let list = [];
@@ -12,7 +23,8 @@ function findConceptSectors(stock) {
     return list;
 }
 
-async function exec() {
+async function runTask(option) {
+    logger = option && option.logger || defaultLogger;
     const db = await mongo.getDB();
     const collection = db.collection('kline_day');
     const stocks = await collection.find({}).toArray();
@@ -63,22 +75,36 @@ async function exec() {
             }
         };
         const result = await moneyFlowCol.updateOne(filter, updateDoc, { upsert: true });
-        console.log('📝 更新成功 ', key, ' result.upsertedId', result.upsertedId);
+
+        let logMsg = `📝 更新成功 ${key} result.upsertedId ${result.upsertedId}`;
+        console.log(logMsg);
         console.log();
+
+        logger.info(logMsg);
     }
+
+    const taskExecCol = db.collection('task_exec_history');
+    await taskExecCol.insertOne({
+        taskName: 'stat_money_flow',
+        createdAt: new Date()
+    });
 }
 
-async function main() {
+export async function exec(option) {
     try {
-        await exec();
+        await runTask(option);
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
-        await mongo.close();
+        if (isMain) {
+            await mongo.close();
+        }
     }
 }
 
 /**
  * 统计概念板块的资金流向
  */
-await main();
+if (isMain) {
+    await exec();
+}
