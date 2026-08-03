@@ -77,6 +77,11 @@ let data = ref({
                     value: 'stat_daily_surge_plunge_count',
                     label: 'stat_daily_surge_plunge_count',
                     desc: '统计每日暴涨暴跌数'
+                },
+                {
+                    value: 'stat_daily_up_count',
+                    label: 'stat_daily_up_count',
+                    desc: '每日上涨股票数(和前 N 个交易日每天的股价相比)'
                 }
             ]
         }

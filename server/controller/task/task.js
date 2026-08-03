@@ -9,6 +9,7 @@ import * as save_stock_detail_to_db from '../../scripts/sync_data/save_stock_det
 import * as save_tushare_daily_basic_to_db from '../../scripts/sync_data/save_tushare_daily_basic_to_db.js';
 import * as stat_money_flow from '../../scripts/statistics/stat_money_flow.js';
 import * as stat_daily_surge_plunge_count from '../../scripts/statistics/stat_daily_surge_plunge_count.js';
+import * as stat_daily_up_count from '../../scripts/statistics/stat_daily_up_count.js';
 
 export async function exec(req, res) {
     let task = req.body.task;
@@ -25,6 +26,8 @@ export async function exec(req, res) {
         await stat_money_flow.exec({ logger: socketClientLogger });
     } else if (task === 'stat_daily_surge_plunge_count') {
         await stat_daily_surge_plunge_count.exec({ logger: socketClientLogger });
+    } else if (task === 'stat_daily_up_count') {
+        await stat_daily_up_count.exec({ logger: socketClientLogger });
     }
 
     res.json({

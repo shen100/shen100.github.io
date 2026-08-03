@@ -93,7 +93,7 @@ let data = ref({
 	// 当前选中的概念板块
 	selectedConcept: '',
 	// 暴涨暴跌的开始，结束时间
-	dailySurgePlungeStartStr: formatLocalYMD(new Date(new Date().getTime() - 256 * 24 * 3600 * 1000)), // '2024-09-15'
+	dailySurgePlungeStartStr: formatLocalYMD(new Date(new Date().getTime() - 252 * 24 * 3600 * 1000)), // '2024-09-15'
 	dailySurgePlungeEndStr: formatLocalYMD(new Date()), // 2025-06-12
 });
 
@@ -193,7 +193,10 @@ const chartOptions = ref({
 		data: []
 	},
 	yAxis: {
-		type: 'value'
+		type: 'value',
+		min: 800000, // 固定从 80 万亿开始
+		scale: true, // 关键！开启后弱化0基线，适合观察波动
+
 	},
 	series: []
 });
@@ -221,7 +224,9 @@ function getDailyUpCountChartInitData(dayCount) {
 
 const dailyUpCountList = ref([
 	getDailyUpCountChartInitData(10),
-	getDailyUpCountChartInitData(256),
+	getDailyUpCountChartInitData(22),
+	getDailyUpCountChartInitData(44),
+	getDailyUpCountChartInitData(252),
 ])
 
 // 资金流向
@@ -366,7 +371,9 @@ function updateChart() {
 async function requestAllDailyUpCount(params) {
 	Promise.all([
 		requestDailyUpCount(0, 10),
-		requestDailyUpCount(1, 256),
+		requestDailyUpCount(1, 22),
+		requestDailyUpCount(2, 44),
+		requestDailyUpCount(3, 252),
 	])
 }
 
