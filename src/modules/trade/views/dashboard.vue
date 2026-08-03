@@ -26,10 +26,11 @@
 			</div>
 			<ECharts v-if="chartOptions.series.length" :options="chartOptions" />
 		</Card>
+		<StockDailyMoney />
 		<div style="margin-top: 20px; display: flex; gap: 20px;">
 			<Card style="flex: 1;">
 				<div class="total-shizhi-txt">
-					<div style="margin-right: 4px;">每日暴涨暴跌数</div>
+					<div style="margin-right: 4px;">暴涨暴跌数</div>
 				</div>
 				<div class="shizhi-date-box">
 					<div class="date-label" style="margin-left: 10px;">开始日期</div>
@@ -76,7 +77,8 @@ import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import { Message } from 'view-ui-plus';
 import config from '../config/config.js';
-import ECharts from './components/common/echarts.vue'
+import ECharts from './components/common/echarts.vue';
+import StockDailyMoney from './components/statistics/stock_daily_money.vue';
 import store from '../model/store';
 import { formatLocalYMD, utcStringToLocalString } from '../util/date';
 import { useRouter } from 'vue-router';
@@ -170,7 +172,21 @@ const chartOptions = ref({
 		text: ' '
 	},
 	tooltip: {
-		trigger: 'axis'
+		trigger: 'axis',
+        formatter: function(params) {
+			const name = params[0].name;
+			const value = Number(params[0].data); // 单位：亿元
+			let displayValue;
+			let unit = '亿元';
+			if (value >= 10000) {
+				displayValue = (value / 10000).toFixed(2);
+				unit = '万亿';
+			} else {
+				displayValue = value.toFixed(0);
+				unit = '亿';
+			}
+			return `${name}<br/>总市值：${displayValue} ${unit}`;
+		}
 	},
 	xAxis: {
 		type: 'category',
@@ -396,7 +412,6 @@ function setCurrentDailyMoneyFlow(index) {
 			name: allDailyMoneyFlowList[index].name,
 			type: 'line',
 			data: allDailyMoneyFlowList[index].dates.map(item =>  {
-				console.log('XXXXXXX', item);
 				return {
 					value: (item.amount / 10000).toFixed(2), // 转成 亿元,  图表绘图使用的值
 					...item // 把原始所有字段放进来

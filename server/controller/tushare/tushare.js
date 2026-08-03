@@ -12,9 +12,11 @@ export async function queryAllDailyBasic(req, res) {
 
 	for (let stock of list) {
 		stock.items.forEach(stock => {
-			dateMap[stock.trade_date] = dateMap[stock.trade_date] || { amount: 0, count: 0 };
-			dateMap[stock.trade_date].count += 1;
-			dateMap[stock.trade_date].amount += stock.total_mv; // total_mv 是当日公司市值
+			let date = stock.trade_date;
+			date = `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`;
+			dateMap[date] = dateMap[date] || { amount: 0, count: 0 };
+			dateMap[date].count += 1;
+			dateMap[date].amount += stock.total_mv; // total_mv 是当日公司市值
 		});
 	}
 
