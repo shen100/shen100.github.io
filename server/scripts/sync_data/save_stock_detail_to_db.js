@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import * as mongo from '../../database/mongo.js';
 import * as defaultLogger from '../../util/logger.js';
 import * as stockService from '../../service/stock.js';
-import { requestStockDetail } from '../../util/stock_util.js';
+import stockUtil from '../../util/stock_util.js';
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -25,7 +25,7 @@ export async function exec(option) {
         const collection = db.collection('stock_detail');
 
         await bluebird.map(allStocks, async function (stockData, index) {
-            let stockDetail = await requestStockDetail(stockData);
+            let stockDetail = await stockUtil.requestStockDetail(stockData);
 
             const filter = { stockFullId: stockDetail.stockFullId };
             const updateDoc = {

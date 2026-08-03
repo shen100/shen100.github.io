@@ -6,6 +6,15 @@ export function formatLocalYMD(date) {
     return `${year}-${month}-${day}`;
 }
 
+/**
+ * 将 Date 类型的对象格式化为 "0930", 只返回小时分钟 
+ */
+export function formatLocalHHMM(date) {
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    return hh + mm;
+}
+
 export function formatLocalYMDHMS(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始

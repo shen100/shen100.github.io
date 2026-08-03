@@ -18,8 +18,7 @@ async function initNodeModules() {
 	const { Socks5ProxyAgent } = await import('undici');
 	dispatcher = new Socks5ProxyAgent(config.socks5ProxyUrl);
 
-	const yahooMod = await import('yahoo-finance2');
-	const YahooFinance = yahooMod.default;
+	const YahooFinance = await import('yahoo-finance2');
 	yahooFinance = new YahooFinance();
 }
 
@@ -68,10 +67,10 @@ const exportModule = {
 			stockFullId,
 			{}, // 无额外参数
 			{
-				fetchOptions: {
-					dispatcher,
-					signal: AbortSignal.timeout(15000)
-				}
+			fetchOptions: {
+				dispatcher,
+				signal: AbortSignal.timeout(15000)
+			}
 			}
 		);
 
@@ -96,7 +95,7 @@ const exportModule = {
 		const resList = res.data.data[stockFullId].data.data;
 		const stockInfo = res.data.data[stockFullId].qt[stockFullId];
 		console.log('stockInfo', stockInfo);
-		const prevDayClosePrice = Number(stockInfo[4]);
+		const prevDayClosePrice = Number(stockInfo[4]); // 前一个交易日的收盘价
 
 		let dateStr = res.data.data[stockFullId].data.date;
 		let date = `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}`;

@@ -1,9 +1,4 @@
-import {
-    requestYahooDayKLine,
-    requestDayKLine,
-    requestYahooStockDetail,
-    requestYahooMinuteKLine
-} from '../../util/stock_util.js'
+import stockUtil from '../../util/stock_util.js'
 
 export async function queryDayKLine(req, res) {
     let stockFullId = req.query.stockFullId;
@@ -13,9 +8,9 @@ export async function queryDayKLine(req, res) {
     let useYahooApi = [ '^KS11' ].indexOf(stockFullId) >= 0;
     let myKList;
     if (useYahooApi) {
-        myKList = await requestYahooDayKLine(stockFullId, startStr, endStr);
+        myKList = await stockUtil.requestYahooDayK(stockFullId, startStr, endStr);
     } else {
-        myKList = await requestDayKLine(stockFullId, startStr, endStr, countStr);
+        myKList = await stockUtil.requestDayK(stockFullId, startStr, endStr, countStr);
     }
     res.json({
         code: 0,
@@ -30,7 +25,7 @@ export async function queryMinuteKLine(req, res) {
     let useYahooApi = [ '^KS11' ].indexOf(stockFullId) >= 0;
     let resData;
     if (useYahooApi) {
-        resData = await requestYahooMinuteKLine(stockFullId);
+        resData = await stockUtil.requestYahooMinuteK(stockFullId);
     } else {
         
     }
@@ -45,7 +40,7 @@ export async function queryDetail(req, res) {
     let useYahooApi = [ '^KS11' ].indexOf(stockFullId) >= 0;
     let detailData;
     if (useYahooApi) {
-        detailData = await requestYahooStockDetail(stockFullId);
+        detailData = await stockUtil.requestYahooStockDetail(stockFullId);
     } else {
         
     }

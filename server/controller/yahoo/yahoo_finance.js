@@ -1,7 +1,7 @@
 import YahooFinance from 'yahoo-finance2';
 import { Socks5ProxyAgent } from 'undici'
 import config from '../../config/config.js';
-import { requestYahooDayKLine } from '../../util/stock_util.js'
+import { requestYahooDayK } from '../../util/stock_util.js'
 
 const yahooFinance = new YahooFinance();
 const dispatcher = new Socks5ProxyAgent(config.socks5ProxyUrl);
@@ -11,7 +11,7 @@ export async function queryDayKLine(req, res) {
     let startStr = req.query.startStr;
     let endStr = req.query.endStr;
 
-    await requestYahooDayKLine(stockId, startStr, endStr);
+    await requestYahooDayK(stockId, startStr, endStr);
 }
 
 export async function queryMinuteKLine(req, res) {

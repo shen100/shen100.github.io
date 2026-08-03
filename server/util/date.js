@@ -9,7 +9,7 @@ export function formatLocalYMD(date) {
 /**
  * 将 Date 类型的对象格式化为 "0930", 只返回小时分钟 
  */
-export function formatHHMM(date) {
+export function formatLocalHHMM(date) {
     const hh = String(date.getHours()).padStart(2, '0');
     const mm = String(date.getMinutes()).padStart(2, '0');
     return hh + mm;

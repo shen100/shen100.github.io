@@ -3,7 +3,7 @@ import bluebird from 'bluebird';
 import * as mongo from '../../database/mongo.js';
 import * as stockService from '../../service/stock.js';
 import * as defaultLogger from '../../util/logger.js';
-import { requestDayKLine } from '../../util/stock_util.js';
+import stockUtil from '../../util/stock_util.js';
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -27,7 +27,7 @@ export async function exec(option) {
         const db = await mongo.getDB();
         const collection = db.collection('kline_day');
         await bluebird.map(allStocks, async function (stockData, index) {
-            let myKList = await requestDayKLine(stockData.stockFullId, startStr, endStr, 1000);
+            let myKList = await stockUtil.requestDayK(stockData.stockFullId, startStr, endStr, 1000);
             let kList = myKList.map((item) => {
                 const saveData = {
                     date: item[0],
