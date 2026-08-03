@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import * as mongo from '../../database/mongo.js';
 import config from '../../config/config.js';
+import stockUtil from '../../util/stock_util.js'
 
 export async function queryStocksByNames(req, res) {
     const stockNames = req.body.stockNames;
@@ -67,5 +68,27 @@ export async function queryStocksByUUID(req, res) {
         data: {
             stocks
         }
+    });
+}
+
+export async function queryDetail(req, res) {
+    let stockFullId = req.query.stockFullId;
+
+    const db = await mongo.getDB();
+    const collection = db.collection('stock_detail');
+
+    let stock;
+    if ([ '^KS11' ].indexOf(stockFullId) >= 0) {
+        stock = {
+            stockFullId
+        };
+    } else {
+        stock = await collection.findOne({ stockFullId });
+    }
+
+    let detailData = await stockUtil.requestStockDetail(stock);
+    res.json({
+        code: 0,
+        data: detailData
     });
 }

@@ -3,7 +3,7 @@ import config from '../config/config.js'
 import stock_common_util from './stock_common_util';
 
 async function requestYahooStockDetail(stockFullIdId) {
-	let url = config.url + `/api/stocks/kline/detail?stockFullId=${stockFullIdId}`;
+	let url = config.url + `/api/stocks/detail?stockFullId=${stockFullIdId}`;
 	let res = await axios.get(url);
 	return res.data.data;
 }
@@ -15,14 +15,35 @@ async function requestYahooMinuteK(stockFullId) {
 }
 
 async function requestYahooDayK(stockFullId, start, end, count) {
-	let url = config.url + `/api/stocks/kline/day?stockFullId=${stockFullId}&start=${start}&end=${end}&count=${count}`;
-	res = await axios.get(url);
-	return res;
+	let url = config.url + `/api/stocks/kline/day?stockFullId=${stockFullId}&start=${start}&end=${end}`;
+	let res = await axios.get(url);
+	return res.data.data.kList;
+}
+
+async function requestYahooWeekK(stockFullId, start, end, count) {
+	let url = config.url + `/api/stocks/kline/week?stockFullId=${stockFullId}&start=${start}&end=${end}`;
+	let res = await axios.get(url);
+	return res.data.data.kList;
+}
+
+async function requestYahooMonthK(stockFullId, start, end, count) {
+	let url = config.url + `/api/stocks/kline/month?stockFullId=${stockFullId}&start=${start}&end=${end}`;
+	let res = await axios.get(url);
+	return res.data.data.kList;
+}
+
+async function requestYahooYearK(stockFullId, start, end, count) {
+	let url = config.url + `/api/stocks/kline/year?stockFullId=${stockFullId}&start=${start}&end=${end}`;
+	let res = await axios.get(url);
+	return res.data.data.kList;
 }
 
 stock_common_util.requestYahooStockDetail = requestYahooStockDetail;
 stock_common_util.requestYahooMinuteK = requestYahooMinuteK;
 stock_common_util.requestYahooDayK = requestYahooDayK;
+stock_common_util.requestYahooWeekK = requestYahooWeekK;
+stock_common_util.requestYahooMonthK = requestYahooMonthK;
+stock_common_util.requestYahooYearK = requestYahooYearK;
 
 export async function requestStockDetail(stock) {
 	return await stock_common_util.requestStockDetail(stock);

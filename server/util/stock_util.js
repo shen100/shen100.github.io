@@ -95,7 +95,6 @@ const exportModule = {
 		const minuteList = [];
 		const resList = res.data.data[stockFullId].data.data;
 		const stockInfo = res.data.data[stockFullId].qt[stockFullId];
-		console.log('stockInfo', stockInfo);
 		const prevDayClosePrice = Number(stockInfo[4]);
 
 		let dateStr = res.data.data[stockFullId].data.date;
@@ -198,15 +197,19 @@ const exportModule = {
 		const minuteRes = tasks[0];
 		const quoteRes = tasks[1];
 
-		const quotes = minuteRes.quotes || [];
+		const items = minuteRes.quotes || [];
 
-		let latestData = quotes[quotes.length - 1];
+		let latestData = items[items.length - 1];
 		if (!latestData) {
 			console.log();
 		}
 		let latestDate = formatLocalYMD(latestData.date);
 		console.log();
-		let kLineList = quotes.filter(item => item.date.getDate() === latestData.date.getDate());
+		let kLineList = items.filter(item => {
+			return item.date.getFullYear() === latestData.date.getFullYear() 
+				&& item.date.getMonth() === latestData.date.getMonth() 
+				&& item.date.getDate() === latestData.date.getDate()
+		});
 		let tentcentKLineList = [];
 		let accumulateVolume = 0; // 独立累加变量，不碰原始数据
 
@@ -245,23 +248,15 @@ const exportModule = {
 
 	requestDayK: async function requestDayK(stockFullId, start, end, count) {
 		if ([ '^KS11' ].indexOf(stockFullId) >= 0) {
-			return await exportModule.requestYahooDayK(stockFullId, startStr, endStr)
+			const myKList = await exportModule.requestYahooDayK(stockFullId, start, end);
+			return myKList;
 		}
 		let url = "https://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get?_var=kline_dayqfq&param="
 		url += (stockFullId + ",day," + start + "," + end + "," + count + ",qfq");
 		let res = await axios.get(url);
 		let str = res.data.replace('kline_dayqfq=', '');
 		let resData = JSON.parse(str);
-		/*
-		[
-			"2021-03-10", 0-交易日
-			"1977.000", 1-开盘价
-			"1970.010", 2-收盘价
-			"1999.870", 3-最高价
-			"1967.000", 4-最低价
-			"51172.000" 5-成交量(即多少股，不用乘 100)
-		]
-		*/
+
 		let myKList = [];
 		if (resData.data[stockFullId]['qfqday']) {
 			myKList = resData.data[stockFullId].qfqday;
@@ -273,7 +268,7 @@ const exportModule = {
 		let todayStr = new Date().toISOString().substring(0, 10);
 		let endStr = myKList && myKList.length && myKList[myKList.length - 1][0];
 		if (endStr && todayStr > endStr && todayStr <= end) {
-			let todayKData = await requestToday(stockFullId);
+			let todayKData = await exportModule.requestToday(stockFullId);
 			if (todayKData[0] > endStr) {
 				myKList.push(todayKData);
 			}
@@ -290,57 +285,12 @@ const exportModule = {
 			myKList = myKList.slice(index);
 		}
 
-		castKListToNumbers(myKList);
+		exportModule.castKListToNumbers(myKList);
 		return myKList;
 	},
 
 	requestYahooDayK: async function requestYahooDayK(stockFullIdId, startStr, endStr) {
-		const start = new Date(startStr); // '2024-01-01'
-		const end = new Date(endStr);
-
-		const quote = await yahooFinance.historical(
-			stockFullIdId,  // ^ 开头 是 市场指数, 没有 ^ 是 个股 /或 ETF
-			{
-				period1: start.getTime() / 1000,
-				period2: end.getTime() / 1000,
-				interval: '1d'
-			},
-			{
-				fetchOptions: {
-					dispatcher,
-					signal: AbortSignal.timeout(15000) // 15秒超时
-				}
-			}
-		);
-
-		console.log(JSON.stringify(quote[0], null, 4));
-		/*
-		{
-			"date": "2026-01-02T00:00:00.000Z",
-			"high": 4313.5498046875,
-			"volume": 406300,
-			"open": 4224.52978515625,
-			"low": 4216.68017578125,
-			"close": 4309.6298828125, // 原始收盘价
-			"adjClose": 4309.6298828125 // 前复权收盘价
-		}
-		*/
-		const myKList = [];
-		for (let i = 0; i < quote.length; i++) {
-			const item = quote[i];
-			myKList.push([
-				item.date.toISOString().split('T')[0],
-				item.open,
-				item.adjClose,
-				item.high,
-				item.low,
-				item.volume, // 指数本身不存在 “成交股数”，Yahoo 返回的指数 volume 不标准，不是官方交易所原始数据
-				{},
-				0, // 换手率
-				0 // 成交金额
-			]);
-		}
-		return myKList;
+		return await exportModule.requestYahooKLine(stockFullIdId, startStr, endStr, { interval: '1d' })
 	},
 
 	requestToday: async function requestToday(stockFullId) {
@@ -387,12 +337,13 @@ const exportModule = {
 	},
 	castKListToNumbers: function castKListToNumbers(myKList) {
 		for (let i = 0; i < myKList.length; i++) {
+			// 0 号元素是日期 2021-03-10
 			let openPrice  = Number(myKList[i][1]); // 开盘价
 			let closePrice = Number(myKList[i][2]); // 收盘价
 			let highPrice  = Number(myKList[i][3]); // 最高价
 			let lowPrice   = Number(myKList[i][4]); // 最低价
 			let volume     = Number(myKList[i][5]); // 成交量
-			let amount     = Number(myKList[i][8]); // 成交额(竞)，单位 万
+			let amount     = Number(myKList[i][8]); // 成交额，单位 万
 			
 			myKList[i][1] = openPrice;
 			myKList[i][2] = closePrice;
@@ -419,6 +370,10 @@ const exportModule = {
 	},
 
 	requestWeekK: async function requestWeekK(stockFullId, start, end, count) {
+		if ([ '^KS11' ].indexOf(stockFullId) >= 0) {
+			const myKList = await exportModule.requestYahooWeekK(stockFullId, start, end);
+			return myKList;
+		}
 		let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
 		url += (stockFullId + ",week," + start + "," + end + "," + count + ",qfq");
 		let res = await axios.get(url);
@@ -429,16 +384,19 @@ const exportModule = {
 		} else {
 			myKList = res.data.data[stockFullId].week;
 		}
-			
-		let dates = []
-		for (let i = 0; i < myKList.length; i++) {
-			dates.push(myKList[i][0]); // 之前请求成交量用了dates
-		}
-		castKListToNumbers(myKList);
+		exportModule.castKListToNumbers(myKList);
 		return myKList;
 	},
 
+	requestYahooWeekK: async function requestYahooWeekK(stockFullIdId, startStr, endStr) {
+		return await exportModule.requestYahooKLine(stockFullIdId, startStr, endStr, { interval: '1wk' })
+	},
+
 	requestMonthK: async function requestMonthK(stockFullId, start, end, count) {
+		if ([ '^KS11' ].indexOf(stockFullId) >= 0) {
+			const myKList = await exportModule.requestYahooMonthK(stockFullId, start, end);
+			return myKList;
+		}
 		let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=";
 		url += (stockFullId + ",month," + start + "," + end + "," + count + ",qfq");
 
@@ -455,11 +413,27 @@ const exportModule = {
 		for (let i = 0; i < myKList.length; i++) {
 			dates.push(myKList[i][0]); // 之前请求成交量用了dates
 		}
-		castKListToNumbers(myKList);
+		exportModule.castKListToNumbers(myKList);
 		return myKList;
 	},
 
+	requestYahooMonthK: async function requestYahooMonthK(stockFullIdId, startStr, endStr) {
+		let endDate = new Date(endStr);
+		let nowDate = new Date();
+		if ((endDate.getFullYear() === nowDate.getFullYear() && endDate.getMonth() === nowDate.getMonth())
+			|| endDate.getFullYear() > nowDate.getFullYear()) {
+			const date = new Date();
+			date.setDate(0); // setDate(0)：设置为本月第0天 就是 上月最后一天
+			endStr = formatLocalYMD(date);
+		}
+		return await exportModule.requestYahooKLine(stockFullIdId, startStr, endStr, { interval: '1mo' })
+	},
+
 	requestYearK: async function requestYearK(stockFullId, start, end, count) {
+		if ([ '^KS11' ].indexOf(stockFullId) >= 0) {
+			const myKList = await exportModule.requestYahooYearK(stockFullId, start, end);
+			return myKList;
+		}
 		let url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param="
 		url += (stockFullId + ",month," + start + "," + end + "," + count + ",qfq");
 
@@ -543,9 +517,127 @@ const exportModule = {
 		for (let i = 0; i < myKList.length; i++) {
 			dates.push(myKList[i][0]); // 之前请求成交量用了dates
 		}
-		castKListToNumbers(myKList);
+		exportModule.castKListToNumbers(myKList);
 		return myKList;
-	}
+	},
+
+	requestYahooYearK: async function requestYahooYearK(stockFullIdId, startStr, endStr) {
+		let endDate = new Date(endStr);
+		let nowDate = new Date();
+		if ((endDate.getFullYear() === nowDate.getFullYear() && endDate.getMonth() === nowDate.getMonth())
+			|| endDate.getFullYear() > nowDate.getFullYear()) {
+			const date = new Date();
+			date.setDate(0); // setDate(0)：设置为本月第0天 就是 上月最后一天
+			endStr = formatLocalYMD(date);
+		}
+		let monthList = await exportModule.requestYahooKLine(stockFullIdId, startStr, endStr, { interval: '1mo' });
+		let monthArr = [];
+		monthList = monthList || [];
+		monthList.forEach(item => {
+			monthArr.push({
+				date: item[0],
+				open: item[1],
+				close: item[2],
+				high: item[3],
+				low: item[4],
+				volume: item[5],
+				amount: item[8]
+			});
+		});
+		const yearMap = new Map();
+
+		for (const item of monthArr) {
+			const year = item.date.substring(0, 4);
+			if (!yearMap.has(year)) {
+				yearMap.set(year, {
+					date: item.date, // 保留当年第一个交易日日期
+					open: item.open,
+					close: item.close,
+					high: item.high,
+					low: item.low,
+					volume: item.volume,
+					amount: item.amount,
+				});
+			} else {
+				const yItem = yearMap.get(year);
+				yItem.high = Math.max(yItem.high, item.high);
+				yItem.low = Math.min(yItem.low, item.low);
+				yItem.close = item.close;
+				yItem.volume += item.volume || 0;
+				yItem.amount += item.amount || 0;
+			}
+		}
+
+		// map转数组，按时间升序
+		const yearKList = Array.from(yearMap.values())
+			.sort((a, b) => a.date > b.date ? 1 : -1);
+
+		const myKList = [];
+		yearKList.forEach(item => {
+			myKList.push([
+				item.date,
+				item.open,
+				item.close,
+				item.high,
+				item.low,
+				item.volume,
+				{},
+				0, // 换手率
+				item.amount
+			]);
+		}); 
+		return myKList;
+	},
+
+	requestYahooKLine: async function requestYahooKLine(stockFullIdId, startStr, endStr, option) {
+		const start = new Date(startStr); // '2024-01-01'
+		const end = new Date(endStr);
+		// const end = new Date(new Date(endStr).getTime() + 24 * 3600 * 1000);
+
+		const quote = await yahooFinance.historical(
+			stockFullIdId,  // ^ 开头 是 市场指数, 没有 ^ 是 个股 /或 ETF
+			{
+				period1: start.getTime() / 1000,
+				period2: end.getTime() / 1000,
+				interval: option.interval // '1d'
+			},
+			{
+				fetchOptions: {
+					dispatcher,
+					signal: AbortSignal.timeout(15000) // 15秒超时
+				}
+			}
+		);
+
+		console.log(JSON.stringify(quote[0], null, 4));
+		/*
+		{
+			"date": "2026-01-02T00:00:00.000Z",
+			"high": 4313.5498046875,
+			"volume": 406300,
+			"open": 4224.52978515625,
+			"low": 4216.68017578125,
+			"close": 4309.6298828125, // 原始收盘价
+			"adjClose": 4309.6298828125 // 前复权收盘价
+		}
+		*/
+		const myKList = [];
+		for (let i = 0; i < quote.length; i++) {
+			const item = quote[i];
+			myKList.push([
+				item.date.toISOString().split('T')[0],
+				item.open,
+				item.adjClose,
+				item.high,
+				item.low,
+				item.volume, // 指数本身不存在 “成交股数”，Yahoo 返回的指数 volume 不标准，不是官方交易所原始数据
+				{},
+				0, // 换手率
+				0 // 成交金额
+			]);
+		}
+		return myKList;
+	},
 
 };
 

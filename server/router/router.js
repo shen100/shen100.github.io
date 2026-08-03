@@ -17,9 +17,10 @@ export function init(app) {
     app.get('/api/statistics/concept/get_stocks', concept_sector.queryStocksByConcept);
 
     app.get('/api/stocks/get_stocks_by_uuid/:uuid', stock.queryStocksByUUID);
-    app.get('/api/stocks/kline/detail', kline.queryDetail);
-    app.get('/api/stocks/kline/day', kline.queryDayKLine);
-    app.get('/api/stocks/kline/minute', kline.queryMinuteKLine);
+    app.get('/api/stocks/detail', stock.queryDetail);
+    
+    app.get('/api/stocks/kline/:interval', kline.queryKLineByInterval);
+    app.get('/api/stocks/kline/minute', kline.requestMinuteK);
     app.post('/api/stocks/get_stocks_by_names', stock.queryStocksByNames);
     app.post('/api/stocks/get_stocks_by_fullids', stock.queryStocksByFullIds);
 
