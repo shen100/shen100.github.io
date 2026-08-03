@@ -1,6 +1,18 @@
+import { fileURLToPath } from 'url';
 import * as mongo from '../../database/mongo.js';
+import * as defaultLogger from '../../util/logger.js';
 
-async function exec() {
+const __filename = fileURLToPath(import.meta.url);
+
+let isMain = false;
+let logger;
+
+if (process.argv[1] === __filename) {
+    isMain = true;
+}
+
+async function runTask(option) {
+    logger = option && option.logger || defaultLogger;
     const db = await mongo.getDB();
     const collection = db.collection('kline_day');
     const stocks = await collection.find({}).toArray();
@@ -41,19 +53,31 @@ async function exec() {
             }
         };
         const result = await col.updateOne(filter, updateDoc, { upsert: true });
-        console.log('📝 更新成功 ', key, ' result.upsertedId', result.upsertedId);
+        let logMsg = `📝 更新成功 ${key} result.upsertedId ${result.upsertedId}`;
+        console.log(logMsg);
         console.log();
+
+        logger.info(logMsg);
     }
 }
 
-async function main() {
+export async function exec(option) {
     try {
-        await exec();
+        let startTime = Date.now();
+        await runTask(option);
+        let endTime = Date.now();
+		let logMsg = `总用时 ${(endTime - startTime) / 1000} 秒`;
+		console.log(logMsg);
+		logger.info(logMsg);
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
-        await mongo.close();
+        if (isMain) {
+            await mongo.close();
+        }
     }
 }
 
-await main();
+if (isMain) {
+    await exec();
+}

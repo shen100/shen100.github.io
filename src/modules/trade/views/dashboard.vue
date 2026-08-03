@@ -349,7 +349,7 @@ function updateChart() {
 		series.push({
 			name: '全部',
 			type: 'line',
-			data: arr.map(item => Number(item.amount / 10000).toFixed(2)), // 转换为万亿
+			data: arr.map(item => item.amount), // 单位 亿
 		});
 
 		if (!allDates) {

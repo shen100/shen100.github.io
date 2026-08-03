@@ -104,7 +104,9 @@ const amountChartOptions = ref({
 		data: []
 	},
 	yAxis: {
-		type: 'value'
+		type: 'value',
+		min: 10000, // 固定从 1 万亿开始
+		scale: true, // 关键！开启后弱化0基线，适合观察波动
 	},
 	series: []
 });
@@ -140,7 +142,9 @@ const marginTotalBalanceChartOptions = ref({
 		data: []
 	},
 	yAxis: {
-		type: 'value'
+		type: 'value',
+		min: 22000, // 固定从 2.2 万亿开始
+		scale: true, // 关键！开启后弱化0基线，适合观察波动
 	},
 	series: []
 });
@@ -247,11 +251,13 @@ function onCancel() {
 }
 
 function onAmountStartChange(dateStr) {
-
+	data.value.amountStartStr = dateStr;
+    requestAmountData();
 }
 
 function onAmountEndChange(dateStr) {
-
+	data.value.amountEndStr = dateStr;
+    requestAmountData();
 }
 
 function onMarginTotalBalanceStartChange(dateStr) {

@@ -11,7 +11,7 @@ async function requestYahooStockDetail(stockFullIdId) {
 async function requestYahooMinuteK(stockFullId) {
 	let url = config.url + `/api/stocks/kline/minute?stockFullId=${stockFullId}`;
 	let res = await axios.get(url);
-	return res;
+	return res.data.data[stockFullId].data.data;
 }
 
 async function requestYahooDayK(stockFullId, start, end, count) {

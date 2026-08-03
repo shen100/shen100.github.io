@@ -2,12 +2,13 @@
     <div>
         <div style="display: flex; gap: 20px;">
             <Card style="flex: 1; min-height: 600px;">
+                <div class="date-label">日期: {{ data.date }}</div>
                 <div>
                     <div class="todo-list-item" :key="i" v-for="(item, i) in data.todoList">
                         <Checkbox v-model="item.done">{{ item.label }}</Checkbox>
                     </div>
-                    <div>
-                        <Button type="primary" @click="onSubmit">确定</Button>
+                    <div style="margin-top: 10px;">
+                        <Button type="primary" @click="onSubmit">打卡</Button>
                     </div>
                 </div>
             </Card>
@@ -103,6 +104,12 @@ async function onSubmit() {
 
 
 <style scoped>
+.date-label {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
 .todo-list-item {
     margin-bottom: 6px;
 }

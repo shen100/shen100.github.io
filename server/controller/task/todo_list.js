@@ -4,7 +4,16 @@ import { formatLocalYMD } from '../../util/date.js';
 export async function today(req, res) {
     let list = [
         {
-            label: '看板块指数'
+            label: '看大盘总市值'
+        },
+        {
+            label: '看每日成交额'
+        },
+        {
+            label: '看每日两融余额'
+        },
+        {
+            label: '看指数行情'
         },
         {
             label: '看当前持仓行情'
@@ -17,9 +26,6 @@ export async function today(req, res) {
         },
         {
             label: '看物理AI行情'
-        },
-        {
-            label: '看大盘总市值'
         },
         {
             label: '看资金流向'
@@ -39,6 +45,9 @@ export async function today(req, res) {
     const db = await mongo.getDB();
     const collection = db.collection('todo_list');
     const date = formatLocalYMD(new Date());
+    // const date = formatLocalYMD(new Date(2026, 7, 3));
+
+
     let todoListData = await collection.findOne({
         date
     });

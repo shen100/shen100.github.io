@@ -92,7 +92,12 @@ async function runTask(option) {
 
 export async function exec(option) {
     try {
+        let startTime = Date.now();
         await runTask(option);
+        let endTime = Date.now();
+		let logMsg = `总用时 ${(endTime - startTime) / 1000} 秒`;
+		console.log(logMsg);
+		logger.info(logMsg);
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {

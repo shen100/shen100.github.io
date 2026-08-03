@@ -193,6 +193,17 @@ function onStockSearch(filterData) {
     saveSettings();
 }
 
+function checkStockInput(text, stockInput) {
+    let arr = stockInput.split(',');
+    for (let i = 0; i < arr.length; i++) {
+        let input = arr[i].trim();
+        if (text.indexOf(input) >= 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function filterStocks(stocks) {
     let filterData = data.value.filterData;
     let theStocks = stocks.slice(0);
@@ -200,7 +211,7 @@ function filterStocks(stocks) {
     if (filterData && filterData.stockInput) {
         for (let i = theStocks.length - 1; i >= 0; i--) {
             const stock = theStocks[i];
-            if (stock.stockId.indexOf(filterData.stockInput) < 0 && stock.stockName.indexOf(filterData.stockInput) < 0) {
+            if (!checkStockInput(stock.stockId, filterData.stockInput) && !checkStockInput(stock.stockName, filterData.stockInput)) {
                 theStocks.splice(i, 1);
             }
         }

@@ -72,6 +72,11 @@ let data = ref({
                     value: 'stat_money_flow',
                     label: 'stat_money_flow',
                     desc: '统计概念板块的资金流向'
+                },
+                {
+                    value: 'stat_daily_surge_plunge_count',
+                    label: 'stat_daily_surge_plunge_count',
+                    desc: '统计每日暴涨暴跌数'
                 }
             ]
         }

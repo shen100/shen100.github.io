@@ -86,6 +86,7 @@ const exportModule = {
 		let res;
 		if ([ '^KS11' ].indexOf(stockFullId) >= 0) {
 			res = await exportModule.requestYahooMinuteK(stockFullId);
+			return res;
 		} else {
 			// https://www.cnblogs.com/soarowl/p/20516538
 			let url = `https://web.ifzq.gtimg.cn/appstock/app/minute/query?code=${stockFullId}`;
