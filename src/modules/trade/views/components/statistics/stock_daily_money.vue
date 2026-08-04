@@ -243,6 +243,8 @@ async function onOK() {
 
     if (data.value.selectedType === 'amount') {
         requestAmountData();
+    } else if (data.value.selectedType === 'marginTotalBalance') {
+        requestMarginTotalBalanceData();
     }
 }
 

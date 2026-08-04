@@ -1,7 +1,7 @@
 import * as mongo from '../../database/mongo.js';
 
 /**
- * 把公司按市值分组，统计每个分组下的公司数、总市值
+ * 把公司按市值分组，返回每个分组下的公司数、总市值
  */
 export async function queryShiZhi(req, res) {
     const db = await mongo.getDB();
@@ -23,7 +23,7 @@ export async function queryShiZhi(req, res) {
         shiZhiList.push({ count: 0, amount: 0, name: names[i] });
     }
 
-    const cond = [ 100, 500, 1000, 2000, 5000, 10000, 1000000 ];
+    const cond = [ 100, 500, 1000, 2000, 5000, 10000, 10000 * 10000 ];
     const stocks = [];
     for (let stock of list) {
         stocks.push({

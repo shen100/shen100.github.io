@@ -37,7 +37,7 @@ export async function queryDailyMoneyFlow(req, res) {
     const db = await mongo.getDB();
     const collection = db.collection('money_flow');
     let list = await collection.aggregate([
-        { $match: { date: { $gt: '2026-01-01' } } },
+        { $match: { date: { $gte: '2026-01-01' } } },
         { $sort: { date: 1 } },
         // 按 concept 分组，把所需字段压入数组
         { $group: {
@@ -52,11 +52,15 @@ export async function queryDailyMoneyFlow(req, res) {
         }}
     ]).toArray();
 
+    list.sort((a, b) => {
+        return a.name > b.name ? 1 : -1;
+    });
+
     const names = list.map(item => {
         for (let i = 1; i < item.dates.length; i++) {
             let data1 = item.dates[i - 1];
             let data2 = item.dates[i];
-            data2.amount = data1.amount + data2.amount;
+            data2.amount = data1.amount + data2.amount; // 累计成交额
         }
         return item.name;
     });

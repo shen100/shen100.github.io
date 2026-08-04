@@ -3,6 +3,9 @@ import * as mongo from '../../database/mongo.js';
 import config from '../../config/config.js';
 import stockUtil from '../../util/stock_util.js'
 
+/**
+ * 根据一组股票名称查询股票信息
+ */
 export async function queryStocksByNames(req, res) {
     const stockNames = req.body.stockNames;
     const db = await mongo.getDB();
@@ -25,6 +28,9 @@ export async function queryStocksByNames(req, res) {
     });
 }
 
+/**
+ * 根据一组 stockFullId 查询股票信息
+ */
 export async function queryStocksByFullIds(req, res) {
     const stockFullIds = req.body.stockFullIds;
     const db = await mongo.getDB();
@@ -56,35 +62,34 @@ export async function queryStocksByFullIds(req, res) {
     });
 }
 
+/**
+ * 根据 uuid 查询对应的数据
+ */
 export async function queryStocksByUUID(req, res) {
     const uuid = req.params.uuid;
     const db = await mongo.getDB();
     const collection = db.collection('uuid_data');
-    const uuidData = await collection.findOne({ uuid });
-    const stocks = uuidData && uuidData.stocks || [];
+    const projection = {
+        _id: 0 // 不返回 _id
+    };
+    const uuidData = await collection.findOne({ uuid }, { projection });
 
     res.json({
         code: 0,
-        data: {
-            stocks
-        }
+        data: uuidData
     });
 }
 
+/**
+ * 查询股票详情
+ */
 export async function queryDetail(req, res) {
     let stockFullId = req.query.stockFullId;
 
     const db = await mongo.getDB();
     const collection = db.collection('stock_detail');
 
-    let stock;
-    if ([ '^KS11' ].indexOf(stockFullId) >= 0) {
-        stock = {
-            stockFullId
-        };
-    } else {
-        stock = await collection.findOne({ stockFullId });
-    }
+    const stock = await collection.findOne({ stockFullId });
 
     let detailData = await stockUtil.requestStockDetail(stock);
     res.json({

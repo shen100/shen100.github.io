@@ -457,8 +457,8 @@ async function requestDailySurgePlunge() {
 	let subArr = [];
 	let dates = [];
 	list.forEach(item => {
-		incArr.push(item.incCount);
-		subArr.push(item.subCount);
+		incArr.push(item.upCount);
+		subArr.push(item.downCount);
 		dates.push(item.date);
 	});
 	series.push({

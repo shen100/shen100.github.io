@@ -1,9 +1,14 @@
 import * as mongo from '../../database/mongo.js';
 
+/**
+ * 根据指定的日期，设置金额
+ * 1. 设置整个大盘的成交金额
+ * 2. 设置整个大盘的融资融券余额
+ */
 export async function saveStockDailyAmount(req, res) {
-    const type = req.body.type;
-    const date = req.body.date;
-    const amount = req.body.amount;
+    const type = req.body.type + '';
+    const date = req.body.date + '';
+    const amount = Number(req.body.amount) || 0;
 
     const db = await mongo.getDB();
     const col = db.collection('stock_daily_amount');
@@ -25,6 +30,9 @@ export async function saveStockDailyAmount(req, res) {
     });
 }
 
+/**
+ * 查询整个大盘的成交金额、融资融券余额
+ */
 export async function queryStockDailyAmount(req, res) {
     const type = req.query.type;
     const start = req.query.start;

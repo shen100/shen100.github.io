@@ -1,5 +1,8 @@
 import stockUtil from '../../util/stock_util.js'
 
+/**
+ * 请求股票分时
+ */
 export async function requestMinuteK(req, res) {
     let stockFullId = req.query.stockFullId;
     let resData = await stockUtil.requestMinuteK(stockFullId);
@@ -9,6 +12,9 @@ export async function requestMinuteK(req, res) {
     });
 }
 
+/**
+ * 请求股票K线
+ */
 export async function queryKLineByInterval(req, res) {
     let interval = req.params.interval;
     let stockFullId = req.query.stockFullId;

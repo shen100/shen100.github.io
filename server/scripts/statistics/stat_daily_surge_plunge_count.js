@@ -25,14 +25,14 @@ async function runTask(option) {
             let item2 = stock.kList[j];
             dataMap[item2.date] = dataMap[item2.date] || {
                 date: item2.date,
-                incCount: 0,
-                subCount: 0
+                upCount: 0,
+                downCount: 0
             };
             let rate = (item2.closePrice - item1.closePrice) / item1.closePrice;
             if (rate >= 0.095) {
-                dataMap[item2.date].incCount++;
+                dataMap[item2.date].upCount++;
             } else if (rate <= -0.095) {
-                dataMap[item2.date].subCount++;
+                dataMap[item2.date].downCount++;
             }
         }
     }
@@ -45,8 +45,8 @@ async function runTask(option) {
         const updateDoc = {
             $set: {
                 date: statData.date,
-                incCount: statData.incCount,
-                subCount: statData.subCount,
+                upCount: statData.upCount,
+                downCount: statData.downCount,
             },
             $setOnInsert: {
                 createdAt: new Date()  // 只有插入时才设置
