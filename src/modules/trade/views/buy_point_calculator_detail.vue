@@ -4,21 +4,25 @@
             <Form :label-width="100">
                 <FormItem label="股票代码">
                     <Input v-if="data.isEdit" v-model="data.stockFullId" style="width: 300px;"></Input>
-                    <div v-else>{{ data.stockFullId }}</div>
+                    <a v-else :href="`https://xueqiu.com/S/${data.stockFullId}`" target="_blank">{{ data.stockFullId }}</a>
                 </FormItem>
                 <FormItem label="股票名称">
                     <Input v-if="data.isEdit" v-model="data.stockName" style="width: 300px;"></Input>
                     <div v-else>{{ data.stockName }}</div>
                 </FormItem>
-                <FormItem label="最新价格">
-                    <div>{{ data.curStockPrice }}</div>
-                </FormItem>
                 <FormItem label="指数 / 价格">
-                     <Input v-model="data.zhiShuWithPrice" style="width: 300px;"></Input>
+                    <Input v-if="data.isEdit" v-model="data.zhiShuWithPrice" style="width: 300px;"></Input>
+                    <div v-else>{{ data.zhiShuWithPrice }}</div>
+                    <div class="index-price-tip">指数与价格的比值，例如"上证指数"为 3822.28 点时， "上证指数ETF富国" 的价格为 0.974 元,</div>
+                    <div class="index-price-tip">那么比值为 3822.28 / 0.974，即 3924.3121149897333</div>
                 </FormItem>
                 <FormItem label="最终价格">
                     <Input v-if="data.isEdit" v-model="data.finalPrice" style="width: 300px;"></Input>
-                    <div v-else>{{ data.finalPrice }}</div>
+                    <template v-else>
+                        <div>{{ data.finalPrice }}</div>
+                        <div v-if="finalPriceStr">{{ finalPriceStr }}（指数）</div>
+                    </template>
+                    <div class="index-price-tip">可以填不同的最终价格来计算最终收益</div>
                 </FormItem>
                 <FormItem label="总花费">
                     <div>{{ formatMoney(data.totalExpense, 2) }}</div>
@@ -29,10 +33,12 @@
                     <div>{{ index + 1 }}</div>
 				</template>
                 <template #price="{ row, index }">
-					<InputNumber number v-model="row.price" @on-change="() => onPriceChange(index, row.price)"></InputNumber>
+					<InputNumber number v-model="row.price"
+                        @on-change="() => onPriceChange(index, row.price)" style="width: 100px;"></InputNumber>&nbsp;元
 				</template>
                 <template #count="{ row, index }">
-					<InputNumber number v-model="row.count" @on-change="() => onCountChange(index, row.count)"></InputNumber>
+					<InputNumber number v-model="row.count"
+                        @on-change="() => onCountChange(index, row.count)" style="width: 100px;"></InputNumber>&nbsp;股
 				</template>
                 <template #expense="{ row }">
 					<div>{{ formatMoney(row.expense, 2) }}</div>
@@ -48,9 +54,9 @@
             </Table>
             <Table v-else border :columns="data.columns2" :data="data.buyPoints">
                 <template #price="{ row }">
-                    <div v-if="!data.zhiShuWithPrice">{{ row.price }}</div>
+                    <div v-if="!data.zhiShuWithPrice">{{ row.price }}元</div>
                     <div v-else>
-                        <div>{{ row.price }}</div>
+                        <div>{{ row.price }}&nbsp;元</div>
                         <div>{{ formatMoney((Number(row.price) * data.zhiShuWithPrice), 2) }} (指数)</div>
                     </div>
 				</template>
@@ -97,9 +103,9 @@
 
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, h, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import { InputNumber, Message } from 'view-ui-plus'
+import { Icon, InputNumber, Message, Tooltip } from 'view-ui-plus'
 import { requestStockDetail } from '../util/stock_util';
 import { formatMoney } from '../util/money';
 import { globalEventEmitter } from '../../../util/event';
@@ -107,6 +113,28 @@ import { trim } from '../util/str';
 
 const route = useRoute()
 const router = useRouter()
+
+function renderHeaderTip(label, tip) {
+    return () => {
+        return h(Tooltip,
+            {
+                content: tip,
+                placement: 'top',
+                transfer: true,
+                maxWidth: 320
+            },
+            {
+                default: () => h('div', { style: 'display: flex; align-items: center; gap: 4px;' }, [
+                    h('span', label),
+                    h(Icon, {
+                        type: 'ios-alert',
+                        style: 'font-size: 14px;'
+                    })
+                ])
+            }
+        )
+    }
+}
 
 let data = ref({
     isEdit: false,
@@ -139,6 +167,7 @@ let data = ref({
             width: 220,
             slot: 'upDownRate1',
             align: 'center',
+            renderHeader: renderHeaderTip('ƒ(买入价格, 首次买入价格)', '当前买点价格相对于第一次买入价格的涨跌幅')
         },
         {
             title: '操作',
@@ -177,40 +206,53 @@ let data = ref({
             width: 220,
             slot: 'upDownRate1',
             align: 'center',
+            renderHeader: renderHeaderTip('ƒ(买入价格, 首次买入价格)', '当前买点价格相对于第一次买入价格的涨跌幅')
         },
         {
-            title: 'ƒ(买入价格, 平均成本)',
+            title: '亏损金额',
+            slot: 'profit2',
+            align: 'center',
+            renderHeader: renderHeaderTip('亏损金额', '如果当前买点是最后一次买入，以当前买点价格清仓的亏损金额')
+        },
+        {
+            title: '亏损率',
             width: 200,
             slot: 'upDownRate2',
             align: 'center',
+            renderHeader: renderHeaderTip('亏损率', '如果当前买点是最后一次买入，以当前买点价格清仓的亏损率')
         },
         {
-            title: '利润2',
-            slot: 'profit2',
+            title: '最终利润',
+            slot: 'profit3',
             align: 'center',
+            renderHeader: renderHeaderTip('最终利润', '如果当前买点是最后一次买入，以最终价格清仓的利润')
         },
         {
-            title: 'ƒ(最终价格, 平均成本)',
+            title: '最终利润率',
             width: 200,
             slot: 'upDownRate3',
             align: 'center',
-        },
-        {
-            title: '利润3',
-            slot: 'profit3',
-            align: 'center',
+            renderHeader: renderHeaderTip('最终利润率', '如果当前买点是最后一次买入，以最终价格清仓的利润率')
         }
     ],
     list: [],
     buyPoints: ref([]),
-    curStockPrice: 0, // 最新价格
     finalPrice: 0,  // 最终价格 
     totalExpense: 0, // 总花费
     tempData: null,
-    // 指数与价格的比值，如 当 "上证指数" 为 4093.73， "上证指数ETF富国" 的价格为 1.033 时,
-    // 那么比值为 4093.73 / 1.033
+    // 指数与价格的比值，如 当 "上证指数" 为 4093.73 时， "上证指数ETF富国" 的价格为 1.033,
+    // 那么比值为 4093.73 / 1.033，即 3962.9526
     zhiShuWithPrice: '' 
 })
+
+const finalPriceStr = computed(() => {
+    let zhiShuWithPrice = Number(data.value.zhiShuWithPrice) || 0;
+    if (zhiShuWithPrice) {
+        let value = Number(data.value.finalPrice) * zhiShuWithPrice;
+        return value ? value.toFixed(2) : '';
+    }
+    return '';
+});
 
 onMounted(async () => {
     data.value.id = route.query.id;
@@ -246,14 +288,6 @@ onMounted(async () => {
         ]
     });
 
-    if (data.value.stockFullId) {
-        let stock = {
-            stockFullId: data.value.stockFullId
-        }
-        let stockDetail = await requestStockDetail(stock);
-        data.value.curStockPrice = stockDetail.price;
-    }
-
     calculateAverageCostChangeRate();
 });
 
@@ -261,6 +295,9 @@ function onBuyPointsEdit() {
     data.value.tempData = {
         stockFullId: data.value.stockFullId,
         stockName: data.value.stockName,
+        totalExpense: data.value.totalExpense,
+        finalPrice: data.value.finalPrice,
+        zhiShuWithPrice: data.value.zhiShuWithPrice,
         buyPoints: JSON.parse(JSON.stringify(data.value.buyPoints))
     };
     data.value.isEdit = true;
@@ -273,9 +310,9 @@ function onAddBuyPoints() {
         avgCost: 0, // 平均成本
         expense: 0, // 花费
         sumExpense: 0, // 累计花费
-        upDownRate1: 0,
-        upDownRate2: 0,
-        upDownRate3: 0,
+        upDownRate1: 0, // 涨跌幅
+        upDownRate2: 0, // 涨跌幅
+        upDownRate3: 0, // 涨跌幅
         profit2: 0, // 利润
         profit3: 0 // 利润
     });
@@ -286,6 +323,7 @@ function onPriceChange(index, price) {
     buyPoints[index].price = price;
     buyPoints[index].expense = price * buyPoints[index].count;
     let firstBuyPrice = buyPoints[0].price;
+    // 当前买点价格相对于第一次买入价格的涨跌幅
     buyPoints[index].upDownRate1 = (buyPoints[index].price - firstBuyPrice) / firstBuyPrice;
 }
 
@@ -335,6 +373,7 @@ function onBuyPointsEditOk() {
     }
 
     calculateAverageCostChangeRate();
+
     for (let i = 0; i < list.length; i++) {
         if (list[i].id === data.value.id) {
             list[i].stockFullId = stockFullId;
@@ -356,6 +395,9 @@ function onBuyPointsEditOk() {
 function onBuyPointsEditCancel() {
     data.value.stockFullId = data.value.tempData.stockFullId;
     data.value.stockName = data.value.tempData.stockName;
+    data.value.totalExpense = data.value.tempData.totalExpense;
+    data.value.finalPrice = data.value.tempData.finalPrice;
+    data.value.zhiShuWithPrice = data.value.tempData.zhiShuWithPrice;
     data.value.buyPoints = data.value.tempData.buyPoints;
     data.value.isEdit = false;
 }
@@ -380,11 +422,19 @@ function calculateAverageCostChangeRate() {
             sumCount += buyPoints[j].count;
         }
         avgCost = sumExpense / sumCount;
+        // 当前买点价格相对于第一次买入价格的涨跌幅
         buyPoints[i].upDownRate1 = (buyPoints[i].price - firstBuyPrice) / firstBuyPrice;
+
+        // 如果当前买点是最后一次买入，以当前价格清仓的亏损率
         buyPoints[i].upDownRate2 = (buyPoints[i].price - avgCost) / avgCost;
+        // 如果当前买点是最后一次买入，以当前价格清仓的亏损金额
         buyPoints[i].profit2 = buyPoints[i].price * sumCount - sumExpense;
+
+        // 如果当前买点是最后一次买入，以最终价格清仓的利润率
         buyPoints[i].upDownRate3 = (data.value.finalPrice - avgCost) / avgCost;
+        // 如果当前买点是最后一次买入，以最终价格清仓的利润
         buyPoints[i].profit3 = data.value.finalPrice * sumCount - sumExpense;
+
         buyPoints[i].sumExpense = sumExpense;
         buyPoints[i].avgCost = avgCost;
     }
@@ -402,9 +452,18 @@ function onBuyPointsSwap(i, j) {
             item.buyPoints = newBuyPoints;
         }
     });
+    // 加上这一行，交换后重新计算成本
+    calculateAverageCostChangeRate();
 }
 
 function onDelBuyPoints(index) {
     data.value.buyPoints.splice(index, 1);
 }
 </script>
+
+<style lang="css" scoped>
+.index-price-tip {
+    font-size: 14px;
+    color:#d23c3c;
+}
+</style>

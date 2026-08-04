@@ -1,16 +1,16 @@
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import allStocksRes from '../data/all_original_stocks.json' with { type: 'json' }
 import * as mongo from '../database/mongo.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /*
 股票数据 - 基础数据 - 股票列表
 
 接口: stock_basic
+
+https://tushare.pro/document/2?doc_id=25
 
 allStocksRes 的数据结构
 

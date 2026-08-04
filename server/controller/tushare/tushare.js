@@ -16,7 +16,7 @@ export async function queryAllDailyBasic(req, res) {
 			date = `${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}`;
 			dateMap[date] = dateMap[date] || { amount: 0, count: 0 };
 			dateMap[date].count += 1;
-			dateMap[date].amount += stock.total_mv; // total_mv 是当日公司市值
+			dateMap[date].amount += stock.total_mv; // total_mv 是当日公司总市值, 原始数据是万元，入库时转换为亿了
 		});
 	}
 

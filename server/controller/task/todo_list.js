@@ -1,6 +1,9 @@
 import * as mongo from '../../database/mongo.js';
 import { formatLocalYMD } from '../../util/date.js';
 
+/**
+ * 查询今日待办事项
+ */
 export async function today(req, res) {
     let list = [
         {
@@ -44,9 +47,8 @@ export async function today(req, res) {
 
     const db = await mongo.getDB();
     const collection = db.collection('todo_list');
-    const date = formatLocalYMD(new Date());
+    let date = formatLocalYMD(new Date());
     // const date = formatLocalYMD(new Date(2026, 7, 3));
-
 
     let todoListData = await collection.findOne({
         date
@@ -64,9 +66,12 @@ export async function today(req, res) {
     });
 }
 
+/**
+ * 打卡
+ */
 export async function done(req, res) {
     const list = req.body.list;
-    const date = req.body.date;
+    const date = req.body.date + '';
     const db = await mongo.getDB();
     const todoListCol = db.collection('todo_list');
     const filter = { date };
@@ -88,12 +93,14 @@ export async function done(req, res) {
     });
 }
 
+/**
+ * 查询近三年的历史打卡数
+ */
 export async function getDailyFinishedTaskCount(req, res) {
     const db = await mongo.getDB();
     const coll = db.collection('todo_list');
 
-    // 获取365天前日期 YYYY-MM-DD
-    const dateAgo = new Date(Date.now() - 365 * 24 * 3600 * 1000);
+    const dateAgo = new Date(Date.now() - 3 * 365 * 24 * 3600 * 1000);
     const startDateStr = dateAgo.toISOString().split('T')[0];
 
     const pipeline = [
@@ -104,7 +111,7 @@ export async function getDailyFinishedTaskCount(req, res) {
                 }
             }
         },
-        // 2.增加字段：当天todo 完成数量
+        // 增加字段：当天todo 完成数量
         {
             $addFields: {
                 finishedTodoCount: {

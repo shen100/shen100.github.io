@@ -1,9 +1,5 @@
-import crypto from 'node:crypto';
 import * as socket_client_logger from '../../util/socket_client_logger.js';
-
 import * as mongo from '../../database/mongo.js';
-import { conceptSectors } from '../../data/concept_sector.js';
-import config from '../../config/config.js';
 import * as save_kline_day_to_db from '../../scripts/sync_data/save_kline_day_to_db.js';
 import * as save_stock_detail_to_db from '../../scripts/sync_data/save_stock_detail_to_db.js';
 import * as save_tushare_daily_basic_to_db from '../../scripts/sync_data/save_tushare_daily_basic_to_db.js';
@@ -11,6 +7,9 @@ import * as stat_money_flow from '../../scripts/statistics/stat_money_flow.js';
 import * as stat_daily_surge_plunge_count from '../../scripts/statistics/stat_daily_surge_plunge_count.js';
 import * as stat_daily_up_count from '../../scripts/statistics/stat_daily_up_count.js';
 
+/**
+ * 执行任务
+ */
 export async function exec(req, res) {
     let task = req.body.task;
     let socketId = req.body.socketId;
@@ -37,6 +36,9 @@ export async function exec(req, res) {
     });
 }
 
+/**
+ * 查询指定任务的最后一次执行历史
+ */
 export async function queryLastHistory(req, res) {
     const task = req.query.task;
     const db = await mongo.getDB();

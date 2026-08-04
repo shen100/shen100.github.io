@@ -6,7 +6,7 @@
                 <div class="buy-point-calculator-btnbox-space"></div>
                 <div>
                     <span>总花费: </span>
-                    <span>{{ formatMoney(data.totalExpense, 2) }}</span>
+                    <span>{{ formatMoney(data.totalExpense, 2) }}&nbsp;元</span>
                 </div>
             </div>
             <Table border :columns="data.columns" :data="data.list">
