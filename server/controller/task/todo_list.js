@@ -7,6 +7,9 @@ import { formatLocalYMD } from '../../util/date.js';
 export async function today(req, res) {
     let list = [
         {
+            label: '看东方财富全A'
+        },
+        {
             label: '看大盘总市值'
         },
         {

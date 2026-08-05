@@ -24,11 +24,11 @@
 import axios from 'axios';
 import { onMounted, ref, computed } from 'vue';
 import config from '../config/config.js';
+import { Message } from 'view-ui-plus';
 import ECharts from './components/common/echarts.vue'
 
 let data = ref({
-    todoList: [
-    ],
+    todoList: [],
     date: '',
 });
 
@@ -65,7 +65,6 @@ async function requestTodoListData() {
 	let resData = res.data.data;
     data.value.todoList = resData.list;
     data.value.date = resData.date;
-    console.log('data.value.todoList', data.value.todoList);
 }
 
 async function requestChartData() {
@@ -74,7 +73,6 @@ async function requestChartData() {
 		url: config.url + '/api/todo/get_daily_todo_count'
 	});
 	let resData = res.data.data;
-    console.log(resData);
     const list = resData.list;
     const dates = [];
     const finishedTodoCountList = [];
@@ -89,7 +87,6 @@ async function requestChartData() {
             data: finishedTodoCountList
         }
     ];
-    // chartOptions.value.legend.data = [ '打卡数' ];
 	chartOptions.value.xAxis.data = dates;
 	chartOptions.value.series = series;
 }
@@ -99,6 +96,13 @@ async function onSubmit() {
 		list: data.value.todoList,
         date: data.value.date
 	});
+    if (res.data && res.data.code === 0) {
+        Message.success({
+            duration: 10,
+            content: `打卡成功`
+        });
+        requestChartData();
+    }
 }
 </script>
 

@@ -115,15 +115,19 @@ export async function exec(option) {
 
 		const db = await mongo.getDB();
 		const taskExecCol = db.collection('task_exec_history');
+		const createdAt = new Date();
         await taskExecCol.insertOne({
             taskName: 'save_tushare_daily_basic_to_db',
-            createdAt: new Date()
+            createdAt
         });
 
 		let endTime = Date.now();
 		let logMsg = `总用时 ${(endTime - startTime) / 1000 / 60} 分`;
 		console.log(logMsg);
 		logger.info(logMsg);
+		return {
+			createdAt
+		};
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {

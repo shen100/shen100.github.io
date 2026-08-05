@@ -1,11 +1,11 @@
-import stockUtil from '../../util/stock_util.js'
+import stockNetUtil from '../../util/stock_net_util.js'
 
 /**
  * 请求股票分时
  */
 export async function requestMinuteK(req, res) {
     let stockFullId = req.query.stockFullId;
-    let resData = await stockUtil.requestMinuteK(stockFullId);
+    let resData = await stockNetUtil.requestMinuteK(stockFullId);
     res.json({
         code: 0,
         data: resData
@@ -24,13 +24,13 @@ export async function queryKLineByInterval(req, res) {
 
     let myKList = [];
     if (interval === 'day') {
-        myKList = await stockUtil.requestDayK(stockFullId, startStr, endStr, countStr);
+        myKList = await stockNetUtil.requestDayK(stockFullId, startStr, endStr, countStr);
     } else if (interval === 'week') {
-        myKList = await stockUtil.requestWeekK(stockFullId, startStr, endStr, countStr);
+        myKList = await stockNetUtil.requestWeekK(stockFullId, startStr, endStr, countStr);
     } else if (interval === 'month') {
-        myKList = await stockUtil.requestMonthK(stockFullId, startStr, endStr, countStr);
+        myKList = await stockNetUtil.requestMonthK(stockFullId, startStr, endStr, countStr);
     } else if (interval === 'year') {
-        myKList = await stockUtil.requestYearK(stockFullId, startStr, endStr, countStr);
+        myKList = await stockNetUtil.requestYearK(stockFullId, startStr, endStr, countStr);
     }
     res.json({
         code: 0,

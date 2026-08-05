@@ -33,7 +33,7 @@
 
 <script setup>
 import axios from 'axios';
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router';
 import { io } from 'socket.io-client';
 import KChartList from './components/kchart/kchart_list.vue';
@@ -82,6 +82,11 @@ let data = ref({
                     value: 'stat_daily_up_count',
                     label: 'stat_daily_up_count',
                     desc: '每日上涨股票数(和前 N 个交易日每天的股价相比)'
+                },
+                {
+                    value: 'a_equal_weight_index',
+                    label: 'a_equal_weight_index',
+                    desc: '更新每日全A等权指数'
                 }
             ]
         }
@@ -170,6 +175,9 @@ async function onSubmit() {
         socketId: data.value.socketId,
 	});
 	let resData = res.data.data;
+    if (resData && resData.createdAt) {
+        data.value.lastExecTime = new Date(resData.createdAt);
+    }
 }
 </script>
 

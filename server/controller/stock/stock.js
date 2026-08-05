@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import * as mongo from '../../database/mongo.js';
 import config from '../../config/config.js';
-import stockUtil from '../../util/stock_util.js'
+import stockNetUtil from '../../util/stock_net_util.js'
 
 /**
  * 根据一组股票名称查询股票信息
@@ -91,7 +91,7 @@ export async function queryDetail(req, res) {
 
     const stock = await collection.findOne({ stockFullId });
 
-    let detailData = await stockUtil.requestStockDetail(stock);
+    let detailData = await stockNetUtil.requestStockDetail(stock);
     res.json({
         code: 0,
         data: detailData

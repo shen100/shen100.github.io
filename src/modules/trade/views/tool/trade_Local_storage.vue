@@ -15,8 +15,8 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
-import { Message } from 'view-ui-plus'
+import { onMounted, ref } from 'vue';
+import { Message } from 'view-ui-plus';
 
 let data = ref({
     myLocalKey: '',
@@ -27,7 +27,7 @@ let data = ref({
         },
         {
             value: 'tradeCustomStocks',
-            label: '地址栏传参'
+            label: '地址栏传UUID'
         },
         {
             value: 'tradeIndexStocks',
@@ -51,7 +51,7 @@ let data = ref({
         },
         {
             value: 'tradeMemoryStocks',
-            label: '存储'
+            label: '存储芯片'
         },
         {
             value: 'tradePhysicalAIStocks',

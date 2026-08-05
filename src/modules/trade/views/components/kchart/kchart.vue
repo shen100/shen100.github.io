@@ -9,8 +9,8 @@
 						{{ data.stockName }}
 					</a>
 					{{ data.stockDetail ? `&nbsp;(总市值&nbsp;${zongShiZhi})` : '' }}
-					<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice.toFixed(2) }}</span>
-					<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(2) : ''}}</span>
+					<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice.toFixed(3) }}</span>
+					<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(3) : ''}}</span>
 					<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{data.dtRate > 0 ? '+' : ''}}{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
 					<template v-if="props.kChartLocalKey !== 'tradeAllFullIdStocks'">
 						<span v-if="data.stock && currentDownRate" class="stop-rate-label">当前参考跌幅 {{ currentDownRate }}</span>
@@ -141,7 +141,7 @@
 
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import * as stockUtil from '../../../util/stock_util';
+import * as stockNetUtil from '../../../util/stock_net_util';
 import StockNewPrice from '../stock_new_price.vue';
 import MinuteLine from './minute_line.vue';
 import Candle from './candle.vue';
@@ -420,8 +420,8 @@ async function requestMinuteK(stock, start, end, count) {
 	resetData(stock, start, end);
 	data.value.dataLoaded = false;
 	const tasks = await Promise.all([
-		stockUtil.requestStockDetail(stock),
-		stockUtil.requestMinuteK(stock.stockFullId)
+		stockNetUtil.requestStockDetail(stock),
+		stockNetUtil.requestMinuteK(stock.stockFullId)
 	]);
 	data.value.dataLoaded = true;
 	data.value.stockDetail = tasks[0];
@@ -469,8 +469,8 @@ async function requestDayK(stock, start, end, count) {
 	resetData(stock, start, end);
 	data.value.dataLoaded = false;
 	const tasks = await Promise.all([
-		stockUtil.requestStockDetail(stock),
-		stockUtil.requestDayK(stock.stockFullId, start, end, count)
+		stockNetUtil.requestStockDetail(stock),
+		stockNetUtil.requestDayK(stock.stockFullId, start, end, count)
 	]);
 	data.value.dataLoaded = true;
 	updateKListData(tasks[0], tasks[1]);
@@ -481,8 +481,8 @@ async function requestWeekK(stock, start, end, count) {
 	resetData(stock, start, end);
 	data.value.dataLoaded = false;
 	const tasks = await Promise.all([
-		stockUtil.requestStockDetail(stock),
-		stockUtil.requestWeekK(stock.stockFullId, start, end, count)
+		stockNetUtil.requestStockDetail(stock),
+		stockNetUtil.requestWeekK(stock.stockFullId, start, end, count)
 	]);
 	data.value.dataLoaded = true;
 	updateKListData(tasks[0], tasks[1]);
@@ -493,8 +493,8 @@ async function requestMonthK(stock, start, end, count) {
 	resetData(stock, start, end);
 	data.value.dataLoaded = false;
 	const tasks = await Promise.all([
-		stockUtil.requestStockDetail(stock),
-		stockUtil.requestMonthK(stock.stockFullId, start, end, count)
+		stockNetUtil.requestStockDetail(stock),
+		stockNetUtil.requestMonthK(stock.stockFullId, start, end, count)
 	]);
 	data.value.dataLoaded = true;
 	updateKListData(tasks[0], tasks[1]);
@@ -505,8 +505,8 @@ async function requestYearK(stock, start, end, count) {
 	resetData(stock, start, end);
 	data.value.dataLoaded = false;
 	const tasks = await Promise.all([
-		stockUtil.requestStockDetail(stock),
-		stockUtil.requestYearK(stock.stockFullId, start, end, count)
+		stockNetUtil.requestStockDetail(stock),
+		stockNetUtil.requestYearK(stock.stockFullId, start, end, count)
 	]);
 	data.value.dataLoaded = true;
 	updateKListData(tasks[0], tasks[1]);

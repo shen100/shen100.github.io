@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import * as mongo from '../../database/mongo.js';
 import * as defaultLogger from '../../util/logger.js';
 import * as stockService from '../../service/stock.js';
-import stockUtil from '../../util/stock_util.js';
+import stockNetUtil from '../../util/stock_net_util.js';
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -25,7 +25,7 @@ export async function exec(option) {
         const collection = db.collection('stock_detail');
 
         await bluebird.map(allStocks, async function (stockData, index) {
-            let stockDetail = await stockUtil.requestStockDetail(stockData);
+            let stockDetail = await stockNetUtil.requestStockDetail(stockData);
 
             const filter = { stockFullId: stockDetail.stockFullId };
             const updateDoc = {
@@ -49,14 +49,18 @@ export async function exec(option) {
         }, { concurrency: 20 });
 
         const taskExecCol = db.collection('task_exec_history');
+        const createdAt = new Date();
         await taskExecCol.insertOne({
             taskName: 'save_stock_detail_to_db',
-            createdAt: new Date()
+            createdAt
         });
 
         let logMsg = `一共更新了 ${allStocks.length} 条数据`;
         console.log(logMsg);
         logger.info(logMsg);
+        return {
+            createdAt
+        };
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {

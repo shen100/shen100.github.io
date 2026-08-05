@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import { Message } from 'view-ui-plus'
 import { trim } from '../../util/str';
 import axios from 'axios';
@@ -40,16 +40,7 @@ async function onSubmit() {
             stockNames.splice(i, 1);
         }
     }
-
-    // if (!data.value.myLocalKey) {
-    //     Message.error({
-    //         duration: 10,
-    //         content: '请选择key'
-    //     });
-    //     return
-    // }
     
-
     let url = 'http://localhost:3000/api/stocks/get_stocks_by_names';
     const res = await axios.post(url, {
 		stockNames

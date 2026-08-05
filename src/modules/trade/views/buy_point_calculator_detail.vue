@@ -106,7 +106,6 @@
 import { onMounted, ref, h, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import { Icon, InputNumber, Message, Tooltip } from 'view-ui-plus'
-import { requestStockDetail } from '../util/stock_util';
 import { formatMoney } from '../util/money';
 import { globalEventEmitter } from '../../../util/event';
 import { trim } from '../util/str';

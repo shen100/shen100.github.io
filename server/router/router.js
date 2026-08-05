@@ -2,6 +2,8 @@ import * as tushare from '../controller/tushare/tushare.js';
 import * as shizhi_stat from '../controller/statistics/shizhi_stat.js';
 import * as daily_stat from '../controller/statistics/daily_stat.js';
 import * as stock_daily_amount from '../controller/statistics/stock_daily_amount.js';
+import * as stat_index from '../controller/statistics/stat_index.js';
+
 import * as stock from '../controller/stock/stock.js';
 import * as kline from '../controller/stock/kline.js';
 import * as task from '../controller/task/task.js';
@@ -15,6 +17,9 @@ export function init(app) {
     app.get('/api/statistics/daily/money_flow', daily_stat.queryDailyMoneyFlow);
     app.get('/api/statistics/daily/surge_plunge', daily_stat.queryDailySurgePlungeCount);
     app.get('/api/statistics/daily/amount', stock_daily_amount.queryStockDailyAmount);
+    app.get('/api/statistics/daily/a_equal_weight_index', stat_index.queryEqualWeightIndex);
+
+
     app.get('/api/statistics/daily/up/:dayCount', daily_stat.queryDailyUpCount);
     app.post('/api/statistics/daily/amount', stock_daily_amount.saveStockDailyAmount);
 

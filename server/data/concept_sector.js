@@ -150,6 +150,52 @@ const concepts = [
         ]
     },
     {
+        name: '先进封装',
+        stocks: [
+            '长电科技', // 国内封测龙头，XDFOI Chiplet平台，HBM/2.5D/3D堆叠、Fan‑out扇出[reference:2][reference:8]
+            '通富微电', // GPU先进封装主力，深度绑定AMD，FC‑BGA、HBM堆叠封装[reference:2][reference:8]
+            '华天科技', // 存储、功率器件先进封测，Fan‑out、晶圆级封装布局[reference:4]
+            '甬矽电子', // 射频、算力芯片封装，高密小型化先进封装[reference:4]
+            '晶方科技', // WLP晶圆级封装，图像传感器、车载芯片封装[reference:10]
+            '汇成股份', // 显示驱动芯片先进封装，COG/COF封装[reference:10]
+            '伟测科技', // 先进封装配套芯片测试，算力芯片测试[reference:10]
+            '深南电路', // IC封装基板，FC‑BGA基板国产主力[reference:1][reference:4]
+            '鼎龙股份', // 先进封装材料，RDL、抛光垫、光刻配套材料[reference:4]
+            '华海诚科', // 先进封装环氧塑封料，适配HBM高算力芯片[reference:4]
+            '凯格精机', // 先进封装固晶设备，Chiplet键合设备[reference:4]
+            '康强电子', // 引线框架，先进封装框架材料[reference:4]
+            '天承科技', // ABF封装基板材料，FC‑BGA基板配套[reference:4]
+            '赛微电子', // MEMS、晶圆级先进封装代工[reference:4]
+            '华峰测控', // 先进封装后道测试设备[reference:10]
+            '长川科技' // 先进封装后道测试设备[reference:10]
+        ]
+    },
+    {
+        name: 'AI应用',
+        stocks: [
+            '科大讯飞', // 星火大模型，教育、医疗、政务、车载多场景AI落地[reference:14][reference:17]
+            '金山办公', // WPS AI，办公文档全链路AI，国内办公AI龙头[reference:13][reference:14]
+            '昆仑万维', // 天工大模型，AI搜索、AI游戏、AIGC多应用布局[reference:16][reference:17]
+            '三六零', // 360智脑，AI安全、AI搜索，政企大模型应用[reference:15][reference:17]
+            '万兴科技', // C端AIGC创意软件，AI剪辑、AI绘图、AI文档，海外收入占比高[reference:12][reference:16]
+            '同花顺', // AI问财，金融AI投顾、智能资讯，金融AI应用龙头[reference:15]
+            '福昕软件', // PDF文档AI，文档智能解析、摘要改写，海外B端优势[reference:13][reference:14]
+            '合合信息', // OCR+大模型，票据、合同、财报智能解析，B端AI应用[reference:13][reference:17]
+            '用友网络', // ERP+AI智能体，企业财务供应链智能化[reference:13]
+            '泛微网络', // OA协同AI，公文生成、流程智能优化，信创政企[reference:13][reference:17]
+            '拓尔思', // 大模型+政务，行业知识库、政务大模型应用[reference:17]
+            '光庭信息', // 车载软件AI，汽车智能座舱智驾软件定制[reference:17]
+            '海天瑞声', // AI训练数据，多模态数据集，大模型训练数据服务商[reference:17]
+            '虹软科技', // 计算机视觉AI，图像算法，手机车载视觉应用[reference:17]
+            '当虹科技', // AI视频编解码，视频AIGC、智能处理[reference:17]
+            '蓝色光标', // AI营销，AIGC营销内容生成，数字人营销[reference:17]
+            '中文在线', // AIGC内容，AI小说、数字内容生成[reference:17]
+            '汤姆猫', // AI交互应用，AI对话交互产品落地[reference:17]
+            '赛意信息', // 工业AI，制造企业数字化、工业大模型应用[reference:17]
+            '汉得信息' // 企业数字化AI，ERP实施+AI智能体[reference:17]
+        ]
+    },
+    {
         name: '液冷服务器',
         stocks: [
             '英维克', // 冷板式液冷、CDU温控系统，全球液冷全链条全自研龙头[reference:140][reference:141][reference:142]
