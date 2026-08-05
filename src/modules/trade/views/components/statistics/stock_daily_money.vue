@@ -65,9 +65,9 @@ import config from '../../../config/config';
 let data = ref({
     inputDate: new Date(formatLocalYMD(new Date())),
     inputNumber: 0,
-	amountStartStr: formatLocalYMD(new Date(new Date().getTime() - 256 * 24 * 3600 * 1000)), // '2024-09-15'
+	amountStartStr: formatLocalYMD(new Date(new Date().getTime() - 365 * 24 * 3600 * 1000)), // '2024-09-15'
     amountEndStr: formatLocalYMD(new Date()), // 2025-06-12
-    marginTotalBalanceStartStr: formatLocalYMD(new Date(new Date().getTime() - 256 * 24 * 3600 * 1000)), // '2024-09-15'
+    marginTotalBalanceStartStr: formatLocalYMD(new Date(new Date().getTime() - 365 * 24 * 3600 * 1000)), // '2024-09-15'
     marginTotalBalanceEndStr: formatLocalYMD(new Date()), // 2025-06-12
     modalVisible: false,
     selectedType: ''
@@ -82,17 +82,15 @@ const amountChartOptions = ref({
         formatter: function(params) {
 			const name = params[0].name;
 			const value = params[0].data.value; // 单位：亿元
-			// 转为万亿（如果数值 >= 10000 亿）
 			let displayValue;
 			let unit = '亿元';
 			if (value >= 10000) {
-				displayValue = (value / 10000).toFixed(2); // 保留一位小数
+				displayValue = (value / 10000).toFixed(2);
 				unit = '万亿';
 			} else {
 				displayValue = value.toFixed(0);
 				unit = '亿';
 			}
-			// 百分比使用 params.percent，自带 %
 			return `${name}<br/>成交额：${displayValue} ${unit}`;
 		}
 	},
@@ -120,18 +118,16 @@ const marginTotalBalanceChartOptions = ref({
         formatter: function(params) {
 			const name = params[0].name;
 			const value = params[0].data.value; // 单位：亿元
-			// 转为万亿（如果数值 >= 10000 亿）
 			let displayValue;
 			let unit = '亿元';
 			if (value >= 10000) {
-				displayValue = (value / 10000).toFixed(2); // 保留一位小数
+				displayValue = (value / 10000).toFixed(2);
 				unit = '万亿';
 			} else {
 				displayValue = value.toFixed(0);
 				unit = '亿';
 			}
-			// 百分比使用 params.percent，自带 %
-			return `${name}<br/>成交额：${displayValue} ${unit}`;
+			return `${name}<br/>两融余额：${displayValue} ${unit}`;
 		}
 	},
     legend: {
@@ -166,12 +162,9 @@ onMounted(async () => {
 function onShowModal(selectedType) {
     data.value.selectedType = selectedType;
     data.value.modalVisible = true;
-
-    // data.value.inputDate = new Date(formatLocalYMD(new Date()));
-
-    data.value.inputDate = new Date(data.value.inputDate.getTime() + 24 * 3600 * 1000)
+    data.value.inputDate = new Date(formatLocalYMD(new Date()));
+    // data.value.inputDate = new Date(data.value.inputDate.getTime() + 24 * 3600 * 1000)
     data.value.inputNumber = 0;
-    console.log(data.value.inputDate.toISOString());
 }
 
 async function requestAmountData() {
@@ -180,7 +173,6 @@ async function requestAmountData() {
 		url: config.url + `/api/statistics/daily/amount?type=amount&start=${data.value.amountStartStr}&end=${data.value.amountEndStr}`
 	});
 	let resData = res.data.data;
-	console.log('resData', resData);
 
     let series = [
 		{
@@ -205,12 +197,10 @@ async function requestMarginTotalBalanceData() {
 		url: config.url + `/api/statistics/daily/amount?type=marginTotalBalance&start=${data.value.marginTotalBalanceStartStr}&end=${data.value.marginTotalBalanceEndStr}`
 	});
 	let resData = res.data.data;
-	console.log('resData marginTotalBalance', resData);
     let series = [
 		{
 			name: '两融余额',
 			type: 'line',
-            sampling: 'none', // ✅ 关闭自动采样，全部点绘制
 			data: resData.list.map(item => {
 				return {
 					value: item.amount, // 亿元, 图表绘图使用的值
@@ -233,18 +223,16 @@ async function onOK() {
         date: new Date(timestamp).toISOString().substring(0, 10),
         amount: data.value.inputNumber
 	});
-    console.log('res', res.data);
     if (res.data.code === 0) {
         Message.success({
             duration: 10,
             content: '录入成功'
         });
-    }
-
-    if (data.value.selectedType === 'amount') {
-        requestAmountData();
-    } else if (data.value.selectedType === 'marginTotalBalance') {
-        requestMarginTotalBalanceData();
+		if (data.value.selectedType === 'amount') {
+			requestAmountData();
+		} else if (data.value.selectedType === 'marginTotalBalance') {
+			requestMarginTotalBalanceData();
+		}
     }
 }
 
@@ -263,13 +251,11 @@ function onAmountEndChange(dateStr) {
 }
 
 function onMarginTotalBalanceStartChange(dateStr) {
-    console.log(dateStr);
     data.value.marginTotalBalanceStartStr = dateStr;
     requestMarginTotalBalanceData();
 }
 
 function onMarginTotalBalanceEndChange(dateStr) {
-    console.log(dateStr);
     data.value.marginTotalBalanceEndStr = dateStr;
     requestMarginTotalBalanceData();
 }
@@ -290,6 +276,8 @@ function onMarginTotalBalanceEndChange(dateStr) {
 
 .date-range-box {
     display: flex;
+	align-items: center;
+    justify-content: center;
 }
 
 .date-range-label {
