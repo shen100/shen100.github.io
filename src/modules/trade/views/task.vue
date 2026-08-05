@@ -90,7 +90,9 @@ let data = ref({
     lastExecTime: null,
     socket: null,
     socketId: '',
-    logList: []
+    logList: [],
+    logListTmp: [],
+    logIntervalId: 0
 });
 
 const tasks = computed(() => {
@@ -124,14 +126,25 @@ onMounted(async () => {
     data.value.socket = io('http://127.0.0.1:3000');
     data.value.socket.on('log', printLog);
     data.value.socket.on('socketId', onGotSocketId);
+    intervalSetLog();
 });
+
+function intervalSetLog() {
+    data.value.logIntervalId = setInterval(function() {
+        data.value.logList = data.value.logListTmp.slice(0);
+    }, 3000);
+}
+
+onBeforeUnmount(() => {
+    clearInterval(data.value.logIntervalId);
+})
 
 function onGotSocketId(socketId) {
     data.value.socketId = socketId;
 }
 
 function printLog(message) {
-    data.value.logList.unshift(message);
+    data.value.logListTmp.unshift(message);
 }
 
 function onGroupChange(a) {

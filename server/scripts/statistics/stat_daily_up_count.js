@@ -94,6 +94,14 @@ export async function exec(option) {
             ...option,
             statDayCount: 252 // 一年大概 252 个交易日
         });
+
+        const db = await mongo.getDB();
+        const taskExecCol = db.collection('task_exec_history');
+        await taskExecCol.insertOne({
+            taskName: 'stat_daily_up_count',
+            createdAt: new Date()
+        });
+
         let endTime = Date.now();
 		let logMsg = `总用时 ${(endTime - startTime) / 1000} 秒`;
 		console.log(logMsg);

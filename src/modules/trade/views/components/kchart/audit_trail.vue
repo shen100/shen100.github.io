@@ -13,6 +13,10 @@
             <template v-if="data.popupVisible && !data.isEdit">
                 <div class="audit-trail-popup-title">检查与回溯</div>
                 <div class="audit-trail-popup-item">
+                    <span class="audit-trail-popup-item-label">大盘走势</span>
+                    <span class="audit-trail-popup-item-text">{{ props.trailData?.daPanZouShi }}</span>
+                </div>
+                <div class="audit-trail-popup-item">
                     <span class="audit-trail-popup-item-label">是否主线</span>
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.zhuXian }}</span>
                 </div>
@@ -61,6 +65,11 @@
             </template>
             <div v-if="data.popupVisible && data.isEdit">
                 <Form :label-width="80">
+                    <FormItem label="大盘走势">
+                        <Select v-model="data.formItem.daPanZouShi">
+                            <Option v-for="item in data.daPanZouShiList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                        </Select>
+                    </FormItem>
                     <FormItem label="是否主线">
                         <Select v-model="data.formItem.zhuXian">
                             <Option v-for="item in data.zhuXianList" :value="item.value" :key="item.value">{{ item.label }}</Option>
@@ -128,6 +137,7 @@ let data = ref({
     popupVisible: false,
     isEdit: false,
     formItem: {
+        daPanZouShi: '', // 大盘走势: 上升、下降、区间震荡
         zhuXian: '', // 是否主线: 是、否
         banKuai: '', // 板块: 光模块、PCB、物理AI
         diaoYan: '', // 公司调研
@@ -140,6 +150,11 @@ let data = ref({
         maiDian2: '', // 卖点: 自动止损、手动止损、加速
         zongJie: '' // 总结
     },
+    daPanZouShiList: [
+        { label: '上升', value: '上升' },
+        { label: '下降', value: '下降' },
+        { label: '区间震荡', value: '区间震荡' }
+    ],
     zhuXianList: [
         { label: '是', value: '是' },
         { label: '否', value: '否' }
@@ -189,6 +204,7 @@ function onSwitchVisibleFalse() {
 function onEdit() {
     console.log('onEdit', props.trailData);
     data.value.isEdit = true;
+    data.value.formItem.daPanZouShi = trim(props.trailData?.daPanZouShi || '');
     data.value.formItem.zhuXian = trim(props.trailData?.zhuXian || '');
     data.value.formItem.banKuai = trim(props.trailData?.banKuai || '');
     data.value.formItem.diaoYan = trim(props.trailData?.diaoYan || '');

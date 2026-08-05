@@ -19,6 +19,9 @@ export async function today(req, res) {
             label: '看指数行情'
         },
         {
+            label: '看韩国KOSPI行情'
+        },
+        {
             label: '看当前持仓行情'
         },
         {
@@ -48,7 +51,7 @@ export async function today(req, res) {
     const db = await mongo.getDB();
     const collection = db.collection('todo_list');
     let date = formatLocalYMD(new Date());
-    // const date = formatLocalYMD(new Date(2026, 7, 3));
+    // let date = formatLocalYMD(new Date(2026, 7, 4));
 
     let todoListData = await collection.findOne({
         date

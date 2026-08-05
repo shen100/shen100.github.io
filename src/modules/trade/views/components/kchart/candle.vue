@@ -1,11 +1,12 @@
 <template>
     <div :id="'candle-container-' + date"
-        @click="onClick"
+        @dblclick="onDoubleClick"
         @mouseenter="onMouseOver"
         @mouseleave="onMouseOut"
         @mousemove="onMouseMove" class="candle-container" :style="{minWidth: `${data.boxWidth + 2}px`}">
         <div class="candle-line" :style="candleLineStyle"></div>
-        <div class="candle-box" :style="candleBoxStyle">
+        <div class="candle-box" :style="candleBoxStyle" 
+            :class="{ 'candle-glow-green': isGreenGlow, 'candle-glow-red': isRedGlow, 'candle-glow-grey': isGreyGlow }">
             <div :style="candleInnerBoxStyle"></div>
         </div>
         <div v-if="data.isMouseOver" class="full-line" :style="{left: `${data.lineX}px`}"></div>
@@ -37,9 +38,12 @@ const props = defineProps([
     'highPriceInAll',
     'candleMaxHeight',
     'tradeAction',
+    'staticVar' // candle 组件的多个实例之间共用的静态变量
 ]);
 
 const emit = defineEmits(['mouse-over', 'mouse-out', 'mouse-move']);
+
+const isGlow = ref(false);
 
 let data = ref({
     boxWidth: 7,
@@ -53,6 +57,27 @@ let data = ref({
     lineWidth: 1,
     lineHeight: 0,
     isMouseOver: false,
+});
+
+const isGreenGlow = computed(() => {
+    if (props.closePrice < props.openPrice && isGlow.value) {
+        return true;
+    }
+    return false;
+});
+
+const isRedGlow = computed(() => {
+    if (props.closePrice > props.openPrice && isGlow.value) {
+        return true;
+    }
+    return false;
+});
+
+const isGreyGlow = computed(() => {
+    if (props.closePrice === props.openPrice && isGlow.value) {
+        return true;
+    }
+    return false;
 });
 
 const candleLineStyle = computed(() => {
@@ -228,22 +253,55 @@ function onMouseMove(event) {
     }
 }
 
-async function onClick() {
+async function onDoubleClick() {
     if (!props.closePrice) {
         return;
     }
+
     try {
         await navigator.clipboard.writeText('' + props.closePrice);
-        if (props.stockHighPrice) {
-            let rate = 100 * (props.stockHighPrice - props.lowPrice) / props.stockHighPrice;
-            let str = rate.toFixed(2);
-            Message.success({
-                duration: 10,
-                content: `${props.date} 的最低价相对于最高参考价的跌幅为${str}%`
-            });
-        }
     } catch (err) {
         console.error('复制失败:', err);
+    }
+
+    props.staticVar.clickedCandles = props.staticVar.clickedCandles || [];
+
+    if (isGlow.value) {
+        isGlow.value = false;
+        for (let i = 0; i < props.staticVar.clickedCandles.length; i++) {
+            if (props.staticVar.clickedCandles[i].date === props.date) {
+                props.staticVar.clickedCandles.splice(i, 1);
+                break;
+            }
+        }
+        return;
+    }
+
+    if (props.staticVar.clickedCandles.length === 2) {
+        return;
+    }
+
+    isGlow.value = true;
+    props.staticVar.clickedCandles.push({
+        date: props.date,
+        closePrice: props.closePrice
+    });
+
+    if (props.staticVar.clickedCandles.length === 2) {
+        let date0 = props.staticVar.clickedCandles[0].date;
+        let date1 = props.staticVar.clickedCandles[1].date;
+        let closePrice0 = props.staticVar.clickedCandles[0].closePrice;
+        let closePrice1 = props.staticVar.clickedCandles[1].closePrice;
+        if (date0 > date1) {
+            [ date0, date1 ] = [ date1, date0 ];
+            [ closePrice0, closePrice1 ] = [ closePrice1, closePrice0 ];
+        }
+        let rate = 100 * (closePrice1 - closePrice0) / closePrice0;
+        let str = rate.toFixed(2);
+        Message.success({
+            duration: 10,
+            content: `${date0} 到 ${date1} 的涨跌幅为${str}%`
+        });
     }
 }
 
@@ -280,5 +338,20 @@ defineExpose({ getCandleData, setMouseOver, setMouseOut });
     line-height: 16px;
     text-align: center;
     font-size: 10px;
+}
+
+.candle-glow-green {
+    transition: box-shadow 0.2s ease;
+    box-shadow: 0 0 10px 3px rgba(2, 179, 61, 0.32), 0 0 20px 8px rgba(2, 179, 61, 0.18);
+}
+
+.candle-glow-red {
+    transition: box-shadow 0.2s ease;
+    box-shadow: 0 0 10px 3px rgba(238, 37, 0, 0.32), 0 0 20px 8px rgba(238, 37, 0, 0.18);
+}
+
+.candle-glow-grey {
+    transition: box-shadow 0.2s ease;
+    box-shadow: 0 0 8px 2px #b8b8b8, 0 0 16px 6px rgba(134, 134, 134, 0.65);
 }
 </style>

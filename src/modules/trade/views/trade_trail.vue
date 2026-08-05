@@ -41,6 +41,7 @@ import { nextTick, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import KChart from './components/kchart/kchart.vue';
 import { formatLocalYMD, parseLocalYMDString } from '../util/date';
+import { globalEventEmitter } from '../../../util/event';
 import { trim } from '../util/str';
 
 const route = useRoute()
@@ -69,6 +70,8 @@ onMounted(async () => {
         data.value.end = '2026-01-01';
     }
 
+    initBreadcrumb();
+
     let stocks = getStocks();
     data.value.total = stocks.length;
     let start = (data.value.page - 1) * data.value.pageSize;
@@ -77,6 +80,20 @@ onMounted(async () => {
         onRequest(data.value.type, data.value.stocks);
     })
 });
+
+function initBreadcrumb() {
+    globalEventEmitter.emit('breadcrumb', {
+        list: [
+            {
+                to: '/',
+                label: '首页'
+            },
+            {
+                label: '交易回溯'
+            }
+        ]
+    });
+}
 
 function getStocks() {
     let stocks = JSON.parse(localStorage.getItem(data.value.kChartLocalKey) || '[]');

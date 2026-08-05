@@ -83,6 +83,7 @@
 					:lowPriceInAll="data.lowPriceInAll"
 					:highPriceInAll="data.highPriceInAll"
 					:candleMaxHeight="data.candleMaxHeight"
+					:staticVar="data.candleStaticVar"
 					@mouse-over="(candleData) => onCandleMouseOver(i, candleData)"
 					@mouse-out="() => onCandleMouseOut(i)"
 					@mouse-move="(candleData) => onCandleMouseMove(i, candleData)"
@@ -210,7 +211,8 @@ let data = ref({
 	addPotentialModalVisible: false,
 	removePotentialModalVisible: false,
 	askAIModalVisible: false,
-	minuteList: [] // 分时点数据
+	minuteList: [], // 分时点数据
+	candleStaticVar: {}
 });
 
 onMounted(async () => {

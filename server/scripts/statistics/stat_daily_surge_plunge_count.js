@@ -59,6 +59,12 @@ async function runTask(option) {
 
         logger.info(logMsg);
     }
+
+    const taskExecCol = db.collection('task_exec_history');
+    await taskExecCol.insertOne({
+        taskName: 'stat_daily_surge_plunge_count',
+        createdAt: new Date()
+    });
 }
 
 export async function exec(option) {
