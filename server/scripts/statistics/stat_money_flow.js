@@ -6,7 +6,6 @@ import * as defaultLogger from '../../util/logger.js';
 const __filename = fileURLToPath(import.meta.url);
 
 let isMain = false;
-let logger;
 
 if (process.argv[1] === __filename) {
     isMain = true;
@@ -23,11 +22,59 @@ function findConceptSectors(stock) {
     return list;
 }
 
+async function bulkUpsert(db, dataMap) {
+    const ops = [];
+
+    for (let key in dataMap) {
+        const statData = dataMap[key];
+        ops.push({
+            updateOne: {
+                filter: {
+                    concept: statData.concept, 
+                    date: statData.date
+                },
+                update: {
+                    $set: {
+                        date: statData.date,
+                        concept: statData.concept,
+                        amount: statData.amount,
+                        stocks: statData.stocks,
+                        updatedAt: new Date()
+                    },
+                    $setOnInsert: {
+                        createdAt: new Date()
+                    }
+                },
+                upsert: true
+            }
+        });
+    }
+
+
+    const coll = db.collection('money_flow');
+    const res = await coll.bulkWrite(ops, {
+        ordered: false // false：某一条失败，不影响其他继续执行；适合K线批量写入
+    });
+    return res;
+}
+
 async function runTask(option) {
-    logger = option && option.logger || defaultLogger;
+    const logger = option && option.logger || defaultLogger;
     const db = await mongo.getDB();
     const collection = db.collection('kline_day');
+
+    let logMsg = '查询股票历史K线';
+    console.log(logMsg);
+    logger.info(logMsg);
+    let startTime = Date.now();
+
     const stocks = await collection.find({}).toArray();
+
+    let endTime = Date.now();
+    logMsg = `查询股票历史K线用时 ${(endTime - startTime) / 1000} 秒`;
+    console.log(logMsg);
+    logger.info(logMsg);
+
     const dataMap = {};
 
     for (let i = 0; i < stocks.length; i++) {
@@ -57,31 +104,18 @@ async function runTask(option) {
         }
     }
 
-    const moneyFlowCol = db.collection('money_flow');
-    
-    for (let key in dataMap) {
-        const statData = dataMap[key];
-        const filter = { concept: statData.concept, date: statData.date };
-        const updateDoc = {
-            $set: {
-                date: statData.date,
-                concept: statData.concept,
-                amount: statData.amount,
-                stocks: statData.stocks,
-                updatedAt: new Date()
-            },
-            $setOnInsert: {
-                createdAt: new Date()  // 只有插入时才设置
-            }
-        };
-        const result = await moneyFlowCol.updateOne(filter, updateDoc, { upsert: true });
+    logMsg = `开始写入数据库`;
+    console.log(logMsg);
+    logger.info(logMsg);
 
-        let logMsg = `📝 更新成功 ${key} result.upsertedId ${result.upsertedId}`;
-        console.log(logMsg);
-        console.log();
+    startTime = Date.now();
 
-        logger.info(logMsg);
-    }
+    await bulkUpsert(db, dataMap);
+
+    endTime = Date.now();
+    logMsg = `写库用时 ${(endTime - startTime) / 1000} 秒`;
+    console.log(logMsg);
+    logger.info(logMsg);
 
     const taskExecCol = db.collection('task_exec_history');
     await taskExecCol.insertOne({
@@ -92,7 +126,9 @@ async function runTask(option) {
 
 export async function exec(option) {
     try {
+        const logger = option && option.logger || defaultLogger;
         let startTime = Date.now();
+
         await runTask(option);
         let endTime = Date.now();
 		let logMsg = `总用时 ${(endTime - startTime) / 1000} 秒`;

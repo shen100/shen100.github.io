@@ -239,9 +239,9 @@ const dailyMoneyFlowChartOptions = ref({
 	tooltip: {
 		trigger: 'axis'
 	},
-	legend: {
-		data: []
-	},
+	// legend: {
+	// 	data: []
+	// },
 	xAxis: {
 		type: 'category',
 		data: []
@@ -431,7 +431,7 @@ function setCurrentDailyMoneyFlow(index) {
 
 	let dates = allDailyMoneyFlowList[index].dates.map(item => item.date);
 
-	dailyMoneyFlowChartOptions.value.legend.data = [ allDailyMoneyFlowList[index].name ];
+	// dailyMoneyFlowChartOptions.value.legend.data = [ allDailyMoneyFlowList[index].name ];
 	dailyMoneyFlowChartOptions.value.xAxis.data = dates;
 	dailyMoneyFlowChartOptions.value.series = series;
 	data.value.selectedConcept = allDailyMoneyFlowList[index].name;

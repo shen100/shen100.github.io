@@ -1,14 +1,14 @@
 <template>
     <div class="task-box">
         <Card style="flex: 1; min-height: 500px;">
-            <div>
-                <span>任务分组</span>
+            <div class="task-form-item">
+                <span class="task-form-item-label">任务分组</span>
                 <Select v-model="data.groupName" @on-change="onGroupChange" style="width: 420px">
                     <Option v-for="item in data.groups" :value="item.groupName" :key="item.groupName">{{ item.groupName }}</Option>
                 </Select>
             </div>
-            <div>
-                <span>任务</span>
+            <div class="task-form-item">
+                <span class="task-form-item-label">任务</span>
                 <Select v-model="data.task" @on-change="onChange" style="width: 420px">
                     <Option v-for="item in tasks" :value="item.value" :key="item.value">{{ item.label }}</Option>
                 </Select>
@@ -22,7 +22,6 @@
                 <span class="desc-label">最后执行: </span>
                 <span>{{ lastExecTimeStr }}</span>
             </div>
-
         </Card>
         <Card style="flex: 1; min-height: 500px;">
             <div :key="i" v-for="(msg, i) in data.logList">{{ msg }}</div>
@@ -34,13 +33,9 @@
 <script setup>
 import axios from 'axios';
 import { onMounted, ref, computed, onBeforeUnmount } from 'vue'
-import { useRoute } from 'vue-router';
 import { io } from 'socket.io-client';
-import KChartList from './components/kchart/kchart_list.vue';
-import { formatLocalYMD, formatLocalYMDHMS } from '../util/date';
-import { trim } from '../util/str';
+import { formatLocalYMDHMS } from '../util/date';
 import config from '../config/config.js';
-import { Card } from 'view-ui-plus';
 
 let data = ref({
     groupName: '',
@@ -110,8 +105,6 @@ const tasks = computed(() => {
 });
 
 const description = computed(() => {
-    console.log(JSON.parse(JSON.stringify(tasks.value)));
-    console.log('data.value.task', data.value.task);
     for (let i = 0; i < tasks.value.length; i++) {
         if (tasks.value[i].value === data.value.task) {
             return tasks.value[i].desc;
@@ -153,9 +146,8 @@ function printLog(message) {
 }
 
 function onGroupChange(a) {
-    console.log(a);
-    console.log(123, data.value.groupName);
     data.value.task = '';
+    data.value.logListTmp = [];
 }
 
 async function onChange() {
@@ -164,7 +156,6 @@ async function onChange() {
 		url: config.url + '/api/tasks/last_history?task=' + data.value.task
 	});
 	let resData = res.data.data;
-    console.log(resData);
     data.value.lastExecTime = resData ? new Date(resData.createdAt) : null;
 }
 
@@ -187,13 +178,27 @@ async function onSubmit() {
     gap: 20px;
 }
 
+.task-form-item {
+    padding-top: 10px;
+    margin-bottom: 10px;
+}
+
+.task-form-item-label {
+    display: inline-block;
+    width: 80px;
+    text-align: right;
+    margin-right: 10px;
+}
+
 .task-description {
-    margin-top: 10px;
+    padding-top: 10px;
 }
 
 .desc-label {
     display: inline-block;
     vertical-align: top;
-    margin-right: 8px;
+    width: 80px;
+    text-align: right;
+    margin-right: 10px;
 }
 </style>

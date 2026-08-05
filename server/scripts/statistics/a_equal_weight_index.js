@@ -29,7 +29,7 @@ function calcAAEqualWeightIndex(dateMap, kList) {
     }
 }
 
-async function bulkUpsertKline(db, dateList) {
+async function bulkUpsert(db, dateList) {
     const ops = dateList.map(item => {
         return {
             updateOne: {
@@ -128,7 +128,7 @@ async function runTask(option) {
     logger.info(logMsg);
 
     startTime = Date.now();
-    await bulkUpsertKline(db, dateList);
+    await bulkUpsert(db, dateList);
 
     endTime = Date.now();
     logMsg = `写库用时 ${(endTime - startTime) / 1000} 秒`;

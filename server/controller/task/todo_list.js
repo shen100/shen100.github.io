@@ -10,6 +10,9 @@ export async function today(req, res) {
             label: '看东方财富全A'
         },
         {
+            label: '看全A等权指数'
+        },
+        {
             label: '看大盘总市值'
         },
         {
