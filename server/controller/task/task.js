@@ -8,6 +8,7 @@ import * as stat_daily_surge_plunge_count from '../../scripts/statistics/stat_da
 import * as stat_daily_up_count from '../../scripts/statistics/stat_daily_up_count.js';
 import * as a_equal_weight_index from '../../scripts/statistics/a_equal_weight_index.js';
 import * as index_recent_decline_md from '../../scripts/statistics/index_recent_decline_md.js';
+import * as explore_stocks from '../../scripts/strategy/explore_stocks.js';
 
 /**
  * 执行任务
@@ -34,6 +35,10 @@ export async function exec(req, res) {
         resData = await a_equal_weight_index.exec({ logger: socketClientLogger });
     } else if (task === 'index_recent_decline_md') {
         resData = await index_recent_decline_md.exec({ logger: socketClientLogger });
+    } else if (task === 'tradeStocksByStrategy1') {
+        resData = await explore_stocks.exec({ logger: socketClientLogger, strategy: 'tradeStocksByStrategy1' });
+    } else if (task === 'tradeStocksByStrategy2') {
+        resData = await explore_stocks.exec({ logger: socketClientLogger, strategy: 'tradeStocksByStrategy2' });
     }
 
     res.json({

@@ -5,6 +5,11 @@
  * 3. 在北交所上市
  */
 export function detectTrend(allItems, stockDetail) {
+    // 上市时间少于 100 个交易日的，不考虑
+    if (allItems.length < 100) {
+        return { ok: false };
+    }
+    
     let index = allItems.length - 1;
     for (let i = 0; i < index; i++) {
         if (allItems[i].highPrice > allItems[index].closePrice) {

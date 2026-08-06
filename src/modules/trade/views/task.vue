@@ -89,7 +89,22 @@ let data = ref({
                     desc: '统计上证指数、科创50近几年的跌幅'
                 }
             ]
-        }
+        },
+        {
+            groupName: '交易策略',
+            tasks: [
+                {
+                    value: 'tradeStocksByStrategy1',
+                    label: 'tradeStocksByStrategy1',
+                    desc: '到达最高价后回踩'
+                },
+                {
+                    value: 'tradeStocksByStrategy2',
+                    label: 'tradeStocksByStrategy2',
+                    desc: '最后一个交易日达到最高价'
+                }
+            ]
+        },
     ],
     task: '',
     lastExecTime: null,

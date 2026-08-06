@@ -48,6 +48,23 @@ const questions = [
         optionsVisible: false,
     },
     {
+        question: '现在大盘总市值大概是多少',
+        options: [
+            { answer: '100万亿' },
+            { answer: '105万亿' },
+            { answer: '110万亿' },
+            { answer: '115万亿' },
+            { answer: '120万亿' },
+            { answer: '125万亿' },
+            { answer: '130万亿' },
+            { answer: '135万亿' },
+            { answer: '140万亿' }
+        ],
+        answer: '125万亿',
+        selectedAnswer: '',
+        optionsVisible: false
+    },
+    {
         question: '现在两融余额大概是多少',
         options: [
             { answer: '2.1万亿' },
@@ -62,6 +79,24 @@ const questions = [
             { answer: '3万亿' },
         ],
         answer: '2.6万亿',
+        selectedAnswer: '',
+        optionsVisible: false
+    },
+    {
+        question: '现在每日成交额大概是多少',
+        options: [
+            { answer: '2.1万亿' },
+            { answer: '2.2万亿' },
+            { answer: '2.3万亿' },
+            { answer: '2.4万亿' },
+            { answer: '2.5万亿' },
+            { answer: '2.6万亿' },
+            { answer: '2.7万亿' },
+            { answer: '2.8万亿' },
+            { answer: '2.9万亿' },
+            { answer: '3万亿' },
+        ],
+        answer: '2.5万亿',
         selectedAnswer: '',
         optionsVisible: false
     }
