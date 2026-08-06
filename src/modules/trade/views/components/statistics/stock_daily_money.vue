@@ -163,6 +163,9 @@ function onShowModal(selectedType) {
     data.value.selectedType = selectedType;
     data.value.modalVisible = true;
     data.value.inputDate = new Date(formatLocalYMD(new Date()));
+	if (selectedType === 'marginTotalBalance') {
+		data.value.inputDate = new Date(formatLocalYMD(new Date(new Date().getTime() - 24 * 3600 * 1000)));
+	}
     // data.value.inputDate = new Date(data.value.inputDate.getTime() + 24 * 3600 * 1000)
     data.value.inputNumber = 0;
 }
@@ -224,6 +227,7 @@ async function onOK() {
         amount: data.value.inputNumber
 	});
     if (res.data.code === 0) {
+		data.value.modalVisible = false;
         Message.success({
             duration: 10,
             content: '录入成功'

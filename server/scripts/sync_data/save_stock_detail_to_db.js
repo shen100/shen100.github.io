@@ -8,59 +8,68 @@ import stockNetUtil from '../../util/stock_net_util.js';
 const __filename = fileURLToPath(import.meta.url);
 
 let isMain = false;
-let logger;
 
 if (process.argv[1] === __filename) {
     isMain = true;
 }
 
-/**
- * 把所有股票的详细信息存入数据库，需要先更新 server/data/all_original_stocks.json
- */
+async function runTask(option) {
+    const logger = option && option.logger || defaultLogger;
+    const db = await mongo.getDB();
+    const collection = db.collection('stock_detail');
+    const allStocks = await stockService._getAllStocksFromFile();
+
+    await bluebird.map(allStocks, async function (stockData, index) {
+        let stockDetail = await stockNetUtil.requestStockDetail(stockData);
+
+        const filter = { stockFullId: stockDetail.stockFullId };
+        const updateDoc = {
+            $set: {
+                stockId: stockDetail.stockId,
+                stockFullId: stockDetail.stockFullId,
+                stockName: stockDetail.stockName,
+                zongShiZhi: stockDetail.zongShiZhi,
+                updatedAted: new Date()
+            },
+            $setOnInsert: {
+                createdAt: new Date() // 只有插入时才设置
+            }
+        };
+        const result = await collection.updateOne(filter, updateDoc, { upsert: true });
+
+        let logMsg = `📝 更新成功: index ${index} modifiedCount ${result.modifiedCount} upsertedCount ${result.upsertedCount}`;
+        console.log(logMsg);
+        console.log();
+        logger.info(logMsg);
+
+    }, { concurrency: 20 });
+
+    const taskExecCol = db.collection('task_exec_history');
+    const createdAt = new Date();
+    await taskExecCol.insertOne({
+        taskName: 'save_stock_detail_to_db',
+        createdAt
+    });
+
+    let logMsg = `一共更新了 ${allStocks.length} 条数据`;
+    console.log(logMsg);
+    logger.info(logMsg);
+    return {
+        createdAt
+    };
+}
+
 export async function exec(option) {
     try {
-        logger = option && option.logger || defaultLogger;
-        const allStocks = await stockService.getAllStocksFromFile();
-        const db = await mongo.getDB();
-        const collection = db.collection('stock_detail');
+        let logger = option.logger;
+        let startTime = Date.now();
 
-        await bluebird.map(allStocks, async function (stockData, index) {
-            let stockDetail = await stockNetUtil.requestStockDetail(stockData);
+        await runTask(option);
 
-            const filter = { stockFullId: stockDetail.stockFullId };
-            const updateDoc = {
-                $set: {
-                    stockId: stockDetail.stockId,
-                    stockFullId: stockDetail.stockFullId,
-                    stockName: stockDetail.stockName,
-                    zongShiZhi: stockDetail.zongShiZhi,
-                },
-                $setOnInsert: {
-                    createdAt: new Date() // 只有插入时才设置
-                }
-            };
-            const result = await collection.updateOne(filter, updateDoc, { upsert: true });
-
-            let logMsg = '📝 更新成功: ' + index + ' result.upsertedId ' + result.upsertedId;
-            console.log(logMsg);
-            console.log();
-            logger.info(logMsg);
-
-        }, { concurrency: 20 });
-
-        const taskExecCol = db.collection('task_exec_history');
-        const createdAt = new Date();
-        await taskExecCol.insertOne({
-            taskName: 'save_stock_detail_to_db',
-            createdAt
-        });
-
-        let logMsg = `一共更新了 ${allStocks.length} 条数据`;
+        let endTime = Date.now();
+        let logMsg = `总用时 ${(endTime - startTime) / 1000} 秒`;
         console.log(logMsg);
         logger.info(logMsg);
-        return {
-            createdAt
-        };
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
@@ -70,6 +79,10 @@ export async function exec(option) {
     }
 }
 
+/**
+ * 把所有股票的详细信息存入数据库，需要先更新 server/data/all_original_stocks.json
+ */
 if (isMain) {
     await exec();
 }
+

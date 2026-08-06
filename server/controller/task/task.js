@@ -7,6 +7,7 @@ import * as stat_money_flow from '../../scripts/statistics/stat_money_flow.js';
 import * as stat_daily_surge_plunge_count from '../../scripts/statistics/stat_daily_surge_plunge_count.js';
 import * as stat_daily_up_count from '../../scripts/statistics/stat_daily_up_count.js';
 import * as a_equal_weight_index from '../../scripts/statistics/a_equal_weight_index.js';
+import * as index_recent_decline_md from '../../scripts/statistics/index_recent_decline_md.js';
 
 /**
  * 执行任务
@@ -31,6 +32,8 @@ export async function exec(req, res) {
         resData = await stat_daily_up_count.exec({ logger: socketClientLogger });
     } else if (task === 'a_equal_weight_index') {
         resData = await a_equal_weight_index.exec({ logger: socketClientLogger });
+    } else if (task === 'index_recent_decline_md') {
+        resData = await index_recent_decline_md.exec({ logger: socketClientLogger });
     }
 
     res.json({

@@ -11,6 +11,7 @@ import DailyCheckIn from '../views/daily_check_in.vue';
 import BuyPointCalculator from '../views/buy_point_calculator.vue';
 import BuyPointCalculatorDetail from '../views/buy_point_calculator_detail.vue';
 import Task from '../views/task.vue';
+import Questions from '../views/questions.vue';
 
 const routeList = [
     {
@@ -92,6 +93,11 @@ const routeList = [
         path: '/trade/dailycheckin',
         name: 'tradeDailyCheckIn',
         component: DailyCheckIn,
+    },
+    {
+        path: '/trade/questions',
+        name: 'tradeQuestions',
+        component: Questions,
     },
     {
         path: '/trade/tool/localstorage',

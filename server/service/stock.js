@@ -80,7 +80,7 @@ for (let i = 0; i < myItems.length; i++) {
     });
 }
 
-export function getAllStocksFromFile() {
+export function _getAllStocksFromFile() {
     return myStocks;
 }
 

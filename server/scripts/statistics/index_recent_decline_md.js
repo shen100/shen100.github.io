@@ -1,5 +1,14 @@
+import { fileURLToPath } from 'url';
 import * as mongo from '../../database/mongo.js';
-import { requestDayK } from '../../util/stock_net_util.js';
+import stockNetUtil from '../../util/stock_net_util.js';
+
+const __filename = fileURLToPath(import.meta.url);
+
+let isMain = false;
+
+if (process.argv[1] === __filename) {
+    isMain = true;
+}
 
 let years = [ 2026, 2025, 2024 ];
 
@@ -98,12 +107,11 @@ async function analyzePriceChange(year, list, option) {
     if (down3RateCount === 0) {
         mdArr[6] = `| 跌幅 >= ${option.rateConst3 * 100}% 的天数 | ${down3RateCount}`;
     }
-    console.log(mdArr.join('\n'));
-    console.log();
+    return mdArr.join('\n') + '\n';
 }
 
-async function requestKList(stockData, startStr, endStr, count) {
-    let myKList = await requestDayK(stockData, startStr, endStr, count);
+async function requestKList(stockFullId, startStr, endStr, count) {
+    let myKList = await stockNetUtil.requestDayK(stockFullId, startStr, endStr, count);
     let kList = myKList.map((item) => {
         return {
             date: item[0],
@@ -117,18 +125,18 @@ async function requestKList(stockData, startStr, endStr, count) {
     return kList;
 }
 
-async function doAnalyze(db, option) {
-    console.log('## ' + option.indexTitle);
+async function runTask(db, option) {
+    let outputStr = '## ' + option.indexTitle + '\n'
 
     for (let i = 0; i < years.length; i++) {
         const year = years[i];
-        const kList = await requestKList({ stockFullId: option.stockFullId }, `${year - 1}-12-01`, `${year}-12-31`, 1000);
+        const kList = await requestKList(option.stockFullId, `${year - 1}-12-01`, `${year}-12-31`, 1000);
         if (!(kList && kList.length)) {
             console.log('kList 没数据');
-            console.log();
-            process.exit(0);
+            return '';
         }
-        await analyzePriceChange(years[i], kList, option);
+        outputStr += await analyzePriceChange(year, kList, option);
+        outputStr += '\n';
     }
 
     option.rate2List.sort((a, b) => {
@@ -141,17 +149,18 @@ async function doAnalyze(db, option) {
     for (let i = 0; i < rate2List.length; i++) {
         str = str + `| ${rate2List[i].date}  | ${rate2List[i].rate}   |  ${rate2List[i].nextRatePercent} | ${rate2List[i].nextRate}   |\n`;
     }
-    console.log('\n' + option.nextRateTableTip);
-    // console.log(JSON.stringify(rate2List));
-    console.log(str);
-    console.log();
+
+    outputStr += ('\n' + option.nextRateTableTip);
+    outputStr += ('\n' + str);
+    outputStr += '\n';
+    return outputStr;
 }
 
-/**
- * 统计上证指数、科创 50 等近几年的跌幅
- */
-async function main() {
+export async function exec(option) {
     try {
+        const logger = option && option.logger || defaultLogger;
+        let startTime = Date.now();
+        logger.info('开始执行');
         const db = await mongo.getDB();
 
         // 上证指数
@@ -164,7 +173,8 @@ async function main() {
             rate2List: []
         };
         option1.nextRateTableTip = `### 上证指数 跌幅超过 ${option1.rateConst2 * 100}%`;
-        await doAnalyze(db, option1);
+        let outputStr1 = await runTask(db, option1);
+        
 
         // 科创50
         const option2 = {
@@ -175,13 +185,40 @@ async function main() {
             indexTitle: '科创50',
             rate2List: []
         };
-        option2.nextRateTableTip = `### 科创50 跌幅超过 ${option2.rateConst2 * 100}%`,
-        await doAnalyze(db, option2);
+        option2.nextRateTableTip = `### 科创50 跌幅超过 ${option2.rateConst2 * 100}%`;
+        let outputStr2 = await runTask(db, option2);
+        console.log(outputStr1);
+        console.log(outputStr2);
+
+        const createdAt = new Date();
+        const taskExecCol = db.collection('task_exec_history');
+        await taskExecCol.insertOne({
+            taskName: 'index_recent_decline_md',
+            createdAt
+        });
+
+        let endTime = Date.now();
+        let logMsg = `总用时 ${(endTime - startTime) / 1000} 秒`;
+        console.log(logMsg);
+        logger.info(logMsg);
+
+        return {
+            chapterId: 1784641704413,
+            outputStr: outputStr1 + outputStr2,
+            createdAt
+        };
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
-        await mongo.close();
+        if (isMain) {
+            await mongo.close();
+        }
     }
 }
 
-await main();
+/**
+ * 统计上证指数、科创50近几年的跌幅
+ */
+if (isMain) {
+    await exec();
+}

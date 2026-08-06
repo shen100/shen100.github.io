@@ -138,7 +138,7 @@ async function runTask(option) {
 
 export async function exec(option) {
     try {
-        let logger = option.logger;
+        const logger = option && option.logger || defaultLogger;
         let startTime = Date.now();
 
         await runTask(option);

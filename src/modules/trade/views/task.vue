@@ -82,6 +82,11 @@ let data = ref({
                     value: 'a_equal_weight_index',
                     label: 'a_equal_weight_index',
                     desc: '更新每日全A等权指数'
+                },
+                {
+                    value: 'index_recent_decline_md',
+                    label: 'index_recent_decline_md',
+                    desc: '统计上证指数、科创50近几年的跌幅'
                 }
             ]
         }
