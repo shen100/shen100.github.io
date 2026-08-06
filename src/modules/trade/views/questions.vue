@@ -45,8 +45,25 @@ const questions = [
         ],
         answer: '3%',
         selectedAnswer: '',
-        optionsVisible: true,
-        answerStatus: 1
+        optionsVisible: false,
+    },
+    {
+        question: '现在两融余额大概是多少',
+        options: [
+            { answer: '2.1万亿' },
+            { answer: '2.2万亿' },
+            { answer: '2.3万亿' },
+            { answer: '2.4万亿' },
+            { answer: '2.5万亿' },
+            { answer: '2.6万亿' },
+            { answer: '2.7万亿' },
+            { answer: '2.8万亿' },
+            { answer: '2.9万亿' },
+            { answer: '3万亿' },
+        ],
+        answer: '2.6万亿',
+        selectedAnswer: '',
+        optionsVisible: false
     }
 ];
 

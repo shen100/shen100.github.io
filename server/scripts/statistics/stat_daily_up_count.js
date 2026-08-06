@@ -5,14 +5,45 @@ import * as defaultLogger from '../../util/logger.js';
 const __filename = fileURLToPath(import.meta.url);
 
 let isMain = false;
-let logger;
 
 if (process.argv[1] === __filename) {
     isMain = true;
 }
 
+async function bulkUpsert(db, dataMap, option) {
+    const ops = [];
+    for (let key in dataMap) {
+        const statData = dataMap[key];
+        ops.push({
+            updateOne: {
+                filter: {
+                    uniqueId: statData.date + `-` + option.statDayCount
+                },
+                update: {
+                    $set: {
+                        date: statData.date,
+                        count: statData.count,
+                        statDayCount: option.statDayCount,
+                        stocks: statData.stocks
+                    },
+                    $setOnInsert: {
+                        createdAt: new Date()  // 只有插入时才设置
+                    }
+                },
+                upsert: true
+            }
+        });
+    }
+
+    const coll = db.collection('daily_up_count');
+    const res = await coll.bulkWrite(ops, {
+        ordered: false // false：某一条失败，不影响其他继续执行；适合K线批量写入
+    });
+    return res;
+}
+
 async function runTask(option) {
-    logger = option && option.logger || defaultLogger;
+    const logger = option && option.logger || defaultLogger;
     const db = await mongo.getDB();
     const collection = db.collection('kline_day');
     const stocks = await collection.find({}).toArray();
@@ -46,28 +77,17 @@ async function runTask(option) {
         }
     }
 
-    const dailyUpCountCol = db.collection('daily_up_count');
-    
-    for (let key in dataMap) {
-        const statData = dataMap[key];
-        const filter = { uniqueId: statData.date + `-` + option.statDayCount };
-        const updateDoc = {
-            $set: {
-                date: statData.date,
-                count: statData.count,
-                statDayCount: option.statDayCount,
-                stocks: statData.stocks
-            },
-            $setOnInsert: {
-                createdAt: new Date()  // 只有插入时才设置
-            }
-        };
-        const result = await dailyUpCountCol.updateOne(filter, updateDoc, { upsert: true });
-        let logMsg = `📝 更新成功 date ${key} result.upsertedId ${result.upsertedId}`;
-        console.log(logMsg);
-        console.log();
-        logger.info(logMsg);
-    }
+    let logMsg = `开始写入数据库`;
+    console.log(logMsg);
+    logger.info(logMsg);
+
+    let startTime = Date.now();
+    await bulkUpsert(db, dataMap, option);
+
+    let endTime = Date.now();
+    logMsg = `写库用时 ${(endTime - startTime) / 1000} 秒`;
+    console.log(logMsg);
+    logger.info(logMsg);
 }
 
 /**
@@ -77,6 +97,7 @@ async function runTask(option) {
  */
 export async function exec(option) {
     try {
+        const logger = option && option.logger || defaultLogger;
         let startTime = Date.now();
         await runTask({
             ...option,
@@ -95,17 +116,21 @@ export async function exec(option) {
             statDayCount: 252 // 一年大概 252 个交易日
         });
 
-        const db = await mongo.getDB();
-        const taskExecCol = db.collection('task_exec_history');
-        await taskExecCol.insertOne({
-            taskName: 'stat_daily_up_count',
-            createdAt: new Date()
-        });
-
         let endTime = Date.now();
 		let logMsg = `总用时 ${(endTime - startTime) / 1000} 秒`;
 		console.log(logMsg);
 		logger.info(logMsg);
+
+        const db = await mongo.getDB();
+        const taskExecCol = db.collection('task_exec_history');
+        const createdAt = new Date();
+        await taskExecCol.insertOne({
+            taskName: 'stat_daily_up_count',
+            createdAt
+        });
+        return {
+            createdAt
+        };
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {

@@ -96,6 +96,9 @@ async function runTask(option) {
             continue;
         }
         const stockFullId = stocks[i].stockFullId
+        if (!stockDetailMap[stockFullId]) {
+            continue;
+        }
         // 过滤掉市值小于 30 亿的
         if (stockDetailMap[stockFullId].zongShiZhi < 30) {
             continue;
@@ -147,6 +150,17 @@ export async function exec(option) {
         let logMsg = `总用时 ${(endTime - startTime) / 1000} 秒`;
         console.log(logMsg);
         logger.info(logMsg);
+
+        const db = await mongo.getDB();
+        const taskExecCol = db.collection('task_exec_history');
+        const createdAt = new Date();
+        await taskExecCol.insertOne({
+            taskName: 'a_equal_weight_index',
+            createdAt
+        });
+        return {
+            createdAt
+        };
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {

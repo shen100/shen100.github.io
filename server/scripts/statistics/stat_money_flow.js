@@ -116,12 +116,6 @@ async function runTask(option) {
     logMsg = `写库用时 ${(endTime - startTime) / 1000} 秒`;
     console.log(logMsg);
     logger.info(logMsg);
-
-    const taskExecCol = db.collection('task_exec_history');
-    await taskExecCol.insertOne({
-        taskName: 'stat_money_flow',
-        createdAt: new Date()
-    });
 }
 
 export async function exec(option) {
@@ -134,6 +128,17 @@ export async function exec(option) {
 		let logMsg = `总用时 ${(endTime - startTime) / 1000} 秒`;
 		console.log(logMsg);
 		logger.info(logMsg);
+
+        const db = await mongo.getDB();
+        const taskExecCol = db.collection('task_exec_history');
+        const createdAt = new Date();
+        await taskExecCol.insertOne({
+            taskName: 'stat_money_flow',
+            createdAt
+        });
+        return {
+            createdAt
+        };
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {

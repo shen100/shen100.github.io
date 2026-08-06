@@ -9,13 +9,10 @@ import { convertStockFullIdToTsCode } from '../../util/tushare_util.js';
 const __filename = fileURLToPath(import.meta.url);
 
 let isMain = false;
-let logger;
 
 if (process.argv[1] === __filename) {
     isMain = true;
 }
-
-let allStocks = await stockService.getAllStocksFromDB();
 
 function sleep(timeout) {
 	return new Promise(resolve => setTimeout(resolve, timeout));
@@ -59,10 +56,12 @@ async function requestDailyBasic(stock) {
 	}
 }
 
-async function requestAllDailyBasic(option) {
-	logger = option && option.logger || defaultLogger;
+async function runTask(option) {
+	const logger = option && option.logger || defaultLogger;
 	const db = await mongo.getDB();
     const collection = db.collection('tushare_daily_basic');
+	let allStocks = await stockService.getAllStocksFromDB();
+
 	let concurrence = 200;
 	for (let i = 0; i < allStocks.length; i += concurrence) {
 		let startTime = new Date().getTime();
@@ -84,14 +83,15 @@ async function requestAllDailyBasic(option) {
                 $set: {
 					stockFullId: stock.stockFullId,
                     stockId: stock.stockId,
-                    items: stock.items
+                    items: stock.items,
+					updatedAt: new Date()
                 },
                 $setOnInsert: {
                     createdAt: new Date() // 只有插入时才设置
                 }
             };
             const result = await collection.updateOne(filter, updateDoc, { upsert: true });
-			let logMsg = `📝 更新成功 index ${i} stockFullId ${stock.stockFullId} result.upsertedId ${result.upsertedId}`;
+			let logMsg = `📝 更新成功 index ${i} stockFullId ${stock.stockFullId} modifiedCount ${result.modifiedCount} upsertedCount ${result.upsertedCount}`;
 			console.log(logMsg);
 			logger.info(logMsg);
 		}
@@ -105,13 +105,11 @@ async function requestAllDailyBasic(option) {
 	}
 }
 
-/**
- * 把每个公司每日的市值存入数据库，用来计算整个大盘每日的总市值
- */
 export async function exec(option) {
     try {
+		const logger = option && option.logger || defaultLogger;
 		let startTime = Date.now();
-        await requestAllDailyBasic(option);
+        await runTask(option);
 
 		const db = await mongo.getDB();
 		const taskExecCol = db.collection('task_exec_history');
@@ -137,6 +135,9 @@ export async function exec(option) {
     }
 }
 
+/**
+ * 把每个公司每日的市值存入数据库，用来计算整个大盘每日的总市值
+ */
 if (isMain) {
 	await exec();
 }

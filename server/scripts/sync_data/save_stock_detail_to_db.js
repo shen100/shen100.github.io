@@ -29,7 +29,7 @@ async function runTask(option) {
                 stockFullId: stockDetail.stockFullId,
                 stockName: stockDetail.stockName,
                 zongShiZhi: stockDetail.zongShiZhi,
-                updatedAted: new Date()
+                updatedAt: new Date()
             },
             $setOnInsert: {
                 createdAt: new Date() // 只有插入时才设置
