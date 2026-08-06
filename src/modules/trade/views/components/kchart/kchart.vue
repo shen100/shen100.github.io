@@ -87,6 +87,7 @@
 					@mouse-over="(candleData) => onCandleMouseOver(i, candleData)"
 					@mouse-out="() => onCandleMouseOut(i)"
 					@mouse-move="(candleData) => onCandleMouseMove(i, candleData)"
+					@range-change="(rangeStatsData) => data.rangeStatsData = rangeStatsData"
 				/>
 			</div>
 			<div v-else-if="data.dataLoaded" ref="minuteLinesContainerRef"
@@ -114,6 +115,7 @@
 			</div>
 			<StockInfoPopup v-if="data.activeKItemData" :info="data.activeKItemData" />
 			<AuditTrail v-if="props.auditTrailVisible" @audit-trail-change="onAuditTrailChange" :trailData="data.stock?.trailData"/>
+			<RangeStats v-if="data.rangeStatsData && data.rangeStatsData.visible" :rangeStatsData="data.rangeStatsData" />
 		</div>
 		<Volume ref="volumeRef" :maxVolume="data.maxVolume" :minVolume="data.minVolume" 
 			:kLineType="data.type" :volumeList="data.volumeList" :activeKItemData="data.activeKItemData" 
@@ -152,6 +154,7 @@ import AddPotentialModal from './add_potential_modal.vue';
 import RemovePotentialModal from './remove_potential_modal.vue';
 import AskAIModal from './ask_ai_modal.vue';
 import AuditTrail from './audit_trail.vue';
+import RangeStats from './range_stats.vue';
 
 const emit = defineEmits(['stocks-remove-potential', 'audit-trail-change']);
 
@@ -212,7 +215,8 @@ let data = ref({
 	removePotentialModalVisible: false,
 	askAIModalVisible: false,
 	minuteList: [], // 分时点数据
-	candleStaticVar: {}
+	candleStaticVar: {},
+	rangeStatsData: null
 });
 
 onMounted(async () => {

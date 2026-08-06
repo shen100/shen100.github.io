@@ -41,7 +41,7 @@ const props = defineProps([
     'staticVar' // candle 组件的多个实例之间共用的静态变量
 ]);
 
-const emit = defineEmits(['mouse-over', 'mouse-out', 'mouse-move']);
+const emit = defineEmits(['mouse-over', 'mouse-out', 'mouse-move', 'range-change']);
 
 const isGlow = ref(false);
 
@@ -271,6 +271,9 @@ async function onDoubleClick() {
         for (let i = 0; i < props.staticVar.clickedCandles.length; i++) {
             if (props.staticVar.clickedCandles[i].date === props.date) {
                 props.staticVar.clickedCandles.splice(i, 1);
+                emit('range-change', {
+                    visible: false
+                });
                 break;
             }
         }
@@ -284,23 +287,21 @@ async function onDoubleClick() {
     isGlow.value = true;
     props.staticVar.clickedCandles.push({
         date: props.date,
-        closePrice: props.closePrice
+        closePrice: props.closePrice,
+        highPrice: props.highPrice,
+        lowPrice: props.lowPrice,
     });
 
     if (props.staticVar.clickedCandles.length === 2) {
-        let date0 = props.staticVar.clickedCandles[0].date;
-        let date1 = props.staticVar.clickedCandles[1].date;
-        let closePrice0 = props.staticVar.clickedCandles[0].closePrice;
-        let closePrice1 = props.staticVar.clickedCandles[1].closePrice;
-        if (date0 > date1) {
-            [ date0, date1 ] = [ date1, date0 ];
-            [ closePrice0, closePrice1 ] = [ closePrice1, closePrice0 ];
+        let startData = props.staticVar.clickedCandles[0];
+        let endData = props.staticVar.clickedCandles[1];
+        if (startData.date > endData.date) {
+            [ startData, endData ] = [ endData, startData ];
         }
-        let rate = 100 * (closePrice1 - closePrice0) / closePrice0;
-        let str = rate.toFixed(2);
-        Message.success({
-            duration: 10,
-            content: `${date0} 到 ${date1} 的涨跌幅为${str}%`
+        emit('range-change', {
+            visible: true,
+            startData,
+            endData
         });
     }
 }
