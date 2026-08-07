@@ -1,12 +1,14 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { RouterView } from 'vue-router'
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, onUnmounted } from 'vue'
 import Menu from './menu/Menu.vue'
 import config from './config/config.js'
 import { globalEventEmitter } from './util/event'
 
 const route = useRoute()
+
+const showBackTop = ref(false);
 
 const shoudReviewFullPageArr = [
     'login',
@@ -27,10 +29,26 @@ watch(() => route.path, (newPath) => {
 
 onMounted(() => {
     globalEventEmitter.on('breadcrumb', onBreadcrumbChange);
+    window.addEventListener('scroll', onScroll)
 });
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', onScroll)
+})
 
 function onBreadcrumbChange(breadcrumbData) {
     breadcrumbList.value = breadcrumbData.list || [];
+}
+
+function onScroll() {
+    showBackTop.value = window.scrollY > 300
+}
+
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    })
 }
 </script>
 
@@ -62,6 +80,10 @@ function onBreadcrumbChange(breadcrumbData) {
             <div class="main-content-layout-content">
                 <RouterView :key="route.name"/>
             </div>
+        </div>
+
+        <div v-if="showBackTop" class="back-top-btn" @click="scrollToTop">
+            <Icon type="md-arrow-round-up" />
         </div>
     </div>
 </template>
@@ -138,5 +160,28 @@ function onBreadcrumbChange(breadcrumbData) {
     flex: auto;
     margin-top: 64px;
     padding: 20px;
+}
+
+.back-top-btn {
+    position: fixed;
+    right: 40px;
+    bottom: 60px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #3d3d43;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: background 0.25s ease;
+}
+
+.back-top-btn:hover {
+    background: #717172;
 }
 </style>
