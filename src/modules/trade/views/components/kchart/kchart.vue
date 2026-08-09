@@ -117,11 +117,15 @@
 			<AuditTrail v-if="props.auditTrailVisible" @audit-trail-change="onAuditTrailChange" :trailData="data.stock?.trailData"/>
 			<RangeStats v-if="data.rangeStatsData && data.rangeStatsData.visible" :rangeStatsData="data.rangeStatsData" />
 		</div>
+		<RelativeStrength ref="relStrengthRef" v-if="data.type === 'day'" :list="data.relStrengthList" :activeKItemData="data.activeKItemData" 
+			@mouse-over="onVolumeOrRelStrengthMouseOver"
+			@mouse-out="onVolumeOrRelStrengthMouseOut" 
+			@scroll="onVolumeOrRelStrengthScroll" />
 		<Volume ref="volumeRef" :maxVolume="data.maxVolume" :minVolume="data.minVolume" 
 			:kLineType="data.type" :volumeList="data.volumeList" :activeKItemData="data.activeKItemData" 
-			@mouse-over="onVolumeMouseOver"
-			@mouse-out="onVolumeMouseOut"
-			@scroll="onVolumeScroll" />
+			@mouse-over="onVolumeOrRelStrengthMouseOver"
+			@mouse-out="onVolumeOrRelStrengthMouseOut"
+			@scroll="onVolumeOrRelStrengthScroll" />
 		<EditKChartModal :kChartLocalKey="props.kChartLocalKey" @hide-modal="onHideEditModal" :stock="data.stock" :modalVisible="data.editModalVisible" />
 		<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :modalVisible="data.addPotentialModalVisible" />
 		<RemovePotentialModal @hide-modal="onHideRemovePotentialModal"
@@ -144,10 +148,12 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
 import * as stockNetUtil from '../../../util/stock_net_util';
+import * as aEqualWeightIndexUtil from '../../../util/a_equal_weight_index_util';
 import StockNewPrice from '../stock_new_price.vue';
 import MinuteLine from './minute_line.vue';
 import Candle from './candle.vue';
 import Volume from './volume.vue';
+import RelativeStrength from './relative_strength.vue';
 import StockInfoPopup from './stock_info_popup.vue';
 import EditKChartModal from './edit_kchart_modal.vue';
 import AddPotentialModal from './add_potential_modal.vue';
@@ -172,6 +178,7 @@ const candleRefs = ref([]);
 const minuteLineRefs = ref([]);
 
 let volumeRef = ref(null);
+let relStrengthRef = ref(null);
 
 let data = ref({
 	dataLoaded: false,
@@ -216,7 +223,8 @@ let data = ref({
 	askAIModalVisible: false,
 	minuteList: [], // 分时点数据
 	candleStaticVar: {},
-	rangeStatsData: null
+	rangeStatsData: null,
+	relStrengthList: [] // 相对强度
 });
 
 onMounted(async () => {
@@ -418,6 +426,7 @@ function resetData(stock, start, end) {
 	data.value.myKList = [];
 	data.value.start = start;
     data.value.end = end;
+	data.value.relStrengthList = [];
 }
 
 async function requestMinuteK(stock, start, end, count) {
@@ -474,11 +483,33 @@ async function requestDayK(stock, start, end, count) {
 	data.value.dataLoaded = false;
 	const tasks = await Promise.all([
 		stockNetUtil.requestStockDetail(stock),
-		stockNetUtil.requestDayK(stock.stockFullId, start, end, count)
+		stockNetUtil.requestDayK(stock.stockFullId, start, end, count),
+		aEqualWeightIndexUtil.requestEqualWeightData(start, end)
 	]);
 	data.value.dataLoaded = true;
 	updateKListData(tasks[0], tasks[1]);
 	updateChart("day");
+	updateRelativeStrength(tasks[2]);
+}
+
+function updateRelativeStrength(list) {
+	for (let i = 0; i < list.length; i++) {
+		if (i === 0) {
+			list[i].strength = 0;
+			continue;
+		}
+		const closePrice1 = data.value.myKList[0][2];
+		const closePrice2 = data.value.myKList[i][2];
+		const kRate = (closePrice2 - closePrice1) / closePrice1;
+		const indexRate = (list[i].indexPoint - list[0].indexPoint) / list[0].indexPoint;
+		list[i].strength = kRate - indexRate;
+	}
+	for (let i = 0; i < list.length; i++) {
+		if (i < list.length - 1) {
+			list[i].nextStrength = list[i + 1].strength;
+		}
+	}
+	data.value.relStrengthList = list;
 }
 
 async function requestWeekK(stock, start, end, count) {
@@ -670,7 +701,7 @@ function onMinuteLineMouseMove(i, minuteLineData) {
 	data.value.isMouseMoveOnKItem = true;
 }
 
-function onVolumeMouseOver(i) {
+function onVolumeOrRelStrengthMouseOver(i) {
 	if (data.value.type === 'minute') {
 		minuteLineRefs.value.forEach((el, index) => {
 			if (index === i) {
@@ -690,7 +721,7 @@ function onVolumeMouseOver(i) {
 	});
 }
 
-function onVolumeMouseOut(i) {
+function onVolumeOrRelStrengthMouseOut(i) {
 	if (data.value.type === 'minute') {
 		minuteLineRefs.value.forEach((el, index) => {
 			if (index === i) {
@@ -708,7 +739,7 @@ function onVolumeMouseOut(i) {
 	});
 }
 
-function onVolumeScroll(scrollLeft) {
+function onVolumeOrRelStrengthScroll(scrollLeft) {
 	if (data.value.type === 'minute') {
 		minuteLinesContainerRef.value.scrollLeft = scrollLeft;
 	} else {
@@ -718,10 +749,12 @@ function onVolumeScroll(scrollLeft) {
 
 function onCandlesContainerScroll(event) {
 	volumeRef.value.setScrollLeft(event.target.scrollLeft);
+	relStrengthRef.value.setScrollLeft(event.target.scrollLeft);
 }
 
 function onMinuteLinesContainerScroll(event) {
 	volumeRef.value.setScrollLeft(event.target.scrollLeft);
+	relStrengthRef.value.setScrollLeft(event.target.scrollLeft);
 }
 
 function onShowEditModal() {
@@ -819,7 +852,7 @@ defineExpose({ requestMinuteK, requestDayK, requestWeekK, requestMonthK, request
 
 .y-axis {
 	height: 1px;
-	background-color: #f2f2f2;
+	background-color: #e2e2e2;
 	position: absolute;
 	width: calc(100vw - 320px);
 }
