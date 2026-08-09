@@ -100,3 +100,42 @@ export async function queryDailySurgePlungeCount(req, res) {
         }
     });
 }
+
+
+/**
+ * 腾落线
+ */
+export async function queryDailyAdLine(req, res) {
+    const startDate = req.query.start;
+    const endDate = req.query.end;
+    const db = await mongo.getDB();
+    const collection = db.collection('stat_daily_adline');
+
+    const projection = {
+        createdAt: 0,
+        updatedAt: 0,
+        _id: 0 // 不返回 _id
+    };
+    let list = await collection.find({
+        date: {
+            $gte: startDate,
+            $lte: endDate
+        }
+    }, { projection }).sort({ date: 1 }).toArray();
+
+    let prevAD = 0;
+    for (let i = 0; i < list.length; i++) {
+        const item = list[i];
+        // 累计腾落线
+        const adLine = prevAD + item.upCount - item.downCount;
+        item.adLine = adLine;
+        prevAD = adLine;
+    }
+
+    res.json({
+        code: 0,
+        data: {
+            list,
+        }
+    });
+}

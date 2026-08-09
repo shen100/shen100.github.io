@@ -10,7 +10,7 @@ if (process.argv[1] === __filename) {
     isMain = true;
 }
 
-async function bulkUpsert(db, dataMap) {
+async function bulkUpsert(db, collName, dataMap) {
     const ops = [];
     for (let key in dataMap) {
         const statData = dataMap[key];
@@ -35,7 +35,7 @@ async function bulkUpsert(db, dataMap) {
         });
     }
 
-    const coll = db.collection('stat_daily_surge_plunge');
+    const coll = db.collection(collName);
     const res = await coll.bulkWrite(ops, {
         ordered: false // false：某一条失败，不影响其他继续执行；适合K线批量写入
     });
@@ -59,6 +59,7 @@ async function runTask(option) {
     logger.info(logMsg);
 
     const dataMap = {};
+    const adLineMap = {}; // Advance-Decline Line（A/D Line）腾落线
 
     for (let i = 0; i < stocks.length; i++) {
         let stock = stocks[i];
@@ -70,11 +71,21 @@ async function runTask(option) {
                 upCount: 0,
                 downCount: 0
             };
+            adLineMap[item2.date] = adLineMap[item2.date] || {
+                date: item2.date,
+                upCount: 0,
+                downCount: 0
+            };
             let rate = (item2.closePrice - item1.closePrice) / item1.closePrice;
             if (rate >= 0.095) {
                 dataMap[item2.date].upCount++;
             } else if (rate <= -0.095) {
                 dataMap[item2.date].downCount++;
+            }
+            if (rate > 0) {
+                adLineMap[item2.date].upCount++;
+            } else if (rate < 0) {
+                adLineMap[item2.date].downCount++;
             }
         }
     }
@@ -84,7 +95,8 @@ async function runTask(option) {
     logger.info(logMsg);
 
     startTime = Date.now();
-    await bulkUpsert(db, dataMap);
+    await bulkUpsert(db, 'stat_daily_surge_plunge', dataMap);
+    await bulkUpsert(db, 'stat_daily_adline', adLineMap); // 腾落线
 
     endTime = Date.now();
     logMsg = `写库用时 ${(endTime - startTime) / 1000} 秒`;

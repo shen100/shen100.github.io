@@ -16,6 +16,7 @@ export function init(app) {
     app.get('/api/statistics/shizhi', shizhi_stat.queryShiZhi);
     app.get('/api/statistics/daily/money_flow', daily_stat.queryDailyMoneyFlow);
     app.get('/api/statistics/daily/surge_plunge', daily_stat.queryDailySurgePlungeCount);
+    app.get('/api/statistics/daily/adline', daily_stat.queryDailyAdLine);
     app.get('/api/statistics/daily/amount', stock_daily_amount.queryStockDailyAmount);
     app.get('/api/statistics/daily/a_equal_weight_index', stat_index.queryEqualWeightIndex);
 

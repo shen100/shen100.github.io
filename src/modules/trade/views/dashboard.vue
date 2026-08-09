@@ -27,6 +27,7 @@
 			<ECharts v-if="chartOptions.series.length" :options="chartOptions" />
 		</Card>
 		<StatIndex />
+		<AdLine />
 		<StockDailyMoney />
 		<div style="margin-top: 20px; display: flex; gap: 20px;">
 			<Card style="flex: 1;">
@@ -81,6 +82,7 @@ import config from '../config/config.js';
 import ECharts from './components/common/echarts.vue';
 import StockDailyMoney from './components/statistics/stock_daily_money.vue';
 import StatIndex from './components/statistics/stat_index.vue';
+import AdLine from './components/statistics/adline.vue';
 import store from '../model/store';
 import { formatLocalYMD, utcStringToLocalString } from '../util/date';
 import { useRouter } from 'vue-router';
