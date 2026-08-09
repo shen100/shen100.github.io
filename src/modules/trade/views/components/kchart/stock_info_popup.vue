@@ -110,10 +110,10 @@ const amount = computed({
 
 onMounted(async () => {
     let itemWidth = 0;
-    if (props.info.kLineType === 'day') {
-        itemWidth = 9;
-    } else if (props.info.kLineType === 'minute') {
+    if (props.info.kLineType === 'minute') {
         itemWidth = 4;
+    } else {
+        itemWidth = 9;
     }
     let left = props.info.index * itemWidth - props.info.scrollLeft;
     if (left < props.info.containerWidth / 2) {
