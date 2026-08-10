@@ -120,7 +120,7 @@ export async function exec(option) {
         });
 
 		let endTime = Date.now();
-		let logMsg = `总用时 ${(endTime - startTime) / 1000 / 60} 分`;
+		let logMsg = `✅ 总用时 ${(endTime - startTime) / 1000 / 60} 分`;
 		console.log(logMsg);
 		logger.info(logMsg);
 		return {

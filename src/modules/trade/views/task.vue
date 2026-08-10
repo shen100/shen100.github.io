@@ -102,6 +102,11 @@ let data = ref({
                     value: 'tradeStocksByStrategy2',
                     label: 'tradeStocksByStrategy2',
                     desc: '最后一个交易日达到最高价'
+                },
+                {
+                    value: 'tradeStocksByStrategy3',
+                    label: 'tradeStocksByStrategy3',
+                    desc: ' 最近10天涨幅超过50%'
                 }
             ]
         },

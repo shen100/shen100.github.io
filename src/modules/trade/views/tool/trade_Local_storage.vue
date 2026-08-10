@@ -64,6 +64,10 @@ let data = ref({
         {
             value: 'tradeStocksByStrategy2',
             label: '最后一个交易日达到最高价'
+        },
+        {
+            value: 'tradeStocksByStrategy3',
+            label: '最近10天涨幅超过50%'
         }
     ],
     jsonStr: ''

@@ -1,6 +1,6 @@
 <template>
-    <div @mousedown="onMouseDown" class="stock-info-popup" :style="{ left: data.left + 'px', top: data.top + 'px' }">
-        <template v-if="data.info">
+    <div @mousedown="onMouseDown" class="stock-info-popup" :style="{ right: data.right + 'px', top: data.top + 'px' }">
+        <div v-if="data.info" style="padding: 5px 10px; border: 1px solid #eee;">
             <div class="stock-info-popup-txt-box">
                 <div v-if="data.info.kLineType === 'minute'">时间</div>
                 <div v-else>日期</div>
@@ -56,7 +56,7 @@
                 <div class="space"></div>
                 <div>{{ amount }}</div>
             </div>
-        </template>
+        </div>
     </div>
 </template>
 
@@ -66,11 +66,13 @@ const props = defineProps(['activeKItemData']);
 
 let data = ref({
     info: null,
-    left: 0,
+    right: 200,
     top: 55,
     dragging: false,
-    offsetX: 0,
-    offsetY: 0,
+    clientX: 0,
+    clientY: 0,
+    oldRight: 200,
+    oldTop: 55
 });
 
 watch(
@@ -142,8 +144,10 @@ onMounted(async () => {
 
 function onMouseDown(event) {
     data.value.dragging = true;
-    data.value.offsetX = event.clientX - data.value.left;
-    data.value.offsetY = event.clientY - data.value.top;
+    data.value.clientX = event.clientX;
+    data.value.clientY = event.clientY;
+    data.value.oldRight = data.value.right;
+    data.value.oldTop = data.value.top;
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
 }
@@ -152,9 +156,9 @@ const onMouseMove = (event) => {
     if (!data.value.dragging) {
         return;
     }
-    data.value.left = event.clientX - data.value.offsetX;
-    data.value.top = Math.max(event.clientY - data.value.offsetY, 55);
-
+    data.value.right = data.value.oldRight - (event.clientX - data.value.clientX);
+    data.value.top = data.value.oldTop + (event.clientY - data.value.clientY);
+    data.value.top = Math.max(data.value.top, 55);
 }
 
 const onMouseUp = () => {
@@ -176,10 +180,6 @@ defineExpose({ hide });
 <style scoped>
 .stock-info-popup {
 	position: absolute;
-    left: 0px;
-    top: 55px;
-    border: 1px solid #eee;
-    padding: 5px 10px;
     width: 170px;
     z-index: 2;
     background-color: #fff;

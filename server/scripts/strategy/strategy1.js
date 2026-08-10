@@ -1,4 +1,37 @@
-import * as strategy4 from './strategy4.js';
+/**
+ * 找出最近 N 天（其中某一天）的收盘价是历史最高价
+ */
+export function findHighPriceInRecentNDays(allItems, stockDetail, options) {
+    if (stockDetail.stockName === '鹏鼎控股') {
+        console.log();
+    }
+
+    options = options || { rightIndex: -20 };
+    if (options && options.checkShiZhi && stockDetail.zongShiZhi < 100) {
+        return { ok: false };
+    }
+
+    let rightIndex = options.rightIndex;
+    let items = allItems.slice(rightIndex);
+
+    let highPrice = 0;
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].closePrice > highPrice) {
+            highPrice = items[i].closePrice;
+        }
+    }
+
+    let items2 = allItems.slice(0, allItems.length + rightIndex);
+    for (let i = 0; i < items2.length; i++) {
+        if (items2[i].highPrice > highPrice) {
+            return { ok: false };
+        }
+    }
+    if (stockDetail.stockName === '艾罗能源') {
+        console.log();
+    }
+    return { ok: true };
+}
 
 /**
  * 找出最近 20 天（其中某一天）的收盘价是历史最高价、最近若干天处于下跌趋势的股票, 不考虑以下公司
@@ -14,7 +47,7 @@ export function detectTrend(allItems, stockDetail, options) {
         return { ok: false };
     }
     let rightIndex = -20;
-    if (!strategy4.detectTrend(allItems, stockDetail, { rightIndex } ).ok) {
+    if (!findHighPriceInRecentNDays(allItems, stockDetail, { rightIndex } ).ok) {
         return { ok: false };
     }
     let items = allItems.slice(rightIndex);

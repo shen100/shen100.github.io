@@ -94,7 +94,7 @@ let data = ref({
         },
         {
             value: 'tradeCustomStocks',
-            label: '地址栏传参'
+            label: '地址栏传UUID'
         },
         {
             value: 'tradeIndexStocks',
@@ -118,7 +118,7 @@ let data = ref({
         },
         {
             value: 'tradeMemoryStocks',
-            label: '存储'
+            label: '存储芯片'
         },
         {
             value: 'tradePhysicalAIStocks',
@@ -131,6 +131,10 @@ let data = ref({
         {
             value: 'tradeStocksByStrategy2',
             label: '最后一个交易日达到最高价'
+        },
+        {
+            value: 'tradeStocksByStrategy3',
+            label: '最近10天涨幅超过50%'
         }
     ],
     type: 'day',

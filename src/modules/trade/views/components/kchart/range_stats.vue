@@ -68,7 +68,7 @@ const rate2 = computed(() => {
 .range-stats-popup {
 	position: absolute;
     right: 0px;
-    top: 60px;
+    top: 55px;
     padding: 5px 10px 10px 10px;
     width: 200px;
     min-height: 20px;
