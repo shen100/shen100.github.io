@@ -1,139 +1,139 @@
 <template>
 	<template v-if="!props.isNewPriceMode">
 		<div @mouseleave="onRootMouseOut" class="kchart-root">
-		<div class="kchart-container">
-			<div class="stock-name">
-				<div class="stock-name-left-box"></div>
-				<div class="stock-name-space"></div>
-				<div class="stock-name-txt">
-					<a class="stock-name-link" :href="`https://xueqiu.com/S/${data.stock && data.stock.stockFullId}`" target="_blank">
-						{{ data.stockName }}
-					</a>
-					{{ data.stockDetail ? `&nbsp;(总市值&nbsp;${zongShiZhi})` : '' }}
-					<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice.toFixed(3) }}</span>
-					<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(3) : ''}}</span>
-					<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{data.dtRate > 0 ? '+' : ''}}{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
-					<template v-if="props.kChartLocalKey !== 'tradeAllFullIdStocks'">
-						<span v-if="data.stock && currentDownRate" class="stop-rate-label">当前参考跌幅 {{ currentDownRate }}</span>
-						<span v-if="data.stock && allowMaxDownRate" class="stop-rate-label">止损参考跌幅 {{  allowMaxDownRate }}</span>
-						<span v-if="data.stock && stopRate" class="stop-rate-label">实际止损 {{ stopRate }}</span>
-						<span v-if="data.stock && chiCangShiZhi" class="stop-rate-label">持仓市值 {{ chiCangShiZhi.toLocaleString() }}</span>
-						<span v-if="data.stock && props.kChartLocalKey === 'tradeTrail'" class="stop-rate-label">买入金额 {{ maiRuJinE.toLocaleString() }}</span>
-						<span v-if="data.stock && isSoldOut" class="stop-rate-label">卖出价格 {{  sellPrice.toFixed(4) }}</span>
-						<span v-if="data.stock && profitRate" class="stop-rate-label">利润 <span :style="{color: profitRateColor}">{{ profitRate }}</span></span>
-						<Button v-if="props.kChartLocalKey !== 'tradeCustomStocks'" @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
-					</template>
-					<Button v-if="allowAddToPotential" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
-					<Button v-if="props.kChartLocalKey === 'tradePotentialStocks'" @click="onShowRemovePotentialModal" type="primary" size="small" style="margin-left: 10px;">移出候选股</Button>
+			<div class="kchart-container">
+				<div class="stock-name">
+					<div class="stock-name-left-box"></div>
+					<div class="stock-name-space"></div>
+					<div class="stock-name-txt">
+						<a class="stock-name-link" :href="`https://xueqiu.com/S/${data.stock && data.stock.stockFullId}`" target="_blank">
+							{{ data.stockName }}
+						</a>
+						{{ data.stockDetail ? `&nbsp;(总市值&nbsp;${zongShiZhi})` : '' }}
+						<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice.toFixed(3) }}</span>
+						<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(3) : ''}}</span>
+						<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{data.dtRate > 0 ? '+' : ''}}{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
+						<template v-if="props.kChartLocalKey !== 'tradeAllFullIdStocks'">
+							<span v-if="data.stock && currentDownRate" class="stop-rate-label">当前参考跌幅 {{ currentDownRate }}</span>
+							<span v-if="data.stock && allowMaxDownRate" class="stop-rate-label">止损参考跌幅 {{  allowMaxDownRate }}</span>
+							<span v-if="data.stock && stopRate" class="stop-rate-label">实际止损 {{ stopRate }}</span>
+							<span v-if="data.stock && chiCangShiZhi" class="stop-rate-label">持仓市值 {{ chiCangShiZhi.toLocaleString() }}</span>
+							<span v-if="data.stock && props.kChartLocalKey === 'tradeTrail'" class="stop-rate-label">买入金额 {{ maiRuJinE.toLocaleString() }}</span>
+							<span v-if="data.stock && isSoldOut" class="stop-rate-label">卖出价格 {{  sellPrice.toFixed(4) }}</span>
+							<span v-if="data.stock && profitRate" class="stop-rate-label">利润 <span :style="{color: profitRateColor}">{{ profitRate }}</span></span>
+							<Button v-if="props.kChartLocalKey !== 'tradeCustomStocks'" @click="onShowEditModal" type="primary" icon="md-brush" size="small" style="margin-left: 10px;">编辑</Button>
+						</template>
+						<Button v-if="allowAddToPotential" @click="onShowPotentialModal" type="primary" size="small" style="margin-left: 10px;">加入候选股</Button>
+						<Button v-if="props.kChartLocalKey === 'tradePotentialStocks'" @click="onShowRemovePotentialModal" type="primary" size="small" style="margin-left: 10px;">移出候选股</Button>
+					</div>
+					<div class="stock-name-space"></div>
+					<div class="stock-name-right-box">
+						<Button @click="onShowAskAIModal" type="warning" size="small" style="margin-left: 10px;">问AI?</Button>
+					</div>
 				</div>
-				<div class="stock-name-space"></div>
-				<div class="stock-name-right-box">
-					<Button @click="onShowAskAIModal" type="warning" size="small" style="margin-left: 10px;">问AI?</Button>
-				</div>
-			</div>
-			<div class="space"></div>
-			<div class="y-axis" :style="{top: `${data.yAxis1}px`}"></div>
-			<div class="y-axis-txt" :style="{top: `${data.yAxis1}px`}">{{ data.yAxisText1 }}</div>
-			<div class="y-axis" :style="{top: `${data.yAxis2}px`}"></div>
-			<div class="y-axis-txt" :style="{top: `${data.yAxis2}px`}">{{ data.yAxisText2 }}</div>
-			<div class="y-axis" :style="{top: `${data.yAxis3}px`}"></div>
-			<div class="y-axis-txt" :style="{top: `${data.yAxis3}px`}">{{ data.yAxisText3 }}</div>
-			<div class="y-axis" :style="{top: `${data.yAxis4}px`}"></div>
-			<div class="y-axis-txt" :style="{top: `${data.yAxis4}px`}">{{ data.yAxisText4 }}</div>
-			<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
-			<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
-			
-			<template v-if="data.activeKItemData && data.activeKItemData.tradeAction">
-				<div v-if="data.activeKItemData.tradeAction.type === 'buy'" class="kchart-trade-buy-or-sell">
-					买入 {{data.activeKItemData.tradeAction.price.toFixed(4)}} X {{data.activeKItemData.tradeAction.count}} 股
-				</div>
-				<div v-else-if="data.activeKItemData.tradeAction.type === 'sell'" class="kchart-trade-buy-or-sell" style="background-color: #5287ee;">
-					卖出 {{data.activeKItemData.tradeAction.price.toFixed(4)}} X {{data.activeKItemData.tradeAction.count}} 股
-				</div>
-			</template>
+				<div class="space"></div>
+				<div class="y-axis" :style="{top: `${data.yAxis1}px`}"></div>
+				<div class="y-axis-txt" :style="{top: `${data.yAxis1}px`}">{{ data.yAxisText1 }}</div>
+				<div class="y-axis" :style="{top: `${data.yAxis2}px`}"></div>
+				<div class="y-axis-txt" :style="{top: `${data.yAxis2}px`}">{{ data.yAxisText2 }}</div>
+				<div class="y-axis" :style="{top: `${data.yAxis3}px`}"></div>
+				<div class="y-axis-txt" :style="{top: `${data.yAxis3}px`}">{{ data.yAxisText3 }}</div>
+				<div class="y-axis" :style="{top: `${data.yAxis4}px`}"></div>
+				<div class="y-axis-txt" :style="{top: `${data.yAxis4}px`}">{{ data.yAxisText4 }}</div>
+				<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
+				<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
+				
+				<template v-if="data.activeKItemData && data.activeKItemData.tradeAction">
+					<div v-if="data.activeKItemData.tradeAction.type === 'buy'" class="kchart-trade-buy-or-sell">
+						买入 {{data.activeKItemData.tradeAction.price.toFixed(4)}} X {{data.activeKItemData.tradeAction.count}} 股
+					</div>
+					<div v-else-if="data.activeKItemData.tradeAction.type === 'sell'" class="kchart-trade-buy-or-sell" style="background-color: #5287ee;">
+						卖出 {{data.activeKItemData.tradeAction.price.toFixed(4)}} X {{data.activeKItemData.tradeAction.count}} 股
+					</div>
+				</template>
 
-			<div v-if="data.stock && data.stock.highPrice > 0" class="y-axis-price-line avg-high-line" :style="{top: `${data.highPriceY}px`}">
-				<div class="y-axis-price-line-price avg-high-line-price">{{ data.stock.highPrice }}</div>
-			</div>
-			<div v-if="avgCost > 0" class="y-axis-price-line avg-cost-line" :style="{top: `${data.avgCostY}px`}">
-				<div class="y-axis-price-line-price avg-cost-line-price">{{ avgCost.toFixed(4) }}</div>
-			</div>
-			<div v-if="data.stock && data.stock.stopPrice > 0" class="y-axis-price-line avg-stop-price-line" :style="{top: `${data.stopPriceY}px`}">
-				<div class="y-axis-price-line-price avg-stop-price-line-price">{{ data.stock.stopPrice }}</div>
-			</div>
+				<div v-if="data.stock && data.stock.highPrice > 0" class="y-axis-price-line avg-high-line" :style="{top: `${data.highPriceY}px`}">
+					<div class="y-axis-price-line-price avg-high-line-price">{{ data.stock.highPrice }}</div>
+				</div>
+				<div v-if="avgCost > 0" class="y-axis-price-line avg-cost-line" :style="{top: `${data.avgCostY}px`}">
+					<div class="y-axis-price-line-price avg-cost-line-price">{{ avgCost.toFixed(4) }}</div>
+				</div>
+				<div v-if="data.stock && data.stock.stopPrice > 0" class="y-axis-price-line avg-stop-price-line" :style="{top: `${data.stopPriceY}px`}">
+					<div class="y-axis-price-line-price avg-stop-price-line-price">{{ data.stock.stopPrice }}</div>
+				</div>
 
-			<div v-if="data.activeKItemData && data.isMouseMoveOnKItem" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
-				<div class="y-axis-price-line-price">{{ data.yAxisPriceLinePrice }}</div>
+				<div v-if="data.activeKItemData && data.isMouseMoveOnKItem" class="y-axis-price-line" :style="{top: `${data.yAxisPriceLine}px`}">
+					<div class="y-axis-price-line-price">{{ data.yAxisPriceLinePrice }}</div>
+				</div>
+				<div v-if="data.type !== 'minute' && data.dataLoaded" ref="candlesContainerRef"
+					@scroll="onCandlesContainerScroll" class="candles-container">
+					<Candle
+						:ref="el => { if (el) candleRefs[i] = el }"
+						v-for="(item, i) in data.myKList" :key="i"
+						:stockId="data.stock.stockId"
+						:stockHighPrice="data.stock.highPrice"
+						:kLineType="data.type"
+						:date="item[0]"
+						:tradeAction="getTradeAction(item[0])"
+						:openPrice="item[1]"
+						:closePrice="item[2]"
+						:highPrice="item[3]"
+						:lowPrice="item[4]"
+						:volume="item[5]"
+						:amount="item[8]"
+						:lowPriceInAll="data.lowPriceInAll"
+						:highPriceInAll="data.highPriceInAll"
+						:candleMaxHeight="data.candleMaxHeight"
+						:staticVar="data.candleStaticVar"
+						@mouse-over="(candleData) => onCandleMouseOver(i, candleData)"
+						@mouse-out="() => onCandleMouseOut(i)"
+						@mouse-move="(candleData) => onCandleMouseMove(i, candleData)"
+						@range-change="(rangeStatsData) => data.rangeStatsData = rangeStatsData"
+					/>
+				</div>
+				<div v-else-if="data.dataLoaded" ref="minuteLinesContainerRef"
+					@scroll="onMinuteLinesContainerScroll" class="minute-lines-container">
+					<MinuteLine 
+						:ref="el => { if (el) minuteLineRefs[i] = el }"
+						v-for="(item, i) in data.minuteList" :key="i"
+						:stock="data.stock"
+						:kLineType="data.type"
+						:index="i"
+						:time="item.time"
+						:minute="item.minute"
+						:price="item.price"
+						:prevDayClosePrice="item.prevDayClosePrice"
+						:highPriceInAll="item.highPriceInAll"
+						:lowPriceInAll="item.lowPriceInAll"
+						:nextPrice="item.nextPrice"
+						:volume="item.volume"
+						:amount="item.amount"
+						:maxHeight="data.candleMaxHeight"
+						@mouse-over="(candleData) => onMinuteLineMouseOver(i, candleData)"
+						@mouse-out="() => onMinuteLineMouseOut(i)"
+						@mouse-move="(candleData) => onMinuteLineMouseMove(i, candleData)"
+					/>
+				</div>
+				<StockInfoPopup ref="stockInfoPopupRef" :activeKItemData="data.activeKItemData" />
+				<AuditTrail v-if="props.auditTrailVisible" @audit-trail-change="onAuditTrailChange" :trailData="data.stock?.trailData"/>
+				<RangeStats v-if="data.rangeStatsData && data.rangeStatsData.visible" :rangeStatsData="data.rangeStatsData" />
 			</div>
-			<div v-if="data.type !== 'minute' && data.dataLoaded" ref="candlesContainerRef"
-				@scroll="onCandlesContainerScroll" class="candles-container">
-				<Candle
-					:ref="el => { if (el) candleRefs[i] = el }"
-					v-for="(item, i) in data.myKList" :key="i"
-					:stockId="data.stock.stockId"
-					:stockHighPrice="data.stock.highPrice"
-					:kLineType="data.type"
-					:date="item[0]"
-					:tradeAction="getTradeAction(item[0])"
-					:openPrice="item[1]"
-					:closePrice="item[2]"
-					:highPrice="item[3]"
-					:lowPrice="item[4]"
-					:volume="item[5]"
-					:amount="item[8]"
-					:lowPriceInAll="data.lowPriceInAll"
-					:highPriceInAll="data.highPriceInAll"
-					:candleMaxHeight="data.candleMaxHeight"
-					:staticVar="data.candleStaticVar"
-					@mouse-over="(candleData) => onCandleMouseOver(i, candleData)"
-					@mouse-out="() => onCandleMouseOut(i)"
-					@mouse-move="(candleData) => onCandleMouseMove(i, candleData)"
-					@range-change="(rangeStatsData) => data.rangeStatsData = rangeStatsData"
-				/>
-			</div>
-			<div v-else-if="data.dataLoaded" ref="minuteLinesContainerRef"
-				@scroll="onMinuteLinesContainerScroll" class="minute-lines-container">
-				<MinuteLine 
-					:ref="el => { if (el) minuteLineRefs[i] = el }"
-					v-for="(item, i) in data.minuteList" :key="i"
-					:stock="data.stock"
-					:kLineType="data.type"
-					:index="i"
-					:time="item.time"
-					:minute="item.minute"
-					:price="item.price"
-					:prevDayClosePrice="item.prevDayClosePrice"
-					:highPriceInAll="item.highPriceInAll"
-					:lowPriceInAll="item.lowPriceInAll"
-					:nextPrice="item.nextPrice"
-					:volume="item.volume"
-					:amount="item.amount"
-					:maxHeight="data.candleMaxHeight"
-					@mouse-over="(candleData) => onMinuteLineMouseOver(i, candleData)"
-					@mouse-out="() => onMinuteLineMouseOut(i)"
-					@mouse-move="(candleData) => onMinuteLineMouseMove(i, candleData)"
-				/>
-			</div>
-			<StockInfoPopup ref="stockInfoPopupRef" :activeKItemData="data.activeKItemData" />
-			<AuditTrail v-if="props.auditTrailVisible" @audit-trail-change="onAuditTrailChange" :trailData="data.stock?.trailData"/>
-			<RangeStats v-if="data.rangeStatsData && data.rangeStatsData.visible" :rangeStatsData="data.rangeStatsData" />
-		</div>
-		<RelativeStrength ref="relStrengthRef" v-if="props.relativeStrengthVisible && data.type === 'day'" :list="data.relStrengthList" :activeKItemData="data.activeKItemData" 
-			@mouse-over="onVolumeOrRelStrengthMouseOver"
-			@mouse-out="onVolumeOrRelStrengthMouseOut" 
-			@scroll="onVolumeOrRelStrengthScroll" />
-		<Volume ref="volumeRef" :maxVolume="data.maxVolume" :minVolume="data.minVolume" 
-			:kLineType="data.type" :volumeList="data.volumeList" :activeKItemData="data.activeKItemData" 
-			@mouse-over="onVolumeOrRelStrengthMouseOver"
-			@mouse-out="onVolumeOrRelStrengthMouseOut"
-			@scroll="onVolumeOrRelStrengthScroll" />
-		<EditKChartModal :kChartLocalKey="props.kChartLocalKey" @hide-modal="onHideEditModal" :stock="data.stock" :modalVisible="data.editModalVisible" />
-		<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :modalVisible="data.addPotentialModalVisible" />
-		<RemovePotentialModal @hide-modal="onHideRemovePotentialModal"
-			@stocks-remove-potential="onStocksRemovePotential" 
-			:stock="data.stock" :modalVisible="data.removePotentialModalVisible" />
-		<AskAIModal @hide-modal="onHideAskAIModal"
-			:stock="data.stock" :modalVisible="data.askAIModalVisible" />
+			<RelativeStrength ref="relStrengthRef" v-if="props.relativeStrengthVisible && data.type === 'day'" :list="data.relStrengthList" :activeKItemData="data.activeKItemData" 
+				@mouse-over="onVolumeOrRelStrengthMouseOver"
+				@mouse-out="onVolumeOrRelStrengthMouseOut" 
+				@scroll="onVolumeOrRelStrengthScroll" />
+			<Volume ref="volumeRef" :maxVolume="data.maxVolume" :minVolume="data.minVolume" 
+				:kLineType="data.type" :volumeList="data.volumeList" :activeKItemData="data.activeKItemData" 
+				@mouse-over="onVolumeOrRelStrengthMouseOver"
+				@mouse-out="onVolumeOrRelStrengthMouseOut"
+				@scroll="onVolumeOrRelStrengthScroll" />
+			<EditKChartModal :kChartLocalKey="props.kChartLocalKey" @hide-modal="onHideEditModal" :stock="data.stock" :modalVisible="data.editModalVisible" />
+			<AddPotentialModal @hide-modal="onHidePotentialModal" :stock="data.stock" :modalVisible="data.addPotentialModalVisible" />
+			<RemovePotentialModal @hide-modal="onHideRemovePotentialModal"
+				@stocks-remove-potential="onStocksRemovePotential" 
+				:stock="data.stock" :modalVisible="data.removePotentialModalVisible" />
+			<AskAIModal @hide-modal="onHideAskAIModal"
+				:stock="data.stock" :modalVisible="data.askAIModalVisible" />
 		</div>
 	</template>
 	<template v-else>
