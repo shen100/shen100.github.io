@@ -10,12 +10,13 @@
                 </Select>
                 <div class="date-label" style="margin-left: 10px;">开始日期</div>
                 <DatePicker :model-value="data.start"
-                    type="date" placeholder="Select date" style="width: 200px"
+                    type="date" placeholder="Select date" style="width: 150px"
                     @on-change="(dateStr, dateType) => onStartDateChange(dateStr, dateType, data.type)"/>
                 <div class="date-label date-label-end">结束日期</div>
                 <DatePicker :model-value="data.end" 
-                    type="date" placeholder="Select date" style="width: 200px" 
+                    type="date" placeholder="Select date" style="width: 150px" 
                     @on-change="(dateStr, dateType) => onEndDateChange(dateStr, dateType, data.type)" />
+                <Button v-if="data.type === 'day'" type="text" @click="onNextDay">下一天</Button>
                 <ButtonGroup class="button-group">
                     <Button @click="onTypeChange('minute')" :type="data.type === 'minute' ? 'primary' : 'default'">分时</Button>
                     <Button @click="onTypeChange('day')" :type="data.type === 'day' ? 'primary' : 'default'">天</Button>
@@ -35,6 +36,8 @@
         <div v-if="data.kCharts && data.kCharts.length">
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" 
                 :type="props.type"
+                :refHighPriceVisible="props.refHighPriceVisible"
+                :relativeStrengthVisible="props.relativeStrengthVisible"
                 @stocks-remove-potential="onStocksRemovePotential" 
                 @audit-trail-change="onAuditTrailChange"
                 :kChartLocalKey="data.kChartLocalKey"
@@ -53,7 +56,7 @@
 import { nextTick, onMounted, ref, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import KChart from './kchart.vue';
-import { formatLocalYMD, parseLocalYMDString } from '../../../util/date';
+import { formatLocalYMD, parseLocalYMDString, getNextDay } from '../../../util/date';
 import { trim } from '../../../util/str';
 import StocksUnionModal from './stocks_union_modal.vue';
 
@@ -77,7 +80,9 @@ const props = defineProps([
     'type',
     'start',
     'end',
-    'filterData'
+    'filterData',
+    'refHighPriceVisible',
+    'relativeStrengthVisible'
 ]);
 
 let data = ref({
@@ -274,6 +279,13 @@ function onEndDateChange(dateStr, dateType, type) {
     data.value.end = dateStr;
     onRequest(type, props.stocks);
     emit('end-change', dateStr);
+}
+
+function onNextDay() {
+    const nextDay = getNextDay(data.value.end);
+    data.value.end = nextDay;
+    onRequest(data.value.type, props.stocks);
+    emit('end-change', nextDay);
 }
 
 function onTypeChange(type) {

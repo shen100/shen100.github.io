@@ -8,6 +8,8 @@
             :page="data.page"
             :stocks="data.curStocks"
             :filterData="data.filterData"
+            :refHighPriceVisible="data.refHighPriceVisible"
+            :relativeStrengthVisible="data.relativeStrengthVisible"
             @start-change="onStartChange"
             @end-change="onEndChange"
             @type-change="onTypeChange"
@@ -48,6 +50,8 @@ let data = ref({
     pageSize: 20,
     page: 1,
     filterData: null,
+    refHighPriceVisible: false,
+    relativeStrengthVisible: false
 })
 
 onMounted(async () => {
@@ -79,6 +83,8 @@ async function init() {
     if (settings.filterData) {
         data.value.filterData = settings.filterData;
     }
+    data.value.refHighPriceVisible = !!settings.refHighPriceVisible;
+    data.value.relativeStrengthVisible = !!settings.relativeStrengthVisible;
 
     // /trade/tracked_kcharts?selectShiZhiIndex=1&minValue=100&maxValue=500
     // 直接访问全部股票，市值 >= minValue 且 < maxValue

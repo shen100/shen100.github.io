@@ -5,6 +5,7 @@ import My from '../views/my.vue';
 import TradeTool from '../views/tool/trade_tool.vue';
 import TradeLocalStorage from '../views/tool/trade_Local_storage.vue';
 import TradeNameToJson from '../views/tool/trade_name_to_json.vue';
+import KLineSetting from '../views/tool/kline_setting.vue';
 import StockCharts from '../views/stock_kcharts.vue';
 import TradeTrail from '../views/trade_trail.vue';
 import DailyCheckIn from '../views/daily_check_in.vue';
@@ -108,6 +109,11 @@ const routeList = [
         path: '/trade/tool/name_to_json',
         name: 'tradeNameToJson',
         component: TradeNameToJson,
+    },
+    {
+        path: '/trade/tool/kline_setting',
+        name: 'tradeKLineSetting',
+        component: KLineSetting,
     }
 ];
 

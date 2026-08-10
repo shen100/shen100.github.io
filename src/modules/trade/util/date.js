@@ -57,3 +57,14 @@ export function getDayDiff(dateStr1, dateStr2) {
     const diffMs = Math.abs(d1.getTime() - d2.getTime());
     return Math.round(diffMs / msPerDay);
 }
+
+export function getNextDay(dateStr) {
+    const date = new Date(dateStr);
+    // 加一天
+    date.setDate(date.getDate() + 1);
+    // 格式化为 YYYY-MM-DD
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}

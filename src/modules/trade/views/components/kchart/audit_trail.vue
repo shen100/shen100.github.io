@@ -43,6 +43,10 @@
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.zouShi }}</span>
                 </div>
                 <div class="audit-trail-popup-item">
+                    <span class="audit-trail-popup-item-label">阶段</span>
+                    <span class="audit-trail-popup-item-text">{{ props.trailData?.stage }}</span>
+                </div>
+                <div class="audit-trail-popup-item">
                     <span class="audit-trail-popup-item-label">买点</span>
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.maiDian }}</span>
                 </div>
@@ -144,6 +148,7 @@ let data = ref({
         luoJi: '', // 买入逻辑: 高成长、困境反转、瞎买
         cuiHuaJi: '', // 催化剂: 现在有、未来有、不清楚
         zouShi: '', // 走势: 上升、下降、区间震荡
+        stage: '', // 阶段
         maiDian: '', // 买点: 突破、中继、反转、恐慌
         cangWei: '', // 买入仓位: 1%、10%、50%
         zhiSun: '', // 止损: 1%、5%、10%
@@ -173,6 +178,12 @@ let data = ref({
         { label: '上升', value: '上升' },
         { label: '下降', value: '下降' },
         { label: '区间震荡', value: '区间震荡' }
+    ],
+    stageList: [
+        { label: '第一阶段', value: '第一阶段' },
+        { label: '第二阶段', value: '第二阶段' },
+        { label: '第三阶段', value: '第三阶段' },
+        { label: '第四阶段', value: '第四阶段' }
     ],
     maiDianList: [
         { label: '突破', value: '突破' },

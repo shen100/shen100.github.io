@@ -17,7 +17,6 @@
             <ECharts v-if="adLineChartOptions.series.length" :options="adLineChartOptions" />
         </Card>
         <Card style="flex: 1;">
-
         </Card>
     </div>
 </template>
@@ -55,7 +54,7 @@ const adLineChartOptions = ref({
 	},
 	yAxis: {
 		type: 'value',
-		min: -60000, // 固定从 min 开始
+		min: -15000, // 固定从 min 开始
 		scale: true, // 关键！开启后弱化0基线，适合观察波动
 	},
 	series: []

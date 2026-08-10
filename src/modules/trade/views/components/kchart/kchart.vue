@@ -1,5 +1,6 @@
 <template>
 	<template v-if="!props.isNewPriceMode">
+		<div @mouseleave="onRootMouseOut" class="kchart-root">
 		<div class="kchart-container">
 			<div class="stock-name">
 				<div class="stock-name-left-box"></div>
@@ -113,11 +114,11 @@
 					@mouse-move="(candleData) => onMinuteLineMouseMove(i, candleData)"
 				/>
 			</div>
-			<StockInfoPopup v-if="data.activeKItemData" :info="data.activeKItemData" />
+			<StockInfoPopup ref="stockInfoPopupRef" :activeKItemData="data.activeKItemData" />
 			<AuditTrail v-if="props.auditTrailVisible" @audit-trail-change="onAuditTrailChange" :trailData="data.stock?.trailData"/>
 			<RangeStats v-if="data.rangeStatsData && data.rangeStatsData.visible" :rangeStatsData="data.rangeStatsData" />
 		</div>
-		<RelativeStrength ref="relStrengthRef" v-if="data.type === 'day'" :list="data.relStrengthList" :activeKItemData="data.activeKItemData" 
+		<RelativeStrength ref="relStrengthRef" v-if="props.relativeStrengthVisible && data.type === 'day'" :list="data.relStrengthList" :activeKItemData="data.activeKItemData" 
 			@mouse-over="onVolumeOrRelStrengthMouseOver"
 			@mouse-out="onVolumeOrRelStrengthMouseOut" 
 			@scroll="onVolumeOrRelStrengthScroll" />
@@ -133,6 +134,7 @@
 			:stock="data.stock" :modalVisible="data.removePotentialModalVisible" />
 		<AskAIModal @hide-modal="onHideAskAIModal"
 			:stock="data.stock" :modalVisible="data.askAIModalVisible" />
+		</div>
 	</template>
 	<template v-else>
 		<StockNewPrice :stockName="data.stockName"
@@ -168,7 +170,9 @@ const props = defineProps([
 	'kChartLocalKey',
 	'type',
 	'isNewPriceMode',
-	'auditTrailVisible'
+	'auditTrailVisible',
+	'refHighPriceVisible',
+    'relativeStrengthVisible'
 ]);
 
 let candlesContainerRef = ref(null);
@@ -179,6 +183,7 @@ const minuteLineRefs = ref([]);
 
 let volumeRef = ref(null);
 let relStrengthRef = ref(null);
+let stockInfoPopupRef = ref(null);
 
 let data = ref({
 	dataLoaded: false,
@@ -427,6 +432,7 @@ function resetData(stock, start, end) {
 	data.value.start = start;
     data.value.end = end;
 	data.value.relStrengthList = [];
+	data.value.candleStaticVar = {};
 }
 
 async function requestMinuteK(stock, start, end, count) {
@@ -799,6 +805,10 @@ function onAuditTrailChange(trailData) {
 	});
 }
 
+function onRootMouseOut() {
+	stockInfoPopupRef.value.hide();
+}
+
 defineExpose({ requestMinuteK, requestDayK, requestWeekK, requestMonthK, requestYearK, getDtRate });
 </script>
 
@@ -889,6 +899,7 @@ defineExpose({ requestMinuteK, requestDayK, requestWeekK, requestMonthK, request
     overflow-x: auto;
     width: calc(100vw - 320px);
 	height: 301px; /* 比 data.candleMaxHeight 高出 21px */
+	border-bottom: 1px #eee dashed;
 }
 
 .minute-lines-container {

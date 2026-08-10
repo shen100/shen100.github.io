@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'url';
 import * as mongo from '../../database/mongo.js';
 import * as defaultLogger from '../../util/logger.js';
+import * as stockService from '../../service/stock.js';
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -61,7 +62,18 @@ async function runTask(option) {
     const dataMap = {};
     const adLineMap = {}; // Advance-Decline Line（A/D Line）腾落线
 
+    const allStockDetails = await stockService.getAllStocksFromDB();
+    const allStockDetailsMap = {};
+    for (let i = 0; i < allStockDetails.length; i++) {
+        allStockDetailsMap[allStockDetails[i].stockFullId] = allStockDetails[i];
+    }
+
     for (let i = 0; i < stocks.length; i++) {
+        const stockDetail = allStockDetailsMap[stocks[i].stockFullId];
+        // 忽略市值小于 100 亿 的公司
+        if (!(stockDetail && stockDetail.zongShiZhi > 100)) {
+            continue;
+        }
         let stock = stocks[i];
         for (let j = stock.kList.length - 1; j > 0; j--) {
             let item1 = stock.kList[j - 1];
