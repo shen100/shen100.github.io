@@ -4,12 +4,13 @@
             <div style="display: flex;">
                 <div class="date-label" style="margin-left: 10px;">开始日期</div>
                 <DatePicker :model-value="data.start"
-                    type="date" placeholder="Select date" style="width: 200px"
+                    type="date" placeholder="Select date" style="width: 150px"
                     @on-change="(dateStr, dateType) => onStartDateChange(dateStr, dateType, data.type)"/>
                 <div class="date-label date-label-end">结束日期</div>
                 <DatePicker :model-value="data.end" 
-                    type="date" placeholder="Select date" style="width: 200px" 
+                    type="date" placeholder="Select date" style="width: 150px" 
                     @on-change="(dateStr, dateType) => onEndDateChange(dateStr, dateType, data.type)" />
+                <Button v-if="data.type === 'day'" type="text" @click="onNextDay(data.type)">下一天</Button>
                 <ButtonGroup class="button-group">
                     <Button @click="onTypeChange('day')" :type="data.type === 'day' ? 'primary' : 'default'">天</Button>
                     <Button @click="onTypeChange('week')" :type="data.type === 'week' ? 'primary' : 'default'">周</Button>
@@ -18,6 +19,7 @@
                 </ButtonGroup>
                 <Input v-model="data.stockInput" @on-clear="onClearStockInput" clearable placeholder="股票" style="width: 200px; margin-left: 15px" />
                 <Button type="primary" @click="onSearch" icon="ios-search" style="margin-left: 15px">搜素</Button>
+                <Button v-if="data.viewType === 'tradeTraining'" type="primary" @click="onRandomStock" style="margin-left: 15px">随机选股</Button>
                 <div class="space-all"></div>
             </div>
         </Card>
@@ -37,20 +39,23 @@
 </template>
 
 <script setup>
+import axios from 'axios';
 import { nextTick, onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import KChart from './components/kchart/kchart.vue';
-import { formatLocalYMD, parseLocalYMDString } from '../util/date';
+import { formatLocalYMD, parseLocalYMDString, getNextDay } from '../util/date';
 import { globalEventEmitter } from '../../../util/event';
 import { trim } from '../util/str';
+import config from '../config/config.js';
 
 const route = useRoute()
 
 const itemRefs = ref([]);
 
 let data = ref({
-    auditTrailVisible: true,
+    auditTrailVisible: true, // 是否显示复盘的编辑框
     kChartLocalKey: 'tradeTrail',
+    viewType: 'tradeTrail',
     type: 'day',
     stocks: [],
     kCharts: [],
@@ -60,17 +65,47 @@ let data = ref({
     pageSize: 20,
     start: '2026-01-01', // formatLocalYMD(new Date(new Date().getTime() - 180 * 24 * 3600 * 1000)),
     end: formatLocalYMD(new Date()), // 2025-06-12
+    refHighPriceVisible: false,
+    relativeStrengthVisible: false,
+    allStocks: []
 })
 
 onMounted(async () => {
+    // 默认是交易复盘
     if (route.path === '/trade/paper') {
+        // 程序化交易
+        data.value.viewType = 'tradePaper';
         data.value.auditTrailVisible = false;
         data.value.kChartLocalKey = 'tradePaperStocks';
         data.value.start = '2025-01-01';
         data.value.end = '2026-01-01';
+    } else if (route.path === '/trade/training') {
+        // 交易训练
+        data.value.viewType = 'tradeTraining';
+        data.value.kChartLocalKey = 'tradeTrainingStocks';
+        data.value.end = '2026-05-10';
+        initAllStocks();
     }
 
+    // 只读了 refHighPriceVisible、relativeStrengthVisible, 没有往本地写tradeTrackedStockKChartSettings
+    let settingsStr = localStorage.getItem('tradeTrackedStockKChartSettings') || '{}';
+    let settings = JSON.parse(settingsStr);
+    data.value.refHighPriceVisible = !!settings.refHighPriceVisible;
+    data.value.relativeStrengthVisible = !!settings.relativeStrengthVisible;
+
     initBreadcrumb();
+
+    let url = config.url + '/api/stocks/setting?key=' + data.value.viewType;
+    const res = await axios.get(url);
+    console.log(res.data);
+    if (res.data && res.data.data) {
+        // settingData: {
+        data.value.start = res.data.data.start;
+        data.value.end = res.data.data.end;
+        data.value.page = res.data.data.page;
+        data.value.type = res.data.data.type;
+        data.value.stockInput = res.data.data.stockInput;
+    }
 
     let stocks = getStocks();
     data.value.total = stocks.length;
@@ -82,6 +117,11 @@ onMounted(async () => {
 });
 
 function initBreadcrumb() {
+    const labelMap = {
+        tradeTrail: '交易复盘',
+        tradePaper: '程序化交易',
+        tradeTraining: '交易训练'
+    };
     globalEventEmitter.emit('breadcrumb', {
         list: [
             {
@@ -89,10 +129,15 @@ function initBreadcrumb() {
                 label: '首页'
             },
             {
-                label: '交易回溯'
+                label: labelMap[data.value.viewType]
             }
         ]
     });
+}
+
+function initAllStocks() {
+    const allStockStr = localStorage.getItem('tradeAllFullIdStocks') || '[]';
+    data.value.allStocks = JSON.parse(allStockStr);
 }
 
 function getStocks() {
@@ -112,38 +157,65 @@ function getStocks() {
 }
 
 function filterStocks(stocks) {
-    let theStocks = [];
-    for (let i = 0; i < stocks.length; i++) {
+    let theStocks = stocks.slice(0);
+    for (let i = theStocks.length - 1; i >= 0; i--) {
         let stock = stocks[i];
-        if (data.value.stockInput) {
-            if (stock.stockId.indexOf(data.value.stockInput) >= 0) {
-                theStocks.push(stock);
-                continue;
-            }
-            if (stock.stockName.indexOf(data.value.stockInput) >= 0) {
-                theStocks.push(stock);
-                continue;
-            }
-        } else {
-            theStocks.push(stock);
+        let stockInput = data.value.stockInput;
+        if (!checkStockInput(stock.stockId, stockInput) && !checkStockInput(stock.stockName, stockInput)) {
+            theStocks.splice(i, 1);
         }
     }
     return theStocks;
 }
 
-function onStartDateChange(dateStr, dateType, type) {
+function checkStockInput(text, stockInput) {
+    let arr = stockInput.split(',');
+    for (let i = 0; i < arr.length; i++) {
+        let input = arr[i].trim();
+        if (text.indexOf(input) >= 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+async function onStartDateChange(dateStr, dateType, type) {
     data.value.start = dateStr;
     onRequest(type, data.value.stocks);
+    await saveSettingToServer();
 }
 
-function onEndDateChange(dateStr, dateType, type) {
+async function onEndDateChange(dateStr, dateType, type) {
     data.value.end = dateStr;
     onRequest(type, data.value.stocks);
+    await saveSettingToServer();
 }
 
-function onTypeChange(type) {
+async function saveSettingToServer() {
+    let url = config.url + '/api/stocks/setting';
+    await axios.post(url, {
+        key: data.value.viewType,
+        settingData: {
+            start: data.value.start,
+            end: data.value.end,
+            page: data.value.page,
+            type: data.value.type,
+            stockInput: data.value.stockInput
+        }
+    });
+}
+
+async function onNextDay(type) {
+    const nextDay = getNextDay(data.value.end);
+    data.value.end = nextDay;
+    onRequest(type, data.value.stocks);
+    await saveSettingToServer();
+}
+
+async function onTypeChange(type) {
     data.value.type = type;
     onRequest(type, data.value.stocks);
+    await saveSettingToServer();
 }
 
 async function onRequest(type, stocks) {
@@ -161,7 +233,9 @@ async function onRequest(type, stocks) {
 
 	let count;
 	
-    if (type === "day") {
+    if (type === 'minute') {
+        // 
+    } else if (type === "day") {
         count = Math.floor((endDate - startDate) / (24 * 3600 * 1000));
     } else if (type === "week") {
         count = Math.floor((endDate - startDate) / (7 * 24 * 3600 * 1000));
@@ -179,8 +253,8 @@ async function onRequest(type, stocks) {
             highPrice: stock.highPrice,
             stopPrice: stock.stopPrice,
             isStar: !!stock.isStar,
-            trailData: stock.trailData,
             tradeActions: stock.tradeActions,
+            trailData: stock.trailData
         });
     });
 
@@ -195,7 +269,9 @@ async function onRequest(type, stocks) {
                 return;
             }
             let requestType = data.value.type;
-            if (requestType == "day") {
+            if (requestType === 'minute') {
+                el.requestMinuteK(stock, startStr, endStr, count);
+            } else if (requestType == "day") {
                 el.requestDayK(stock, startStr, endStr, count);
             } else if (requestType == "week") {
                 el.requestWeekK(stock, startStr, endStr, count);
@@ -208,7 +284,7 @@ async function onRequest(type, stocks) {
     });
 }
 
-function onPageChange(page) {
+async function onPageChange(page) {
     data.value.page = page;
 
     let stocks = getStocks();
@@ -217,9 +293,10 @@ function onPageChange(page) {
     window.scrollTo(0, 0);
 
     onRequest(data.value.type, data.value.stocks);
+    await saveSettingToServer();
 }
 
-function onSearch() {
+async function onSearch() {
     data.value.stockInput = trim(data.value.stockInput || '');
     let page = 1;
     data.value.page = page;
@@ -229,6 +306,32 @@ function onSearch() {
     window.scrollTo(0, 0);
 
     onRequest(data.value.type, data.value.stocks);
+    await saveSettingToServer();
+}
+
+async function onRandomStock() {
+    let stocks = JSON.parse(localStorage.getItem(data.value.kChartLocalKey) || '[]');
+    while (true) {
+        const length = data.value.allStocks.length;
+        const randomIndex = parseInt(Math.random() * length);
+        const stock = data.value.allStocks[randomIndex];
+        let found = false;
+        for (let i = 0; i < stocks.length; i++) {
+            if (stock.stockFullId === stocks[i].stockFullId) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            stocks.unshift(stock);
+            const stockStr = JSON.stringify(stocks);
+            localStorage.setItem(data.value.kChartLocalKey, stockStr);
+            data.value.end = '2025-05-06';
+            await saveSettingToServer();
+            location.reload();
+            break;
+        }
+    }
 }
 
 function onClearStockInput() {

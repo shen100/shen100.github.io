@@ -26,6 +26,11 @@ const routeList = [
         component: TradeTrail,
     },
     {
+        path: '/trade/training',
+        name: 'tradeTraining',
+        component: TradeTrail,
+    },
+    {
         path: '/trade/paper',
         name: 'tradePaper',
         component: TradeTrail,

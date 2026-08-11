@@ -19,8 +19,12 @@ export default {
             path: '/trade/tracked_kcharts'
         },
         {
-            title: '交易回溯',
+            title: '交易复盘',
             path: '/trade/trail'
+        },
+        {
+            title: '交易训练',
+            path: '/trade/training'
         },
         {
             title: '交易模拟',

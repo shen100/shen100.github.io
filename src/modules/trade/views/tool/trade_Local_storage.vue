@@ -39,7 +39,7 @@ let data = ref({
         },
         {
             value: 'tradeTrail',
-            label: '交易回溯'
+            label: '交易复盘'
         },
         {
             value: 'tradePotentialStocks',

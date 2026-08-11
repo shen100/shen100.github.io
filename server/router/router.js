@@ -5,6 +5,7 @@ import * as stock_daily_amount from '../controller/statistics/stock_daily_amount
 import * as stat_index from '../controller/statistics/stat_index.js';
 
 import * as stock from '../controller/stock/stock.js';
+import * as setting from '../controller/stock/setting.js';
 import * as kline from '../controller/stock/kline.js';
 import * as task from '../controller/task/task.js';
 import * as todo_list from '../controller/task/todo_list.js';
@@ -29,8 +30,10 @@ export function init(app) {
     app.get('/api/stocks/kline/:interval', kline.queryKLineByInterval);
     app.get('/api/stocks/get_stocks_by_uuid/:uuid', stock.queryStocksByUUID);
     app.get('/api/stocks/detail', stock.queryDetail);
+    app.get('/api/stocks/setting', setting.querySetting);
     app.post('/api/stocks/get_stocks_by_names', stock.queryStocksByNames);
     app.post('/api/stocks/get_stocks_by_fullids', stock.queryStocksByFullIds);
+    app.post('/api/stocks/setting', setting.saveSetting);
 
     // 定时/手动任务相关的 API
     app.get('/api/tasks/last_history', task.queryLastHistory);

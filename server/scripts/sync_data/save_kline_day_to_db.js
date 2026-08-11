@@ -56,35 +56,36 @@ async function runTask(option) {
         logger.info(logMsg);
     }, { concurrency: 20 });
 
-    const createdAt = new Date();
-    const taskExecCol = db.collection('task_exec_history');
-    await taskExecCol.insertOne({
-        taskName: 'save_kline_day_to_db',
-        createdAt,
-        expiredAt: new Date(Date.now() + config.taskExecHistoryExpiredTime)
-    });
-
     let logMsg = `一共更新了 ${allStocks.length} 条数据`;
     console.log(logMsg);
     console.log();
     logger.info(logMsg);
-
-    return {
-        createdAt
-    };
 }
 
 export async function exec(option) {
     try {
-        let logger = option.logger;
+        const logger = option && option.logger || defaultLogger;
         let startTime = Date.now();
 
         await runTask(option);
+
+        const createdAt = new Date();
+        const db = await mongo.getDB();
+        const taskExecCol = db.collection('task_exec_history');
+        await taskExecCol.insertOne({
+            taskName: 'save_kline_day_to_db',
+            createdAt,
+            expiredAt: new Date(Date.now() + config.taskExecHistoryExpiredTime)
+        });
 
         let endTime = Date.now();
         let logMsg = `✅ 总用时 ${(endTime - startTime) / 1000} 秒`;
         console.log(logMsg);
         logger.info(logMsg);
+
+        return {
+            createdAt
+        };
     } catch (error) {
         console.error('❌ 错误:', error);
     } finally {
