@@ -49,6 +49,9 @@ export async function today(req, res) {
             label: '看每日暴涨暴跌数'
         },
         {
+            label: '每日交易训练一次'
+        },
+        {
             label: '每日3组俯卧撑, 一组5个'
         },
         {

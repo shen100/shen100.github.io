@@ -326,7 +326,7 @@ async function onRandomStock() {
             stocks.unshift(stock);
             const stockStr = JSON.stringify(stocks);
             localStorage.setItem(data.value.kChartLocalKey, stockStr);
-            data.value.end = '2025-05-06';
+            data.value.end = '2026-05-06';
             await saveSettingToServer();
             location.reload();
             break;
