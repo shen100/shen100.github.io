@@ -97,3 +97,35 @@ export async function queryDetail(req, res) {
         data: detailData
     });
 }
+
+
+/**
+ * 查询给定日期，市值在某个范围内的所有股票
+ */
+export async function queryStocksByMarketValue(req, res) {
+    let date = (req.query.date + '').replaceAll('-', '');
+    let minMarketValue = parseInt(req.query.minMarketValue) || 0;
+    let maxMarketValue = parseInt(req.query.maxMarketValue) || 0;
+
+    const db = await mongo.getDB();
+    const coll = db.collection('tushare_daily_basic');
+    const filter = {
+        items: {
+            $elemMatch: {
+                trade_date: date,
+                total_mv: {
+                    $gte: minMarketValue,
+                    $lte: maxMarketValue
+                }
+            }
+        }
+    };
+
+    const list = await coll.find(filter, { projection: { stockFullId: 1, _id: 0 } }).toArray();
+    res.json({
+        code: 0,
+        data: {
+            list
+        }
+    });
+}

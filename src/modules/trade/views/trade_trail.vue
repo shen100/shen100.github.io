@@ -67,7 +67,8 @@ let data = ref({
     end: formatLocalYMD(new Date()), // 2025-06-12
     refHighPriceVisible: false,
     relativeStrengthVisible: false,
-    allStocks: []
+    allStocks: [],
+    allStocksMap: {}
 })
 
 onMounted(async () => {
@@ -97,7 +98,6 @@ onMounted(async () => {
 
     let url = config.url + '/api/stocks/setting?key=' + data.value.viewType;
     const res = await axios.get(url);
-    console.log(res.data);
     if (res.data && res.data.data) {
         // settingData: {
         data.value.start = res.data.data.start;
@@ -138,6 +138,9 @@ function initBreadcrumb() {
 function initAllStocks() {
     const allStockStr = localStorage.getItem('tradeAllFullIdStocks') || '[]';
     data.value.allStocks = JSON.parse(allStockStr);
+    for (let i = 0; i < data.value.allStocks.length; i++) {
+        data.value.allStocksMap[data.value.allStocks[i].stockFullId] = data.value.allStocks[i];
+    }
 }
 
 function getStocks() {
@@ -310,11 +313,17 @@ async function onSearch() {
 }
 
 async function onRandomStock() {
+    let end = '2026-05-06';
     let stocks = JSON.parse(localStorage.getItem(data.value.kChartLocalKey) || '[]');
+    let url = config.url + `/api/stocks/get_stocks_by_market_value?date=${end}&minMarketValue=100&maxMarketValue=800`;
+    let res = await axios.get(url);
+    let stocksWithMarketValue = res.data.data.list;
     while (true) {
-        const length = data.value.allStocks.length;
+        const length = stocksWithMarketValue.length;
         const randomIndex = parseInt(Math.random() * length);
-        const stock = data.value.allStocks[randomIndex];
+        const stockTmp = stocksWithMarketValue[randomIndex];
+        const stock = data.value.allStocksMap[stockTmp.stockFullId];
+
         let found = false;
         for (let i = 0; i < stocks.length; i++) {
             if (stock.stockFullId === stocks[i].stockFullId) {
@@ -326,7 +335,7 @@ async function onRandomStock() {
             stocks.unshift(stock);
             const stockStr = JSON.stringify(stocks);
             localStorage.setItem(data.value.kChartLocalKey, stockStr);
-            data.value.end = '2026-05-06';
+            data.value.end = end;
             await saveSettingToServer();
             location.reload();
             break;

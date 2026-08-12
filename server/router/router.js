@@ -29,6 +29,7 @@ export function init(app) {
     app.get('/api/stocks/kline/minute', kline.requestMinuteK);
     app.get('/api/stocks/kline/:interval', kline.queryKLineByInterval);
     app.get('/api/stocks/get_stocks_by_uuid/:uuid', stock.queryStocksByUUID);
+    app.get('/api/stocks/get_stocks_by_market_value', stock.queryStocksByMarketValue);
     app.get('/api/stocks/detail', stock.queryDetail);
     app.get('/api/stocks/setting', setting.querySetting);
     app.post('/api/stocks/get_stocks_by_names', stock.queryStocksByNames);
