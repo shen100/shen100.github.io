@@ -14,7 +14,9 @@
         <div v-if="isBuyOrSell" class="candle-line" :style="candleTradelineStyle"></div>
         <div v-if="isBuyOrSell" class="candle-box" :style="candleTradeSmallBoxStyle"></div>
         <div v-if="isBuyOrSell" class="candle-box" :style="candleTradeBoxStyle">
-            <div class="candle-trade-box-txt">{{ props.tradeAction.type === 'buy' ? 'B' : 'S' }}</div>
+            <div class="candle-trade-box-txt" v-if="actionType === 'buy'">B</div>
+            <div class="candle-trade-box-txt" v-else-if="actionType === 'sell'">S</div>
+            <div class="candle-trade-box-txt" v-else-if="actionType === 't'">T</div>
         </div>
     </div>
 </template>
@@ -37,7 +39,7 @@ const props = defineProps([
     'lowPriceInAll',
     'highPriceInAll',
     'candleMaxHeight',
-    'tradeAction',
+    'actionsInDate',
     'staticVar' // candle 组件的多个实例之间共用的静态变量
 ]);
 
@@ -57,6 +59,29 @@ let data = ref({
     lineWidth: 1,
     lineHeight: 0,
     isMouseOver: false,
+});
+
+const actionType = computed(() => {
+    const actionsInDate = props.actionsInDate || [];
+    let isBuy = false;
+    let isSell = false;
+    for (let i = 0; i < actionsInDate.length; i++) {
+        if (actionsInDate[i].type === 'buy') {
+            isBuy = true;
+        } else if (actionsInDate[i].type === 'sell') {
+            isSell = true;
+        }
+    }
+    if (isBuy && isSell) {
+        return 't';
+    }
+    if (isBuy) {
+        return 'buy';
+    }
+    if (isSell) {
+        return 'sell';
+    }
+    return 'none';
 });
 
 const isGreenGlow = computed(() => {
@@ -134,9 +159,13 @@ const candleTradelineStyle = computed(() => {
         theY = data.value.lineY + data.value.lineHeight + 5;
     }
     let borderLeft = '1px #ee2500 dashed';
-    if (props.tradeAction.type === 'sell') {
+    let type = actionType.value;
+    if (type === 't') {
+        borderLeft = '1px #ebb12c dashed';
+    } else if (type === 'sell') {
         borderLeft = '1px #5287ee dashed';
     }
+
     return {
         width: `${data.value.lineWidth}px`,
         height: `30px`,
@@ -152,9 +181,14 @@ const candleTradeSmallBoxStyle = computed(() => {
         theY = data.value.lineY + data.value.lineHeight + 5;
     }
     let backgroundColor = '#ee2500';
-    if (props.tradeAction.type === 'sell') {
+    let type = actionType.value;
+    if (type === 't') {
+        backgroundColor = '#ebb12c';
+    } else if (type === 'sell') {
         backgroundColor = '#5287ee';
     }
+
+
     return {
         width: `4px`,
         height: `4px`,
@@ -171,7 +205,10 @@ const candleTradeBoxStyle = computed(() => {
         theY = data.value.lineY + data.value.lineHeight + 35;
     }
     let backgroundColor = '#ee2500';
-    if (props.tradeAction.type === 'sell') {
+    let type = actionType.value;
+    if (type === 't') {
+        backgroundColor = '#ebb12c';
+    } else if (type === 'sell') {
         backgroundColor = '#5287ee';
     }
     return {
@@ -185,10 +222,7 @@ const candleTradeBoxStyle = computed(() => {
 });
 
 const isBuyOrSell = computed(() => {
-    if (!props.tradeAction) {
-        return false;
-    }
-    return [ 'buy', 'sell' ].indexOf(props.tradeAction.type) >= 0;
+    return [ 'buy', 'sell', 't' ].indexOf(actionType.value) >= 0;
 });
 
 onMounted(async () => {
@@ -219,7 +253,7 @@ function getCandleData() {
         closePrice: props.closePrice,
         volume: props.volume,
         amount: props.amount,
-        tradeAction: props.tradeAction,
+        actionsInDate: props.actionsInDate,
     }
 }
 

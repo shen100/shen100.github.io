@@ -43,12 +43,16 @@
 				<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
 				<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
 				
-				<template v-if="data.activeKItemData && data.activeKItemData.tradeAction">
-					<div v-if="data.activeKItemData.tradeAction.type === 'buy'" class="kchart-trade-buy-or-sell">
-						买入 {{data.activeKItemData.tradeAction.price.toFixed(4)}} X {{data.activeKItemData.tradeAction.count}} 股
-					</div>
-					<div v-else-if="data.activeKItemData.tradeAction.type === 'sell'" class="kchart-trade-buy-or-sell" style="background-color: #5287ee;">
-						卖出 {{data.activeKItemData.tradeAction.price.toFixed(4)}} X {{data.activeKItemData.tradeAction.count}} 股
+				<template v-if="data.activeKItemData && data.activeKItemData.actionsInDate">
+					<div class="kchart-trade-buy-or-sell" :style="{'background-color': getActionsInDateColor()}">
+						<div :key="i" v-for="(tradeAction, i) in data.activeKItemData.actionsInDate">
+							<div v-if="tradeAction.type === 'buy'">
+								买入 {{tradeAction.price.toFixed(4)}} X {{tradeAction.count}} 股
+							</div>
+							<div v-else-if="tradeAction.type === 'sell'">
+								卖出 {{tradeAction.price.toFixed(4)}} X {{tradeAction.count}} 股
+							</div>
+						</div>
 					</div>
 				</template>
 
@@ -74,7 +78,7 @@
 						:stockHighPrice="data.stock.highPrice"
 						:kLineType="data.type"
 						:date="item[0]"
-						:tradeAction="getTradeAction(item[0])"
+						:actionsInDate="getActionsInDate(item[0])"
 						:openPrice="item[1]"
 						:closePrice="item[2]"
 						:highPrice="item[3]"
@@ -236,20 +240,44 @@ onMounted(async () => {
 	data.value.type = props.type;
 });
 
-function getTradeAction(date) {
+function getActionsInDate(date) {
 	if (!data.value.stock) {
-        return null;
+        return [];
     }
 	const tradeActions = data.value.stock.tradeActions;
 	if (!tradeActions) {
-        return null;
+        return [];
     }
-	for (let i = 0 ; i < tradeActions.length; i++) {
+	const actionsInDate = [];
+	for (let i = 0; i < tradeActions.length; i++) {
 		if (tradeActions[i].date === date) {
-			return tradeActions[i]
+			actionsInDate.push(tradeActions[i]);
 		}
 	}
-	return null;
+	return actionsInDate;
+}
+
+function getActionsInDateColor() {
+	const actionsInDate = data.value.activeKItemData && data.value.activeKItemData.actionsInDate || [];
+	let isBuy = false;
+    let isSell = false;
+    for (let i = 0; i < actionsInDate.length; i++) {
+        if (actionsInDate[i].type === 'buy') {
+            isBuy = true;
+        } else if (actionsInDate[i].type === 'sell') {
+            isSell = true;
+        }
+    }
+    if (isBuy && isSell) {
+        return '#ebb12c';
+    }
+    if (isBuy) {
+        return '#ee2500';
+    }
+    if (isSell) {
+        return '#5287ee';
+    }
+    return '#e2e2e2';
 }
 
 const zongShiZhi = computed(() => {
@@ -349,7 +377,16 @@ const profitRate = computed(() => {
 		finalAmount += (data.value.curPrice * remainingCount);
 	}
 	return (finalAmount - buyAmount).toFixed(2) + ' ' + (100 * (finalAmount - buyAmount) / buyAmount).toFixed(2) + '%';
-})
+});
+
+function getProfit() {
+	const arr = profitRate.value.split(' ');
+	let profit = arr[0];
+	if (profit === '') {
+		return 0;
+	}
+	return Number(profit);
+}
 
 const profitRateColor = computed(() => {
 	if (profitRate.value.charAt(0) === '-') {
@@ -809,7 +846,7 @@ function onRootMouseOut() {
 	stockInfoPopupRef.value.hide();
 }
 
-defineExpose({ requestMinuteK, requestDayK, requestWeekK, requestMonthK, requestYearK, getDtRate });
+defineExpose({ requestMinuteK, requestDayK, requestWeekK, requestMonthK, requestYearK, getDtRate, getProfit });
 </script>
 
 <style scoped>

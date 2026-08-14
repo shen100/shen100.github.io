@@ -21,6 +21,15 @@
                 <Button type="primary" @click="onSearch" icon="ios-search" style="margin-left: 15px">搜素</Button>
                 <Button v-if="data.viewType === 'tradeTraining'" type="primary" @click="onRandomStock" style="margin-left: 15px">随机选股</Button>
                 <div class="space-all"></div>
+                <Button v-if="data.viewType === 'tradeTraining'" type="primary" @click="onCalSumProfit">计算总利润</Button>
+                <div style="margin-left: 5px;">
+                    <span class="profit-label">总利润:</span>
+                    <span class="profit-label" :style="{'margin-left': '5px', color: data.sumProfit >= 0 ? 'rgb(238, 37, 0)' : 'rgb(2, 179, 61)' }">{{ data.sumProfit }}</span>
+                    <span class="profit-label" style="margin-left: 5px;">成功:</span>
+                    <span class="profit-label" style="margin-left: 5px;">{{ data.successCount }}</span>
+                    <span class="profit-label" style="margin-left: 5px;">失败:</span>
+                    <span class="profit-label" style="margin-left: 5px;">{{ data.failCount }}</span>
+                </div>
             </div>
         </Card>
         <div v-if="data.kCharts && data.kCharts.length">
@@ -41,6 +50,7 @@
 <script setup>
 import axios from 'axios';
 import { nextTick, onMounted, ref } from 'vue';
+import { Message } from 'view-ui-plus';
 import { useRoute } from 'vue-router';
 import KChart from './components/kchart/kchart.vue';
 import { formatLocalYMD, parseLocalYMDString, getNextDay } from '../util/date';
@@ -68,8 +78,57 @@ let data = ref({
     refHighPriceVisible: false,
     relativeStrengthVisible: false,
     allStocks: [],
-    allStocksMap: {}
+    allStocksMap: {},
+    sumProfit: 0,
+    successCount: 0,
+    failCount: 0
 })
+
+function calStockProfit(stock) {
+	if (!(stock && stock.tradeActions && stock.tradeActions.length)) {
+		return 0;
+	}
+	let buyAmount = 0;
+	let sellAmount = 0;
+	let remainingCount = 0;
+	for (let i = 0; i < stock.tradeActions.length; i++) {
+		let action = stock.tradeActions[i];
+		if (action.type === 'buy') {
+			buyAmount += (action.price * action.count);
+			remainingCount += action.count;
+		} else if (action.type === 'sell') {
+			sellAmount += (action.price * action.count);
+			remainingCount -= action.count;
+		}
+	}
+	let finalAmount = sellAmount;
+	if (remainingCount > 0) {
+		// finalAmount += (data.value.curPrice * remainingCount);
+        Message.error({
+            duration: 10,
+            content: `${stock.stockName} 的买入和卖出数量不相等，可能还没有清仓`
+        });
+        return 0;
+	}
+	return finalAmount - buyAmount;
+}
+
+function onCalSumProfit() {
+    let stocks = JSON.parse(localStorage.getItem(data.value.kChartLocalKey) || '[]');
+    let sumProfit = 0;
+    data.value.successCount = 0;
+    data.value.failCount = 0;
+    for (let i = 0; i < stocks.length; i++) {
+        const profit = calStockProfit(stocks[i]);
+        if (profit > 0) {
+            data.value.successCount++;
+        } else if (profit < 0) {
+            data.value.failCount++;
+        }
+        sumProfit += profit;
+    }
+    data.value.sumProfit = sumProfit;
+}
 
 onMounted(async () => {
     // 默认是交易复盘
@@ -392,5 +451,9 @@ function onAuditTrailChange(stockId, trailData) {
 
 .space {
     height: 100px;
+}
+
+.profit-label {
+    line-height: 32px;
 }
 </style>

@@ -9,7 +9,6 @@ import config from '../../config/config.js';
 const __filename = fileURLToPath(import.meta.url);
 
 let startStr = '2024-01-01';
-let endStr = new Date().toISOString().substring(0, 10); // '2027-01-01';
 
 let isMain = false;
 
@@ -19,6 +18,8 @@ if (process.argv[1] === __filename) {
 
 async function runTask(option) {
     const logger = option && option.logger || defaultLogger;
+    const endStr = new Date().toISOString().substring(0, 10); // '2027-01-01';
+
     const allStocks = await stockService.getAllStocksFromDB();
     const db = await mongo.getDB();
     const collection = db.collection('kline_day');
