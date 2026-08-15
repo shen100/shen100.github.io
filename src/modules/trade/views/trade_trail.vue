@@ -10,6 +10,7 @@
                 <DatePicker :model-value="data.end" 
                     type="date" placeholder="Select date" style="width: 150px" 
                     @on-change="(dateStr, dateType) => onEndDateChange(dateStr, dateType, data.type)" />
+                    <Button v-if="data.type === 'day'" type="text" @click="onPreDay(data.type)">前一天</Button>
                 <Button v-if="data.type === 'day'" type="text" @click="onNextDay(data.type)">下一天</Button>
                 <ButtonGroup class="button-group">
                     <Button @click="onTypeChange('day')" :type="data.type === 'day' ? 'primary' : 'default'">天</Button>
@@ -24,7 +25,7 @@
                 <Button v-if="data.viewType === 'tradeTraining'" type="primary" @click="onCalSumProfit">计算总利润</Button>
                 <div style="margin-left: 5px;">
                     <span class="profit-label">总利润:</span>
-                    <span class="profit-label" :style="{'margin-left': '5px', color: data.sumProfit >= 0 ? 'rgb(238, 37, 0)' : 'rgb(2, 179, 61)' }">{{ data.sumProfit }}</span>
+                    <span class="profit-label" :style="{'margin-left': '5px', color: data.sumProfit >= 0 ? 'rgb(238, 37, 0)' : 'rgb(2, 179, 61)' }">{{ data.sumProfit.toFixed(2) }}</span>
                     <span class="profit-label" style="margin-left: 5px;">成功:</span>
                     <span class="profit-label" style="margin-left: 5px;">{{ data.successCount }}</span>
                     <span class="profit-label" style="margin-left: 5px;">失败:</span>
@@ -36,6 +37,7 @@
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" 
                 :kChartLocalKey="data.kChartLocalKey"
                 :auditTrailVisible="data.auditTrailVisible"
+                :relativeStrengthVisible="data.relativeStrengthVisible"
                 @audit-trail-change="onAuditTrailChange" />
         </div>
 
@@ -53,7 +55,7 @@ import { nextTick, onMounted, ref } from 'vue';
 import { Message } from 'view-ui-plus';
 import { useRoute } from 'vue-router';
 import KChart from './components/kchart/kchart.vue';
-import { formatLocalYMD, parseLocalYMDString, getNextDay } from '../util/date';
+import { formatLocalYMD, parseLocalYMDString, getPreDay, getNextDay } from '../util/date';
 import { globalEventEmitter } from '../../../util/event';
 import { trim } from '../util/str';
 import config from '../config/config.js';
@@ -77,6 +79,7 @@ let data = ref({
     end: formatLocalYMD(new Date()), // 2025-06-12
     refHighPriceVisible: false,
     relativeStrengthVisible: false,
+    stockTrainingBuyFilter: false,
     allStocks: [],
     allStocksMap: {},
     sumProfit: 0,
@@ -147,11 +150,11 @@ onMounted(async () => {
         initAllStocks();
     }
 
-    // 只读了 refHighPriceVisible、relativeStrengthVisible, 没有往本地写tradeTrackedStockKChartSettings
     let settingsStr = localStorage.getItem('tradeTrackedStockKChartSettings') || '{}';
     let settings = JSON.parse(settingsStr);
     data.value.refHighPriceVisible = !!settings.refHighPriceVisible;
     data.value.relativeStrengthVisible = !!settings.relativeStrengthVisible;
+    data.value.stockTrainingBuyFilter = !!settings.stockTrainingBuyFilter;
 
     initBreadcrumb();
 
@@ -225,6 +228,11 @@ function filterStocks(stocks) {
         let stockInput = data.value.stockInput;
         if (!checkStockInput(stock.stockId, stockInput) && !checkStockInput(stock.stockName, stockInput)) {
             theStocks.splice(i, 1);
+            continue;
+        }
+        if (data.value.stockTrainingBuyFilter && !(stock.tradeActions && stock.tradeActions.length)) {
+            theStocks.splice(i, 1);
+            continue;
         }
     }
     return theStocks;
@@ -265,6 +273,13 @@ async function saveSettingToServer() {
             stockInput: data.value.stockInput
         }
     });
+}
+
+async function onPreDay(type) {
+    const preDay = getPreDay(data.value.end);
+    data.value.end = preDay;
+    onRequest(type, data.value.stocks);
+    await saveSettingToServer();
 }
 
 async function onNextDay(type) {

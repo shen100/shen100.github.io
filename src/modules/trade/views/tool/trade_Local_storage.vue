@@ -46,6 +46,10 @@ let data = ref({
             label: '候选股'
         },
         {
+            value: 'tradeHighConvictionStocks',
+            label: '最强逻辑'
+        },
+        {
             value: 'tradePaperStocks',
             label: '模拟交易'
         },

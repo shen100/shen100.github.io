@@ -246,13 +246,14 @@ function onStocksUion() {
 }
 
 function saveSettings() {
-    let jsonStr = JSON.stringify({
-        type: data.value.type,
-        start: data.value.start,
-        end: data.value.end,
-        page: data.value.page,
-        filterData: data.value.filterData
-    });
+    let settingsStr = localStorage.getItem('tradeTrackedStockKChartSettings') || '{}';
+    let settings = JSON.parse(settingsStr);
+    settings.type = data.value.type;
+    settings.start = data.value.start;
+    settings.end = data.value.end;
+    settings.page = data.value.page;
+    settings.filterData = data.value.filterData;
+    let jsonStr = JSON.stringify(settings);
     localStorage.setItem('tradeTrackedStockKChartSettings', jsonStr)
 }
 

@@ -25,7 +25,7 @@ export async function today(req, res) {
             label: '看每日两融余额'
         },
         {
-            label: '看指数行情'
+            label: '看板块指数'
         },
         {
             label: '看韩国KOSPI行情'

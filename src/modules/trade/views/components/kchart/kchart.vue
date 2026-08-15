@@ -536,16 +536,28 @@ async function requestDayK(stock, start, end, count) {
 }
 
 function updateRelativeStrength(list) {
+	const equalWeightMap = {};
 	for (let i = 0; i < list.length; i++) {
+		equalWeightMap[list[i].date] = list[i];
+	}
+	let firstItem;
+	for (let i = 0; i < data.value.myKList.length; i++) {
+		let date = data.value.myKList[i][0];
 		if (i === 0) {
-			list[i].strength = 0;
-			continue;
+			firstItem = equalWeightMap[date];
 		}
 		const closePrice1 = data.value.myKList[0][2];
 		const closePrice2 = data.value.myKList[i][2];
 		const kRate = (closePrice2 - closePrice1) / closePrice1;
-		const indexRate = (list[i].indexPoint - list[0].indexPoint) / list[0].indexPoint;
-		list[i].strength = kRate - indexRate;
+		const itemInDate = equalWeightMap[date];
+		const indexRate = (itemInDate.indexPoint - firstItem.indexPoint) / firstItem.indexPoint;
+		itemInDate.strength = kRate - indexRate;
+	}
+	// 大盘每个交易日肯定有数据，但个股可能在这个日期之后才上市
+	for (let i = list.length - 1; i >= 0; i--) {
+		if (typeof list[i].strength === 'undefined') {
+			list.splice(i, 1);
+		}
 	}
 	for (let i = 0; i < list.length; i++) {
 		if (i < list.length - 1) {
