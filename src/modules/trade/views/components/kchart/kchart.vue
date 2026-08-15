@@ -43,7 +43,7 @@
 				<div class="y-axis" :style="{top: `${data.yAxis5}px`}"></div>
 				<div class="y-axis-txt" :style="{top: `${data.yAxis5}px`, transform: 'translateY(-100%)'}">{{ data.yAxisText5 }}</div>
 				
-				<template v-if="data.activeKItemData && data.activeKItemData.actionsInDate">
+				<template v-if="data.activeKItemData && data.activeKItemData.actionsInDate && data.activeKItemData.actionsInDate.length">
 					<div class="kchart-trade-buy-or-sell" :style="{'background-color': getActionsInDateColor()}">
 						<div :key="i" v-for="(tradeAction, i) in data.activeKItemData.actionsInDate">
 							<div v-if="tradeAction.type === 'buy'">
