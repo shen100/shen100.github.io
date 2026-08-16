@@ -31,6 +31,8 @@ async function runTask(myItems, option) {
         myStrategy = strategy2;
     } else if (option.strategy === 'tradeStocksByStrategy3') {
         myStrategy = strategy3;
+    } else if (option.strategy === 'tradeStocksByStrategy4') {
+        myStrategy = strategy4;
     }
 
     let stocks = [];

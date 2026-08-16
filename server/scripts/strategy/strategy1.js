@@ -27,14 +27,11 @@ export function findHighPriceInRecentNDays(allItems, stockDetail, options) {
             return { ok: false };
         }
     }
-    if (stockDetail.stockName === '艾罗能源') {
-        console.log();
-    }
     return { ok: true };
 }
 
 /**
- * 找出最近 20 天（其中某一天）的收盘价是历史最高价、最近若干天处于下跌趋势的股票, 不考虑以下公司
+ * 找出最近 20 天（其中某一天）的收盘价是历史最高价、最近5天回调了 12%的股票, 不考虑以下公司
  * 1. 上市时间少于 100 个交易日
  * 2. 公司市值小于 100 亿
  */
@@ -66,22 +63,14 @@ export function detectTrend(allItems, stockDetail, options) {
         return { ok: false };
     }
 
-    // highPriceIndex 后面有几个阴线
-    let downPriceCount = 0;
     let downLowPrice = 100000000;
     for (let i = highPriceIndex + 1; i < items.length; i++) {
-        if (items[i].closePrice < items[i - 1].closePrice) {
-            downPriceCount++;
-        }
-        if (items[i].closePrice < downLowPrice) {
-            downLowPrice = items[i].closePrice;
+        if (items[i].lowPrice < downLowPrice) {
+            downLowPrice = items[i].lowPrice;
         }
     }
     
-    // if (downPriceCount / count < 0.1) { // 0.7
-    //     return { ok: false };
-    // }
-    if ((highPrice - downLowPrice) / highPrice < 0.15) {
+    if ((highPrice - downLowPrice) / highPrice < 0.12) {
         return { ok: false };
     }
     return { ok: true };

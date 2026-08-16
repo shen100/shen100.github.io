@@ -31,6 +31,10 @@ let data = ref({
         },
         {
             value: 'tradeIndexStocks',
+            label: '全球指数'
+        },
+        {
+            value: 'tradeIndexStocks',
             label: '板块指数'
         },
         {
@@ -72,6 +76,10 @@ let data = ref({
         {
             value: 'tradeStocksByStrategy3',
             label: '最近10天涨幅超过50%'
+        },
+        {
+            value: 'tradeStocksByStrategy4',
+            label: '最近10天最高涨幅超过30%, 回调超过12%'
         }
     ],
     jsonStr: ''

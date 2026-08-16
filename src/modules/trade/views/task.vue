@@ -96,7 +96,7 @@ let data = ref({
                 {
                     value: 'tradeStocksByStrategy1',
                     label: 'tradeStocksByStrategy1',
-                    desc: '到达最高价后回踩'
+                    desc: '到达最高价后回调'
                 },
                 {
                     value: 'tradeStocksByStrategy2',
@@ -106,7 +106,12 @@ let data = ref({
                 {
                     value: 'tradeStocksByStrategy3',
                     label: 'tradeStocksByStrategy3',
-                    desc: ' 最近10天涨幅超过50%'
+                    desc: '最近10天涨幅超过50%'
+                },
+                {
+                    value: 'tradeStocksByStrategy4',
+                    label: 'tradeStocksByStrategy4',
+                    desc: '最近10天涨幅最高超过30%，且有回调'
                 }
             ]
         },

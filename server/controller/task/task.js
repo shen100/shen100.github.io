@@ -41,6 +41,8 @@ export async function exec(req, res) {
         resData = await explore_stocks.exec({ logger: socketClientLogger, strategy: 'tradeStocksByStrategy2' });
     } else if (task === 'tradeStocksByStrategy3') {
         resData = await explore_stocks.exec({ logger: socketClientLogger, strategy: 'tradeStocksByStrategy3' });
+    } else if (task === 'tradeStocksByStrategy4') {
+        resData = await explore_stocks.exec({ logger: socketClientLogger, strategy: 'tradeStocksByStrategy4' });
     }
 
     res.json({

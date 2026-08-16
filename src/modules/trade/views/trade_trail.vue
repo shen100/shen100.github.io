@@ -387,6 +387,7 @@ async function onSearch() {
 }
 
 async function onRandomStock() {
+    let start = '2010-01-01';
     let end = '2026-05-06';
     let stocks = JSON.parse(localStorage.getItem(data.value.kChartLocalKey) || '[]');
     let url = config.url + `/api/stocks/get_stocks_by_market_value?date=${end}&minMarketValue=100&maxMarketValue=800`;
@@ -409,6 +410,8 @@ async function onRandomStock() {
             stocks.unshift(stock);
             const stockStr = JSON.stringify(stocks);
             localStorage.setItem(data.value.kChartLocalKey, stockStr);
+            data.value.type = 'year';
+            data.value.start = start;
             data.value.end = end;
             await saveSettingToServer();
             location.reload();
