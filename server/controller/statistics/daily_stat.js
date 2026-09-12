@@ -139,3 +139,33 @@ export async function queryDailyAdLine(req, res) {
         }
     });
 }
+
+export async function queryDailyHighPriceTend(req, res) {
+    const startDate = req.query.start;
+    const endDate = req.query.end;
+    const db = await mongo.getDB();
+    const collection = db.collection('stat_highprice_tend');
+
+    const projection = {
+        createdAt: 0,
+        updatedAt: 0,
+        _id: 0 // 不返回 _id
+    };
+    let list = await collection.find({
+        date: {
+            $gte: startDate,
+            $lte: endDate
+        }
+    }, { projection }).sort({ date: 1 }).toArray();
+
+    list.forEach(item => {
+        item.count = item.stocks.length;
+    });
+
+    res.json({
+        code: 0,
+        data: {
+            list,
+        }
+    });
+}

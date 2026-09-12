@@ -9,6 +9,13 @@ export function detectTrend(allItems, stockDetail) {
     if (allItems.length < 100) {
         return { ok: false };
     }
+
+    if (stockDetail.zongShiZhi < 100) {
+        return { ok: false };
+    }
+    if (stockDetail.stockFullId.indexOf('bj') === 0) {
+        return { ok: false };
+    }
     
     let index = allItems.length - 1;
     for (let i = 0; i < index; i++) {
@@ -17,11 +24,5 @@ export function detectTrend(allItems, stockDetail) {
         }
     }
 
-    if (stockDetail.zongShiZhi < 100) {
-        return { ok: false };
-    }
-    if (stockDetail.stockFullId.indexOf('bj') === 0) {
-        return { ok: false };
-    }
     return { ok: true };
 }

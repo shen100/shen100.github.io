@@ -71,6 +71,7 @@ async function runTask(myItems, option) {
 
 export async function exec(option) {
     try {
+        endStr = new Date().toISOString().substring(0, 10); // 2026-07-01
         const logger = option && option.logger || defaultLogger;
         const db = await mongo.getDB();
         let startTime = Date.now();
@@ -84,7 +85,7 @@ export async function exec(option) {
         const finalStocks = await runTask(myItems, option);
 
         let endTime = Date.now();
-        logMsg = `总用时 ${(endTime - startTime) / 1000} 秒`;
+        logMsg = `✅ 总用时 ${(endTime - startTime) / 1000} 秒`;
         console.log(logMsg);
         logger.info(logMsg);
 

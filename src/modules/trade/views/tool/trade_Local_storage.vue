@@ -31,10 +31,6 @@ let data = ref({
         },
         {
             value: 'tradeIndexStocks',
-            label: '全球指数'
-        },
-        {
-            value: 'tradeIndexStocks',
             label: '板块指数'
         },
         {
@@ -50,8 +46,8 @@ let data = ref({
             label: '候选股'
         },
         {
-            value: 'tradeHighConvictionStocks',
-            label: '最强逻辑'
+            value: 'tradeMainLineStocks',
+            label: '最强主线'
         },
         {
             value: 'tradePaperStocks',

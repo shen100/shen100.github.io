@@ -64,6 +64,11 @@ let data = ref({
             groupName: '数据分析',
             tasks: [
                 {
+                    value: 'stat_highprice_tend',
+                    label: 'stat_highprice_tend',
+                    desc: '统计最近六日的最高价突破历史最高价的股票数'
+                },
+                {
                     value: 'stat_money_flow',
                     label: 'stat_money_flow',
                     desc: '统计概念板块的资金流向'
@@ -198,6 +203,17 @@ async function onSubmit() {
 	let resData = res.data.data;
     if (resData && resData.createdAt) {
         data.value.lastExecTime = new Date(resData.createdAt);
+    }
+    if (resData && resData.finalStocks) {
+        if (data.value.task === 'tradeStocksByStrategy1') {
+            localStorage.setItem('tradeStocksByStrategy1', JSON.stringify(resData.finalStocks, null, 4));
+        } else if (data.value.task === 'tradeStocksByStrategy2') {
+            localStorage.setItem('tradeStocksByStrategy2', JSON.stringify(resData.finalStocks, null, 4));
+        } else if (data.value.task === 'tradeStocksByStrategy3') {
+            localStorage.setItem('tradeStocksByStrategy3', JSON.stringify(resData.finalStocks, null, 4));
+        } else if (data.value.task === 'tradeStocksByStrategy4') {
+            localStorage.setItem('tradeStocksByStrategy4', JSON.stringify(resData.finalStocks, null, 4));
+        }
     }
 }
 </script>

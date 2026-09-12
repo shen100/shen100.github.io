@@ -6,6 +6,7 @@ import * as save_tushare_daily_basic_to_db from '../../scripts/sync_data/save_tu
 import * as stat_money_flow from '../../scripts/statistics/stat_money_flow.js';
 import * as stat_daily_surge_plunge_count from '../../scripts/statistics/stat_daily_surge_plunge_count.js';
 import * as stat_daily_up_count from '../../scripts/statistics/stat_daily_up_count.js';
+import * as stat_highprice_tend from '../../scripts/statistics/stat_highprice_tend.js';
 import * as a_equal_weight_index from '../../scripts/statistics/a_equal_weight_index.js';
 import * as index_recent_decline_md from '../../scripts/statistics/index_recent_decline_md.js';
 import * as explore_stocks from '../../scripts/strategy/explore_stocks.js';
@@ -27,6 +28,8 @@ export async function exec(req, res) {
         resData = await save_tushare_daily_basic_to_db.exec({ logger: socketClientLogger });
     } else if (task === 'stat_money_flow') {
         resData = await stat_money_flow.exec({ logger: socketClientLogger });
+    } else if (task === 'stat_highprice_tend') {
+        resData = await stat_highprice_tend.exec({ logger: socketClientLogger });
     } else if (task === 'stat_daily_surge_plunge_count') {
         resData = await stat_daily_surge_plunge_count.exec({ logger: socketClientLogger });
     } else if (task === 'stat_daily_up_count') {
