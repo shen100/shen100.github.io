@@ -1,5 +1,5 @@
 /**
- * 找出最近 N 天 股价是上升趋势，且涨幅超过 30% 的股票
+ * 找出最近 N 天 股价是上升趋势，且最高涨幅超过 40% 的股票
  */
 export function findHighRateInRecentNDays(allItems, stockDetail, options) {
     if (stockDetail.stockName === '鹏鼎控股') {
@@ -30,14 +30,14 @@ export function findHighRateInRecentNDays(allItems, stockDetail, options) {
     }
 
     let rate = (highPrice - lowPrice) / lowPrice;
-    if (highDate && lowDate && highDate > lowDate && rate > 0.3) {
+    if (highDate && lowDate && highDate > lowDate && rate > 0.4) {
         return { ok: true };
     }
     return { ok: false };
 }
 
 /**
- * 找出最近 20 天 股价是上升趋势，涨幅超过 30%, 最近 3 天回调超过 12% 的股票, 不考虑以下公司
+ * 找出最近 20 天 股价是上升趋势，最高涨幅超过 40%, 最近几天回调超过 12% 的股票, 不考虑以下公司
  * 1. 上市时间少于 100 个交易日
  * 2. 公司市值小于 100 亿
  */

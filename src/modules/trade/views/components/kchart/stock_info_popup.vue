@@ -66,7 +66,7 @@ const props = defineProps(['activeKItemData']);
 
 let data = ref({
     info: null,
-    right: 200,
+    right: 0,
     top: 55,
     dragging: false,
     clientX: 0,
@@ -195,3 +195,5 @@ defineExpose({ hide });
     flex: 1;
 }
 </style>
+
+

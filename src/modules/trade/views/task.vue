@@ -54,6 +54,11 @@ let data = ref({
                     desc: '把所有股票的详细信息存入数据库'
                 },
                 {
+                    value: 'cyb_index_div_zzhl_index',
+                    label: 'cyb_index_div_zzhl_index',
+                    desc: '同步创业板指 / 中证红利指数'
+                },
+                {
                     value: 'save_tushare_daily_basic_to_db',
                     label: 'save_tushare_daily_basic_to_db',
                     desc: '把每个公司每日的市值存入数据库'

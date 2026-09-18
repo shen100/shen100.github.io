@@ -75,7 +75,7 @@ let data = ref({
         },
         {
             value: 'tradeStocksByStrategy4',
-            label: '最近10天最高涨幅超过30%, 回调超过12%'
+            label: '最近20天最高涨幅超过40%, 最近几天回调超过12%'
         }
     ],
     jsonStr: ''

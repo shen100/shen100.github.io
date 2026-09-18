@@ -3,6 +3,7 @@ import * as mongo from '../../database/mongo.js';
 import * as save_kline_day_to_db from '../../scripts/sync_data/save_kline_day_to_db.js';
 import * as save_stock_detail_to_db from '../../scripts/sync_data/save_stock_detail_to_db.js';
 import * as save_tushare_daily_basic_to_db from '../../scripts/sync_data/save_tushare_daily_basic_to_db.js';
+import * as cyb_index_div_zzhl_index from '../../scripts/sync_data/cyb_index_div_zzhl_index.js';
 import * as stat_money_flow from '../../scripts/statistics/stat_money_flow.js';
 import * as stat_daily_surge_plunge_count from '../../scripts/statistics/stat_daily_surge_plunge_count.js';
 import * as stat_daily_up_count from '../../scripts/statistics/stat_daily_up_count.js';
@@ -26,6 +27,8 @@ export async function exec(req, res) {
         resData = await save_stock_detail_to_db.exec({ logger: socketClientLogger });
     } else if (task === 'save_tushare_daily_basic_to_db') {
         resData = await save_tushare_daily_basic_to_db.exec({ logger: socketClientLogger });
+    } else if (task === 'cyb_index_div_zzhl_index') {
+        resData = await cyb_index_div_zzhl_index.exec({ logger: socketClientLogger });
     } else if (task === 'stat_money_flow') {
         resData = await stat_money_flow.exec({ logger: socketClientLogger });
     } else if (task === 'stat_highprice_tend') {

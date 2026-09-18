@@ -13,6 +13,10 @@
             <template v-if="data.popupVisible && !data.isEdit">
                 <div class="audit-trail-popup-title">检查与回溯</div>
                 <div class="audit-trail-popup-item">
+                    <span class="audit-trail-popup-item-label">市场强弱</span>
+                    <span class="audit-trail-popup-item-text">{{ props.trailData?.shiChangQiangDu }}</span>
+                </div>
+                <div class="audit-trail-popup-item">
                     <span class="audit-trail-popup-item-label">大盘走势</span>
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.daPanZouShi }}</span>
                 </div>
@@ -43,10 +47,6 @@
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.zouShi }}</span>
                 </div>
                 <div class="audit-trail-popup-item">
-                    <span class="audit-trail-popup-item-label">阶段</span>
-                    <span class="audit-trail-popup-item-text">{{ props.trailData?.stage }}</span>
-                </div>
-                <div class="audit-trail-popup-item">
                     <span class="audit-trail-popup-item-label">买点</span>
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.maiDian }}</span>
                 </div>
@@ -55,7 +55,7 @@
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.cangWei }}</span>
                 </div>
                 <div class="audit-trail-popup-item">
-                    <span class="audit-trail-popup-item-label">止损</span>
+                    <span class="audit-trail-popup-item-label">止损/止盈</span>
                     <span class="audit-trail-popup-item-text">{{ props.trailData?.zhiSun }}</span>
                 </div>
                 <div class="audit-trail-popup-item">
@@ -69,6 +69,11 @@
             </template>
             <div v-if="data.popupVisible && data.isEdit">
                 <Form :label-width="80">
+                    <FormItem label="市场强弱">
+                        <Select v-model="data.formItem.shiChangQiangDu">
+                            <Option v-for="item in data.shiChangQiangDuList" :value="item.value" :key="item.value">{{ item.label }}</Option>
+                        </Select>
+                    </FormItem>
                     <FormItem label="大盘走势">
                         <Select v-model="data.formItem.daPanZouShi">
                             <Option v-for="item in data.daPanZouShiList" :value="item.value" :key="item.value">{{ item.label }}</Option>
@@ -108,7 +113,7 @@
                     <FormItem label="仓位">
                         <Input v-model="data.formItem.cangWei" placeholder=""></Input>
                     </FormItem>
-                    <FormItem label="止损">
+                    <FormItem label="止损/止盈">
                         <Input v-model="data.formItem.zhiSun" placeholder=""></Input>
                     </FormItem>
                     <FormItem label="卖点">
@@ -138,9 +143,10 @@ const emit = defineEmits(['audit-trail-change']);
 const props = defineProps(['trailData']);
 
 let data = ref({
-    popupVisible: false,
+    popupVisible: true,
     isEdit: false,
     formItem: {
+        shiChangQiangDu: '', // 市场强度: 强势市场、弱势市场、中等市场
         daPanZouShi: '', // 大盘走势: 上升、下降、区间震荡
         zhuXian: '', // 是否主线: 是、否
         banKuai: '', // 板块: 光模块、PCB、物理AI
@@ -148,13 +154,17 @@ let data = ref({
         luoJi: '', // 买入逻辑: 高成长、困境反转、瞎买
         cuiHuaJi: '', // 催化剂: 现在有、未来有、不清楚
         zouShi: '', // 走势: 上升、下降、区间震荡
-        stage: '', // 阶段
         maiDian: '', // 买点: 突破、中继、反转、恐慌
         cangWei: '', // 买入仓位: 1%、10%、50%
         zhiSun: '', // 止损: 1%、5%、10%
         maiDian2: '', // 卖点: 自动止损、手动止损、加速
         zongJie: '' // 总结
     },
+    shiChangQiangDuList: [
+        { label: '强势市场', value: '强势市场' },
+        { label: '弱势市场', value: '弱势市场' },
+        { label: '中等市场', value: '中等市场' }
+    ],
     daPanZouShiList: [
         { label: '上升', value: '上升' },
         { label: '下降', value: '下降' },
@@ -179,12 +189,6 @@ let data = ref({
         { label: '下降', value: '下降' },
         { label: '区间震荡', value: '区间震荡' }
     ],
-    stageList: [
-        { label: '第一阶段', value: '第一阶段' },
-        { label: '第二阶段', value: '第二阶段' },
-        { label: '第三阶段', value: '第三阶段' },
-        { label: '第四阶段', value: '第四阶段' }
-    ],
     maiDianList: [
         { label: '突破', value: '突破' },
         { label: '中继', value: '中继' },
@@ -194,7 +198,8 @@ let data = ref({
     maiDian2List: [
         { label: '自动止损', value: '自动止损' },
         { label: '手动止损', value: '手动止损' },
-        { label: '加速', value: '加速' }
+        { label: '加速', value: '加速' },
+        { label: '波段涨幅过大', value: '波段涨幅过大' }
     ],
 });
 
@@ -216,6 +221,7 @@ function onEdit() {
     console.log('onEdit', props.trailData);
     data.value.isEdit = true;
     data.value.formItem.daPanZouShi = trim(props.trailData?.daPanZouShi || '');
+    data.value.formItem.shiChangQiangDu = trim(props.trailData?.shiChangQiangDu || '');
     data.value.formItem.zhuXian = trim(props.trailData?.zhuXian || '');
     data.value.formItem.banKuai = trim(props.trailData?.banKuai || '');
     data.value.formItem.diaoYan = trim(props.trailData?.diaoYan || '');
