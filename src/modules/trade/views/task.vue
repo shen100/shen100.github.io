@@ -122,6 +122,11 @@ let data = ref({
                     value: 'tradeStocksByStrategy4',
                     label: 'tradeStocksByStrategy4',
                     desc: '最近10天涨幅最高超过30%，且有回调'
+                },
+                {
+                    value: 'tradeStocksByStrategy5',
+                    label: 'tradeStocksByStrategy5',
+                    desc: '区间震荡'
                 }
             ]
         },
@@ -218,6 +223,8 @@ async function onSubmit() {
             localStorage.setItem('tradeStocksByStrategy3', JSON.stringify(resData.finalStocks, null, 4));
         } else if (data.value.task === 'tradeStocksByStrategy4') {
             localStorage.setItem('tradeStocksByStrategy4', JSON.stringify(resData.finalStocks, null, 4));
+        } else if (data.value.task === 'tradeStocksByStrategy5') {
+            localStorage.setItem('tradeStocksByStrategy5', JSON.stringify(resData.finalStocks, null, 4));
         }
     }
 }

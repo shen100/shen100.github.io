@@ -133,6 +133,10 @@ let data = ref({
             label: '到达最高价后回踩'
         },
         {
+            value: 'tradeStocksByStrategy5',
+            label: '区间震荡'
+        },
+        {
             value: 'tradeStocksByStrategy2',
             label: '最后一个交易日达到最高价'
         },
@@ -342,7 +346,8 @@ async function onRequest(type, stocks) {
             stopPrice: stock.stopPrice,
             isStar: !!stock.isStar,
             tradeActions: stock.tradeActions,
-            trailData: stock.trailData
+            trailData: stock.trailData,
+            shockDates: stock.shockDates, // 测试区间震荡，在最高点，最低点对应的蜡烛显示特殊背景色
         });
     });
 

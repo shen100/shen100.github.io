@@ -7,6 +7,7 @@ import * as strategy1 from './strategy1.js';
 import * as strategy2 from './strategy2.js';
 import * as strategy3 from './strategy3.js';
 import * as strategy4 from './strategy4.js';
+import * as strategy5 from './strategy5.js';
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -33,6 +34,8 @@ async function runTask(myItems, option) {
         myStrategy = strategy3;
     } else if (option.strategy === 'tradeStocksByStrategy4') {
         myStrategy = strategy4;
+    } else if (option.strategy === 'tradeStocksByStrategy5') {
+        myStrategy = strategy5;
     }
 
     let stocks = [];
@@ -59,8 +62,12 @@ async function runTask(myItems, option) {
             stockName: stockData.stockName
         }
 
-        if (!myStrategy.detectTrend(kList, stockData).ok) {
+        let trendResult = myStrategy.detectTrend(kList, stockData);
+        if (!trendResult.ok) {
             return;
+        }
+        if (trendResult.shockDates) {
+            theStock.shockDates = trendResult.shockDates;
         }
 
         stocks.push(theStock);

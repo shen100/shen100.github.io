@@ -6,7 +6,7 @@
         @mousemove="onMouseMove" class="candle-container" :style="{minWidth: `${data.boxWidth + 2}px`}">
         <div class="candle-line" :style="candleLineStyle"></div>
         <div class="candle-box" :style="candleBoxStyle" 
-            :class="{ 'candle-glow-green': isGreenGlow, 'candle-glow-red': isRedGlow, 'candle-glow-grey': isGreyGlow }">
+            :class="{ 'candle-glow-green': isGreenGlow, 'candle-glow-red': isRedGlow, 'candle-glow-grey': isGreyGlow, 'candle-glow-yellow': isYellowGlow }">
             <div :style="candleInnerBoxStyle"></div>
         </div>
         <div v-if="data.isMouseOver" class="full-line" :style="{left: `${data.lineX}px`}"></div>
@@ -40,6 +40,7 @@ const props = defineProps([
     'highPriceInAll',
     'candleMaxHeight',
     'actionsInDate',
+    'shockDates',
     'staticVar' // candle 组件的多个实例之间共用的静态变量
 ]);
 
@@ -59,6 +60,16 @@ let data = ref({
     lineWidth: 1,
     lineHeight: 0,
     isMouseOver: false,
+});
+
+const isShockDate = computed(() => {
+    const shockDates = props.shockDates || [];
+    for (let i = 0; i < shockDates.length; i++) {
+        if (shockDates[i] === props.date) {
+            return true;
+        }
+    }
+    return false;
 });
 
 const actionType = computed(() => {
@@ -100,6 +111,13 @@ const isRedGlow = computed(() => {
 
 const isGreyGlow = computed(() => {
     if (props.closePrice === props.openPrice && isGlow.value) {
+        return true;
+    }
+    return false;
+});
+
+const isYellowGlow = computed(() => {
+    if (isShockDate.value) {
         return true;
     }
     return false;
@@ -383,6 +401,11 @@ defineExpose({ getCandleData, setMouseOver, setMouseOut, hideGlowExceptDate });
     line-height: 16px;
     text-align: center;
     font-size: 10px;
+}
+
+.candle-glow-yellow {
+    transition: box-shadow 0.2s ease;
+    box-shadow: 0 0 10px 3px rgba(255, 210, 26, 0.32), 0 0 20px 8px rgba(255, 210, 26, 0.18);
 }
 
 .candle-glow-green {

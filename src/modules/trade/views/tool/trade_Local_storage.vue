@@ -66,6 +66,10 @@ let data = ref({
             label: '到达最高价后回踩'
         },
         {
+            value: 'tradeStocksByStrategy5',
+            label: '区间震荡'
+        },
+        {
             value: 'tradeStocksByStrategy2',
             label: '最后一个交易日达到最高价'
         },

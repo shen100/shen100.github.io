@@ -37,6 +37,18 @@ export function utcStringToLocalString(utcString) {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+/**
+ * 两个日期相隔多少天
+ */
+export function getDayDiff(dateStr1, dateStr2) {
+    const d1 = new Date(dateStr1);
+    const d2 = new Date(dateStr2);
+    // 毫秒转天数
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const diffMs = Math.abs(d1.getTime() - d2.getTime());
+    return Math.round(diffMs / msPerDay);
+}
+
 export function getPreDay(dateStr) {
     const date = new Date(dateStr);
     // 减一天

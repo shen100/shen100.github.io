@@ -79,6 +79,7 @@
 						:kLineType="data.type"
 						:date="item[0]"
 						:actionsInDate="getActionsInDate(item[0])"
+						:shockDates="data.stock.shockDates"
 						:openPrice="item[1]"
 						:closePrice="item[2]"
 						:highPrice="item[3]"
@@ -192,7 +193,7 @@ let stockInfoPopupRef = ref(null);
 let data = ref({
 	dataLoaded: false,
 	type: 'day',
-	stock: null, // { "stockFullId": "sz000858", "stockId": "000858", "stockName": "五粮液", highPrice: 100, stopPrice: 90, tradeActions: [] }
+	stock: null, // { "stockFullId": "sz000858", "stockId": "000858", "stockName": "五粮液", highPrice: 100, stopPrice: 90, tradeActions: [], shockDates: [] }
 	stockDetail: null, //  { stockId: '000858', zongShiZhi: '4623.77亿' }
 	stockName: '',
 	highPriceY: -1, // 最高参考价的 Y 坐标
