@@ -101,7 +101,6 @@ export async function queryDailySurgePlungeCount(req, res) {
     });
 }
 
-
 /**
  * 腾落线
  */
@@ -168,4 +167,35 @@ export async function queryDailyHighPriceTend(req, res) {
             list,
         }
     });
+}
+
+// 创业板指 / 中证红利指数
+export async function queryCybZzhl(req, res) {
+    const startDate = req.query.start;
+    const endDate = req.query.end;
+    const db = await mongo.getDB();
+    let collName = 'cyb_index_div_zzhl_month_index';
+    if (req.query.type === 'day') {
+        collName = 'cyb_index_div_zzhl_day_index';
+    }
+    const collection = db.collection(collName);
+
+    const projection = {
+        createdAt: 0,
+        updatedAt: 0,
+        _id: 0 // 不返回 _id
+    };
+    let list = await collection.find({
+        date: {
+            $gte: startDate,
+            $lte: endDate
+        }
+    }, { projection }).sort({ date: 1 }).toArray();
+
+    res.json({
+        code: 0,
+        data: {
+            list,
+        }
+    });  
 }
