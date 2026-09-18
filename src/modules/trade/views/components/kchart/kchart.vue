@@ -92,7 +92,7 @@
 						@mouse-over="(candleData) => onCandleMouseOver(i, candleData)"
 						@mouse-out="() => onCandleMouseOut(i)"
 						@mouse-move="(candleData) => onCandleMouseMove(i, candleData)"
-						@range-change="(rangeStatsData) => data.rangeStatsData = rangeStatsData"
+						@range-change="onKRangeChange"
 					/>
 				</div>
 				<div v-else-if="data.dataLoaded" ref="minuteLinesContainerRef"
@@ -729,6 +729,15 @@ function onCandleMouseMove(i, candleData) {
 	data.value.yAxisPriceLine = candleData.y + 55;
 	data.value.yAxisPriceLinePrice = candleData.price;
 	data.value.isMouseMoveOnKItem = true;
+}
+
+function onKRangeChange(rangeStatsData) {
+	data.value.rangeStatsData = rangeStatsData;
+	if (!data.value.rangeStatsData.visible && data.value.rangeStatsData.date) {
+		candleRefs.value.forEach((el, index) => {
+			el.hideGlow(rangeStatsData.date);
+		});
+	}
 }
 
 function onMinuteLineMouseOver(i, minuteLineData) {

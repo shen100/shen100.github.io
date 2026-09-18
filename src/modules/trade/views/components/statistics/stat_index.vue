@@ -18,19 +18,19 @@
         </Card>
         <Card style="flex: 1;">
             <div class="stock-dailly-money-title-box">
-                <div class="stock-dailly-money-title">上证指数</div>
+                <div class="stock-dailly-money-title">开户数</div>
             </div>
             <div class="date-range-box">
 				<div class="date-range-label" style="margin-left: 10px;">开始日期</div>
-				<DatePicker :model-value="data.shangZhengStartStr"
+				<DatePicker :model-value="data.openAccountCountStartStr"
 					type="date" placeholder="Select date" style="width: 200px"
-					@on-change="onShangZhengStartChange"/>
+					@on-change="onOpenAccountCountStartChange"/>
 				<div class="date-range-label">结束日期</div>
-				<DatePicker :model-value="data.shangZhengEndStr" 
+				<DatePicker :model-value="data.onOpenAccountCountEndStr" 
 					type="date" placeholder="Select date" style="width: 200px" 
-					@on-change="onShangZhengEndChange" />
+					@on-change="onOpenAccountCountEndChange" />
 			</div>
-            <ECharts v-if="shangZhengChartOptions.series.length" :options="shangZhengChartOptions" />  
+            <ECharts v-if="openAccountCountChartOptions.series.length" :options="openAccountCountChartOptions" />  
         </Card>
     </div>
 </template>
@@ -38,7 +38,6 @@
 <script setup>
 import axios from 'axios';
 import { onMounted, ref, computed } from 'vue';
-import { Message } from 'view-ui-plus';
 import ECharts from '../common/echarts.vue';
 import { formatLocalYMD, getDayDiff } from '../../../util/date';
 import config from '../../../config/config';
@@ -47,8 +46,8 @@ import * as stockNetUtil from '../../../util/stock_net_util';
 let data = ref({
 	equalWeightStartStr: formatLocalYMD(new Date(new Date().getTime() - 365 * 24 * 3600 * 1000)), // '2024-09-15'
     equalWeightEndStr: formatLocalYMD(new Date()), // 2025-06-12
-    shangZhengStartStr: formatLocalYMD(new Date(new Date().getTime() - 365 * 24 * 3600 * 1000)), // '2024-09-15'
-    shangZhengEndStr: formatLocalYMD(new Date()), // 2025-06-12
+    openAccountCountStartStr: formatLocalYMD(new Date(new Date().getTime() - 365 * 24 * 3600 * 1000)), // '2024-09-15'
+    openAccountCountEndStr: formatLocalYMD(new Date()), // 2025-06-12
 });
 
 const equalWeightChartOptions = ref({
@@ -78,7 +77,7 @@ const equalWeightChartOptions = ref({
 	series: []
 });
 
-const shangZhengChartOptions = ref({
+const openAccountCountChartOptions = ref({
 	title: {
 		text: ' '
 	},
@@ -87,7 +86,7 @@ const shangZhengChartOptions = ref({
         formatter: function(params) {
 			const name = params[0].name;
 			const value = params[0].data.value;
-			return `${name}<br/>指数：${value.toFixed(2)}`;
+			return `${name}<br/>开户数：${value.toFixed(2)}`;
 		}
 	},
     legend: {
@@ -99,7 +98,7 @@ const shangZhengChartOptions = ref({
 	},
 	yAxis: {
 		type: 'value',
-		min: 2500, // 固定从 2500 开始
+		min: 0, // 固定从 min 开始
 		scale: true, // 关键！开启后弱化0基线，适合观察波动
 	},
 	series: []
@@ -107,7 +106,7 @@ const shangZhengChartOptions = ref({
 
 onMounted(async () => {
     requestEqualWeightData();
-    requestShangZhengData();
+    requestOpenAccountCountData();
 });
 
 async function requestEqualWeightData() {
@@ -134,26 +133,30 @@ async function requestEqualWeightData() {
 	equalWeightChartOptions.value.series = series;
 }
 
-async function requestShangZhengData() {
-    let start = data.value.shangZhengStartStr;
-    let end = data.value.shangZhengEndStr;
-    let count = getDayDiff(start, end);
-	const list = await stockNetUtil.requestDayK('sh000001', start, end, count);
+async function requestOpenAccountCountData() {
+    let start = data.value.openAccountCountStartStr;
+    let end = data.value.openAccountCountEndStr;
+    const res = await axios({
+		method: 'get',
+		url: config.url + `/api/statistics/open_account?start=${start}&end=${end}`
+	});
+	let resData = res.data.data;
+
     let series = [
 		{
-			name: '成交额',
+			name: '',
 			type: 'line',
-			data: list.map(item => {
+			data: resData.list.map(item => {
 				return {
-					value: item[2],
+					value: item.count,
 				}
 			})
 		}
 	];
 
-	let dates = list.map(item => item[0]);
-	shangZhengChartOptions.value.xAxis.data = dates;
-	shangZhengChartOptions.value.series = series;
+	let dates = resData.list.map(item => item.date);
+	openAccountCountChartOptions.value.xAxis.data = dates;
+	openAccountCountChartOptions.value.series = series;
 }
 
 function onEqualWeightStartChange(dateStr) {
@@ -166,14 +169,14 @@ function onEqualWeightEndChange(dateStr) {
     requestEqualWeightData();
 }
 
-function onShangZhengStartChange(dateStr) {
-    data.value.shangZhengStartStr = dateStr;
-    requestShangZhengData();
+function onOpenAccountCountStartChange(dateStr) {
+    data.value.openAccountCountStartStr = dateStr;
+    requestOpenAccountCountData();
 }
 
-function onShangZhengEndChange(dateStr) {
-    data.value.shangZhengEndStr = dateStr;
-    requestShangZhengData();
+function onOpenAccountCountEndChange(dateStr) {
+    data.value.openAccountCountEndStr = dateStr;
+    requestOpenAccountCountData();
 }
 </script>
 

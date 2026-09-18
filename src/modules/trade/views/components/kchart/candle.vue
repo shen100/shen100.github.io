@@ -315,11 +315,16 @@ async function onDoubleClick() {
     }
 
     if (props.staticVar.clickedCandles.length === 2) {
-        return;
+        props.staticVar.clickedCandles = [];
+        emit('range-change', {
+            visible: false,
+            date: props.date
+        });
     }
 
     isGlow.value = true;
     props.staticVar.clickedCandles.push({
+        isGlow,
         date: props.date,
         closePrice: props.closePrice,
         highPrice: props.highPrice,
@@ -340,7 +345,13 @@ async function onDoubleClick() {
     }
 }
 
-defineExpose({ getCandleData, setMouseOver, setMouseOut });
+function hideGlow(date) {
+    if (props.date !== date) {
+        isGlow.value = false;
+    }
+}
+
+defineExpose({ getCandleData, setMouseOver, setMouseOut, hideGlow });
 </script>
 
 <style scoped>

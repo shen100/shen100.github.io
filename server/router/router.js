@@ -3,6 +3,7 @@ import * as shizhi_stat from '../controller/statistics/shizhi_stat.js';
 import * as daily_stat from '../controller/statistics/daily_stat.js';
 import * as stock_daily_amount from '../controller/statistics/stock_daily_amount.js';
 import * as stat_index from '../controller/statistics/stat_index.js';
+import * as open_account from '../controller/statistics/open_account.js';
 
 import * as stock from '../controller/stock/stock.js';
 import * as setting from '../controller/stock/setting.js';
@@ -15,14 +16,14 @@ export function init(app) {
 
     // 查询统计相关的 API
     app.get('/api/statistics/shizhi', shizhi_stat.queryShiZhi);
+    app.get('/api/statistics/open_account', open_account.queryOpenAccount);
     app.get('/api/statistics/daily/money_flow', daily_stat.queryDailyMoneyFlow);
     app.get('/api/statistics/daily/surge_plunge', daily_stat.queryDailySurgePlungeCount);
     app.get('/api/statistics/daily/adline', daily_stat.queryDailyAdLine);
+    app.get('/api/statistics/daily/cyb_zzhl', daily_stat.queryCybZzhl);
     app.get('/api/statistics/daily/highprice/tend', daily_stat.queryDailyHighPriceTend);
     app.get('/api/statistics/daily/amount', stock_daily_amount.queryStockDailyAmount);
     app.get('/api/statistics/daily/a_equal_weight_index', stat_index.queryEqualWeightIndex);
-
-
     app.get('/api/statistics/daily/up/:dayCount', daily_stat.queryDailyUpCount);
     app.post('/api/statistics/daily/amount', stock_daily_amount.saveStockDailyAmount);
 
