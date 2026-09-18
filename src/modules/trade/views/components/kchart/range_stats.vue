@@ -1,5 +1,5 @@
 <template>
-    <div class="range-stats-popup">
+    <div class="range-stats-popup" :style="{right: data.right + 'px', top: data.top + 'px'}" @mousedown="onMouseDown">
         <div class="range-stats-title">区间统计</div>
         <div>
             <span class="range-stats-label">开始日期</span>
@@ -43,6 +43,16 @@ const props = defineProps([
     'rangeStatsData'
 ]);
 
+let data = ref({
+    dragging: false,
+    clientX: 0,
+    clientY: 0,
+    oldRight: 0,
+    oldTop: 55,
+    right: 0,
+    top: 55
+});
+
 const rate = computed(() => {
 	let closePrice1 = props.rangeStatsData.startData.closePrice;
     let closePrice2 = props.rangeStatsData.endData.closePrice;
@@ -62,6 +72,34 @@ const rate2 = computed(() => {
     }
     return (rate * 100).toFixed(2) + '%';
 });
+
+function onMouseDown(event) {
+    data.value.dragging = true;
+    data.value.clientX = event.clientX;
+    data.value.clientY = event.clientY;
+    data.value.oldRight = data.value.right;
+    data.value.oldTop = data.value.top;
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', onMouseUp)
+}
+
+const onMouseMove = (event) => {
+    if (!data.value.dragging) {
+        return;
+    }
+    data.value.right = data.value.oldRight - (event.clientX - data.value.clientX);
+    data.value.top = data.value.oldTop + (event.clientY - data.value.clientY);
+    data.value.top = Math.max(data.value.top, 55);
+}
+
+const onMouseUp = () => {
+    if (!data.value.dragging) {
+        return;
+    }
+    data.value.dragging = false;
+    document.removeEventListener('mousemove', onMouseMove)
+    document.removeEventListener('mouseup', onMouseUp)
+}
 </script>
 
 <style scoped>

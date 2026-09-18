@@ -324,7 +324,6 @@ async function onDoubleClick() {
 
     isGlow.value = true;
     props.staticVar.clickedCandles.push({
-        isGlow,
         date: props.date,
         closePrice: props.closePrice,
         highPrice: props.highPrice,
@@ -345,13 +344,13 @@ async function onDoubleClick() {
     }
 }
 
-function hideGlow(date) {
+function hideGlowExceptDate(date) {
     if (props.date !== date) {
         isGlow.value = false;
     }
 }
 
-defineExpose({ getCandleData, setMouseOver, setMouseOut, hideGlow });
+defineExpose({ getCandleData, setMouseOver, setMouseOut, hideGlowExceptDate });
 </script>
 
 <style scoped>

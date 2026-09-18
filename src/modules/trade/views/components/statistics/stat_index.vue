@@ -26,7 +26,7 @@
 					type="date" placeholder="Select date" style="width: 200px"
 					@on-change="onOpenAccountCountStartChange"/>
 				<div class="date-range-label">结束日期</div>
-				<DatePicker :model-value="data.onOpenAccountCountEndStr" 
+				<DatePicker :model-value="data.openAccountCountEndStr" 
 					type="date" placeholder="Select date" style="width: 200px" 
 					@on-change="onOpenAccountCountEndChange" />
 			</div>
@@ -41,7 +41,6 @@ import { onMounted, ref, computed } from 'vue';
 import ECharts from '../common/echarts.vue';
 import { formatLocalYMD, getDayDiff } from '../../../util/date';
 import config from '../../../config/config';
-import * as stockNetUtil from '../../../util/stock_net_util';
 
 let data = ref({
 	equalWeightStartStr: formatLocalYMD(new Date(new Date().getTime() - 365 * 24 * 3600 * 1000)), // '2024-09-15'

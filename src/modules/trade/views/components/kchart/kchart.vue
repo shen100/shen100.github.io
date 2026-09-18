@@ -735,7 +735,7 @@ function onKRangeChange(rangeStatsData) {
 	data.value.rangeStatsData = rangeStatsData;
 	if (!data.value.rangeStatsData.visible && data.value.rangeStatsData.date) {
 		candleRefs.value.forEach((el, index) => {
-			el.hideGlow(rangeStatsData.date);
+			el.hideGlowExceptDate(rangeStatsData.date);
 		});
 	}
 }

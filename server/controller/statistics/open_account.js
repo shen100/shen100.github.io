@@ -1,5 +1,3 @@
-import * as mongo from '../../database/mongo.js';
-
 const openAccountList = [
     // 2024
     { "date": "2024-01", "count": 195.64 },
@@ -46,7 +44,8 @@ const openAccountList = [
 export async function queryOpenAccount(req, res) {
     const startStr = req.query.start;
     const endStr = req.query.end;
-    const list = openAccountList.slice(0);
+    let list = openAccountList.slice(0);
+    list = list.filter(item => item.date >= startStr && item.date <= endStr);
     res.json({
         code: 0,
         data: {
