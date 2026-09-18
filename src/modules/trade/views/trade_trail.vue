@@ -145,6 +145,7 @@ onMounted(async () => {
     } else if (route.path === '/trade/training') {
         // 交易训练
         data.value.viewType = 'tradeTraining';
+        data.value.auditTrailVisible = false;
         data.value.kChartLocalKey = 'tradeTrainingStocks';
         data.value.end = '2026-05-10';
         initAllStocks();
