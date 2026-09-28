@@ -248,6 +248,11 @@ const exportModule = {
 	},
 
 	requestDayK: async function requestDayK(stockFullId, start, end, count) {
+		if (stockFullId.indexOf('option_') >= 0) {
+			const myKList = await exportModule.requestOptionDayK(stockFullId, start, end);
+			exportModule.castKListToNumbers(myKList);
+			return myKList;
+		}
 		if ([ '^KS11' ].indexOf(stockFullId) >= 0) {
 			const myKList = await exportModule.requestYahooDayK(stockFullId, start, end);
 			return myKList;
@@ -288,6 +293,13 @@ const exportModule = {
 
 		exportModule.castKListToNumbers(myKList);
 		return myKList;
+	},
+
+	// 期权日线
+	requestOptionDayK: async function requestOptionDayK(stockFullId, start, end) {
+		let url = config.url;
+		let res = await axios.get(url + `/api/option/kline/day?stockFullId=${stockFullId}&start=${start}&end=${end}`);
+		return res.data.data.list;
 	},
 
 	requestYahooDayK: async function requestYahooDayK(stockFullIdId, startStr, endStr) {
