@@ -6,7 +6,14 @@ import * as mongo from '../../database/mongo.js';
 export async function queryAllDailyBasic(req, res) {
     const db = await mongo.getDB();
     const collection = db.collection('tushare_daily_basic');
-    const list = await collection.find({}).toArray();
+    const list = await collection.find({
+		$and: [
+			{ stockName: { $exists: true } },
+			{ stockName: { $not: /银行/ } },
+			{ stockName: { $not: /证券/ } },
+			{ stockName: { $not: /保险/ } }
+		]
+	}).toArray();
 
 	let dateMap = {};
 

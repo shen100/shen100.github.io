@@ -18,22 +18,22 @@
                 <div class="stock-info-popup-txt-box">
                     <div>开盘价</div>
                     <div class="space"></div>
-                    <div>{{ data.info.openPrice.toFixed(2) }}</div>
+                    <div>{{ data.info.openPrice.toFixed(4) }}</div>
                 </div>
                 <div class="stock-info-popup-txt-box">
                     <div>收盘价</div>
                     <div class="space"></div>
-                    <div>{{ data.info.closePrice.toFixed(2) }}</div>
+                    <div>{{ data.info.closePrice.toFixed(4) }}</div>
                 </div>
                 <div class="stock-info-popup-txt-box">
                     <div>最高价</div>
                     <div class="space"></div>
-                    <div>{{ data.info.highPrice.toFixed(2) }}</div>
+                    <div>{{ data.info.highPrice.toFixed(4) }}</div>
                 </div>
                 <div class="stock-info-popup-txt-box">
                     <div>最低价</div>
                     <div class="space"></div>
-                    <div>{{ data.info.lowPrice.toFixed(2) }}</div>
+                    <div>{{ data.info.lowPrice.toFixed(4) }}</div>
                 </div>
             </template>
             <div v-if="upDownRate" class="stock-info-popup-txt-box">

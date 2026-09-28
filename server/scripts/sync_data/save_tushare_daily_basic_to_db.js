@@ -52,6 +52,7 @@ async function requestDailyBasic(stock) {
 	return {
 		stockFullId: stock.stockFullId,
 		stockId: stock.stockId,
+		stockName: stock.stockName,
 		items
 	}
 }
@@ -83,6 +84,7 @@ async function runTask(option) {
                 $set: {
 					stockFullId: stock.stockFullId,
                     stockId: stock.stockId,
+					stockName: stock.stockName,
                     items: stock.items,
 					updatedAt: new Date()
                 },

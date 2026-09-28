@@ -34,6 +34,10 @@ let data = ref({
             label: '板块指数'
         },
         {
+            value: 'tradeOptionContractStocks',
+            label: '期权'
+        },
+        {
             value: 'tradeInvestedStocks',
             label: '当前持仓'
         },

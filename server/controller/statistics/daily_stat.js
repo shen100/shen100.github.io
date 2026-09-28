@@ -31,6 +31,34 @@ export async function queryDailyUpCount(req, res) {
 }
 
 /**
+ * 查询大盘每日成交量
+ */
+export async function queryDailyAmountVolume(req, res) {
+    const startDate = req.query.start;
+    const endDate = req.query.end;
+    const db = await mongo.getDB();
+    const collection = db.collection('stat_daily_amount_volume');
+
+    const projection = {
+        createdAt: 0,
+        _id: 0 // 不返回 _id
+    };
+    let list = await collection.find({
+        date: {
+            $gte: startDate,
+            $lte: endDate
+        }
+    }, { projection }).sort({ date: 1 }).toArray();
+
+    res.json({
+        code: 0,
+        data: {
+            list,
+        }
+    });
+}
+
+/**
  * 概念板块每日资金流向
  */
 export async function queryDailyMoneyFlow(req, res) {

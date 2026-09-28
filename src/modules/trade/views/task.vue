@@ -69,6 +69,11 @@ let data = ref({
             groupName: '数据分析',
             tasks: [
                 {
+                    value: 'stat_daily_amount_volume',
+                    label: 'stat_daily_amount_volume',
+                    desc: '大盘每日成交额和成交量'
+                },
+                {
                     value: 'stat_highprice_tend',
                     label: 'stat_highprice_tend',
                     desc: '统计最近六日的最高价突破历史最高价的股票数'

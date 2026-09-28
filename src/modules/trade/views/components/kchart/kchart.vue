@@ -10,8 +10,8 @@
 							{{ data.stockName }}
 						</a>
 						{{ data.stockDetail ? `&nbsp;(总市值&nbsp;${zongShiZhi})` : '' }}
-						<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice.toFixed(3) }}</span>
-						<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(3) : ''}}</span>
+						<span class="stock-cur-price" :style="{color: data.lastPriceUpColor}">¥{{ data.curPrice.toFixed(4) }}</span>
+						<span class="stock-price-change" :style="{color: data.lastPriceUpColor}">{{ data.dtPriceUpdated ? (data.dtPrice > 0 ? '+' : '') + data.dtPrice.toFixed(4) : ''}}</span>
 						<span class="stock-price-change" :style="{color: data.lastPriceUpColor, 'margin-left': '10px'}">{{data.dtRate > 0 ? '+' : ''}}{{ ((data.dtRate * 100).toFixed(2) + '%')}}</span>
 						<template v-if="props.kChartLocalKey !== 'tradeAllFullIdStocks'">
 							<span v-if="data.stock && currentDownRate" class="stop-rate-label">当前参考跌幅 {{ currentDownRate }}</span>

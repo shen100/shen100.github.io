@@ -5,6 +5,7 @@ import * as stock_daily_amount from '../controller/statistics/stock_daily_amount
 import * as stat_index from '../controller/statistics/stat_index.js';
 import * as open_account from '../controller/statistics/open_account.js';
 
+import * as option_kline from '../controller/option/kline.js';
 import * as stock from '../controller/stock/stock.js';
 import * as setting from '../controller/stock/setting.js';
 import * as kline from '../controller/stock/kline.js';
@@ -16,6 +17,7 @@ export function init(app) {
 
     // 查询统计相关的 API
     app.get('/api/statistics/shizhi', shizhi_stat.queryShiZhi);
+    app.get('/api/statistics/daily/amount_volume', daily_stat.queryDailyAmountVolume);
     app.get('/api/statistics/open_account', open_account.queryOpenAccount);
     app.get('/api/statistics/daily/money_flow', daily_stat.queryDailyMoneyFlow);
     app.get('/api/statistics/daily/surge_plunge', daily_stat.queryDailySurgePlungeCount);
@@ -28,6 +30,8 @@ export function init(app) {
     app.post('/api/statistics/daily/amount', stock_daily_amount.saveStockDailyAmount);
 
     // 股票相关的 API
+    app.get('/api/option/kline/day', option_kline.queryKLineByDay);
+
     app.get('/api/stocks/kline/minute', kline.requestMinuteK);
     app.get('/api/stocks/kline/:interval', kline.queryKLineByInterval);
     app.get('/api/stocks/get_stocks_by_uuid/:uuid', stock.queryStocksByUUID);

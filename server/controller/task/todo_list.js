@@ -63,7 +63,7 @@ export async function today(req, res) {
     const db = await mongo.getDB();
     const collection = db.collection('todo_list');
     let date = formatLocalYMD(new Date());
-    // date = formatLocalYMD(new Date(2026, 7, 28));
+    // date = formatLocalYMD(new Date(2026, 8, 21));
 
     let todoListData = await collection.findOne({
         date
