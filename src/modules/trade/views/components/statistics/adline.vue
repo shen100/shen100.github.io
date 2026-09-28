@@ -159,6 +159,14 @@ const cybZzhlChartOptions = ref({
 	},
 	tooltip: {
 		trigger: 'axis',
+		// ✅ 开启十字标线（竖+横虚线，y侧显示悬浮y值）
+        axisPointer: {
+            type: 'cross',
+            label:{
+                show: true, // Y轴上显示悬浮的y数值标签
+                backgroundColor: '#666'
+            }
+        },
         formatter: function(params) {
 			const name = params[0].name;
 			const value = params[0].data.value;

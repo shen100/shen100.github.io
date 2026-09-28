@@ -8,27 +8,9 @@
 				<ECharts v-if="shiZhiAmountPiChartOptions.series.length" @click="onShiZhiPieChartClick" :options="shiZhiAmountPiChartOptions" />	
 			</Card>
 		</div>
-		<Card style="margin: 20px 0;">
-			<div class="total-shizhi-txt">
-				<div>大盘总市值(单位: 万亿)</div>
-				<Icon class="refresh" @click="requestDaPanShiZhi" type="md-refresh" style="cursor: pointer;" />
-				<div class="updated-at">{{ data.updatedAt2 ? '更新于 ' + data.updatedAt2 : '' }}</div>
-			</div>
-			<div class="shizhi-date-box">
-				<div class="date-label" style="margin-left: 10px;">开始日期</div>
-				<DatePicker :model-value="data.shiZhiStartDateStr"
-					type="date" placeholder="Select date" style="width: 200px"
-					@on-change="onShiZhiStartDateChange"/>
-				<div class="date-label date-label-end">结束日期</div>
-				<DatePicker :model-value="data.shiZhiEndDateStr" 
-					type="date" placeholder="Select date" style="width: 200px" 
-					@on-change="onShiZhiEndDateChange" />
-			</div>
-			<ECharts v-if="chartOptions.series.length" :options="chartOptions" />
-		</Card>
+		<GlobalShiZhiVolume />
 		<StatIndex />
 		<AdLine />
-		<StockDailyMoney />
 		<div style="margin-top: 20px; display: flex; gap: 20px;">
 			<Card style="flex: 1;">
 				<div class="total-shizhi-txt">
@@ -80,19 +62,15 @@ import { onMounted, ref } from 'vue';
 import { Message } from 'view-ui-plus';
 import config from '../config/config.js';
 import ECharts from './components/common/echarts.vue';
-import StockDailyMoney from './components/statistics/stock_daily_money.vue';
+import GlobalShiZhiVolume from './components/statistics/global_shizhi_volume.vue';
 import StatIndex from './components/statistics/stat_index.vue';
 import AdLine from './components/statistics/adline.vue';
-import store from '../model/store';
-import { formatLocalYMD, utcStringToLocalString } from '../util/date';
+import { formatLocalYMD } from '../util/date';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
 let data = ref({
-	updatedAt2: '',
-	shiZhiStartDateStr: formatLocalYMD(new Date(new Date().getTime() - 2 * 365 * 24 * 3600 * 1000)), // '2024-09-15'
-    shiZhiEndDateStr: formatLocalYMD(new Date()), // 2025-06-12
 	concepts: [],
 	// 当前选中的概念板块
 	selectedConcept: '',
@@ -170,41 +148,6 @@ const shiZhiAmountPiChartOptions = ref({
 	]
 });
 
-// 大盘总市值
-const chartOptions = ref({
-	title: {
-		text: ' '
-	},
-	tooltip: {
-		trigger: 'axis',
-        formatter: function(params) {
-			const name = params[0].name;
-			const value = Number(params[0].data); // 单位：亿元
-			let displayValue;
-			let unit = '亿元';
-			if (value >= 10000) {
-				displayValue = (value / 10000).toFixed(2);
-				unit = '万亿';
-			} else {
-				displayValue = value.toFixed(0);
-				unit = '亿';
-			}
-			return `${name}<br/>总市值：${displayValue} ${unit}`;
-		}
-	},
-	xAxis: {
-		type: 'category',
-		data: []
-	},
-	yAxis: {
-		type: 'value',
-		min: 800000, // 固定从 80 万亿开始
-		scale: true, // 关键！开启后弱化0基线，适合观察波动
-
-	},
-	series: []
-});
-
 // 每日上涨股票数
 function getDailyUpCountChartInitData(dayCount) {
 	return {
@@ -279,7 +222,6 @@ const dailySurgePlungeChartOptions = ref({
 
 onMounted(async () => {
 	requestShiZhiPiData();
-	updateChart();
 	requestAllDailyUpCount();
 	requestDailyMoneyFlow();
 	requestDailySurgePlunge();
@@ -319,57 +261,6 @@ function updateShiZhiPiChart(resData) {
 
 	shiZhiAmountPiChartOptions.value.title.subtext = '总市值 ' + (resData.shiZhiData.amount / 10000).toFixed(2) + '万亿';
 	shiZhiAmountPiChartOptions.value.series[0].data = arr2;
-}
-
-function updateChart() {
-	if (!store.compositeIndex) {
-		return;
-	}
-	data.value.updatedAt2 = utcStringToLocalString(store.compositeIndex.updatedAt);
-	let indexArr = [
-		'index',
-		// 'index0',
-		// 'index1',
-		// 'index2',
-		// 'index3',
-		// 'index4',
-		// 'index5',
-		// 'index6',
-	];
-	let series = [];
-	let allDates;
-	for (let i = 0; i < indexArr.length; i++) {
-		// indexData 为 { '20050620' { amount: 0, count: 0 } }
-		let indexData = store.compositeIndex[indexArr[i]];
-		let arr = [];
-		let startStr = data.value.shiZhiStartDateStr.replaceAll('-', '');
-		let endStr = data.value.shiZhiEndDateStr.replaceAll('-', '');
-		for (let date in indexData) {
-			if (date < startStr || date > endStr) {
-				continue;
-			}
-			arr.push({
-				date,
-				amount: indexData[date].amount,
-				count: indexData[date].count
-			});
-		}
-		arr.sort((a, b) => a.date > b.date ? 1 : -1);
-		series.push({
-			name: '全部',
-			type: 'line',
-			data: arr.map(item => item.amount), // 单位 亿
-		});
-
-		if (!allDates) {
-			allDates = [];
-			for (let i = 0; i < arr.length; i++) {
-				allDates.push(arr[i].date);
-			}
-		}
-	}
-	chartOptions.value.xAxis.data = allDates;
-	chartOptions.value.series = series;
 }
 
 async function requestAllDailyUpCount(params) {
@@ -488,40 +379,6 @@ function onSurgePlungeStartDateChange(dateStr) {
 function onSurgePlungeEndDateChange(dateStr) {
 	data.value.dailySurgePlungeEndStr = dateStr;
 	requestDailySurgePlunge();
-}
-
-async function requestDaPanShiZhi() {
-	const res = await axios({
-		method: 'get',
-		url: config.url + '/api/tushare/all_daily_basic'
-	});
-	store.updateCompositeIndex({
-		...res.data.data,
-		updatedAt: new Date().toISOString()
-	});
-	location.reload();
-}
-
-function onShiZhiStartDateChange(dateStr) {
-	if (!store.compositeIndex) {
-		return;
-	}
-	data.value.shiZhiStartDateStr = dateStr;
-	store.updateCompositeIndex({
-		...store.compositeIndex
-	});
-	updateChart();
-}
-
-function onShiZhiEndDateChange(dateStr) {
-	if (!store.compositeIndex) {
-		return;
-	}
-	data.value.shiZhiEndDateStr = dateStr;
-	store.updateCompositeIndex({
-		...store.compositeIndex
-	});
-	updateChart();
 }
 
 function onShiZhiPieChartClick(params) {

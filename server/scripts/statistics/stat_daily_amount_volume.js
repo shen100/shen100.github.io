@@ -55,7 +55,7 @@ async function runTask(option) {
             dataMap[item.date] = dataMap[item.date] || {
                 date: item.date,
                 volume: 0,
-                amount: item.amount
+                amount: 0
             };
             dataMap[item.date].volume += item.volume;
             dataMap[item.date].amount += item.amount;
