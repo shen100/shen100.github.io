@@ -40,23 +40,10 @@ console.log('期权合约数据结构:', optionContracts[optionContracts.length 
 console.log();
 
 export async function requestOptionDayK(stockFullId, startStr, endStr) {
-    // stockFullId = stockFullId.substring(7);
-    let contractId;
-
-    const reg = /^(\d{8})(\d{4}_\d{1,2}_\d{1,2})$/;
-    const arr = stockFullId.match(reg);
-    if (arr) {
-        contractId = arr[1];  // "10011255"
-        const dateStr = arr[2]; // "2026_9_21"
-    }
-
-    contractId = stockFullId.split('_')[1];
+    let contractId = stockFullId.replace('option_', '');
 
     let reqUrl = `${config.sinaOptionUrl}var%20_CON_OP_${stockFullId}=/StockOptionDaylineService.getSymbolInfo?symbol=CON_OP_${contractId}`;
-//     https://stock.finance.sina.com.cn/futures/api/jsonp_v2.php/
-// var%20_CON_OP_100112552026_9_21=/StockOptionDaylineService.getSymbolInfo?symbol=CON_OP_10011255
     let res = await axios.get(reqUrl);
-    console.log(res.data);
 
     const reg2 = /=\s*\(\s*(\[.*?\])\s*\)\s*;/s;
     const matchResult = res.data.match(reg2);

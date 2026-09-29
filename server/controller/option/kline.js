@@ -1,7 +1,7 @@
-import * as optionService from '../../service/option.js'
+import * as optionService from '../../service/option.js';
 
 /**
- * 请求股票K线
+ * 请求期权K线
  */
 export async function queryKLineByDay(req, res) {
     let stockFullId = req.query.stockFullId;
@@ -10,16 +10,9 @@ export async function queryKLineByDay(req, res) {
 
     let myKList = await optionService.requestOptionDayK(stockFullId, startStr, endStr);
 
-    myKList.filter(item => {
-        
-    });
-
     res.json({
         code: 0,
         data: {
-            // [stockFullId]: {
-            //     day: myKList
-            // },
             list: myKList
         }
     });

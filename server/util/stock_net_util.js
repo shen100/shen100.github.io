@@ -48,6 +48,17 @@ const exportModule = {
 				price: stockDetail.price, // 当前价格  
 			};
 		}
+
+		if (stock.stockFullId.indexOf('option_') >= 0) {
+			return {
+				stockId: stock.stockFullId,
+				stockFullId: stock.stockFullId.replace('option_', ''),
+				stockName: stock.stockName,
+				zongShiZhi: 0, // 总市值
+				price: 0, // 当前价格  
+			};
+		}
+
 		let url = `https://sqt.gtimg.cn/?q=${stock.stockFullId}&fmt=json&app=wzq&t=${Date.now()}`;
 		let res = await axios.get(url);
 		if (!(res.data && res.data[stock.stockFullId])) {
