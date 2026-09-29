@@ -95,9 +95,12 @@ const exportModule = {
 
 	requestMinuteK: async function requestMinuteK(stockFullId) {
 		let res;
+
 		if ([ '^KS11' ].indexOf(stockFullId) >= 0) {
 			res = await exportModule.requestYahooMinuteK(stockFullId);
 			return res;
+		} else if (stockFullId.indexOf('option_') >= 0) {
+			res = await exportModule.requestOptionMinuteK(stockFullId);
 		} else {
 			// https://www.cnblogs.com/soarowl/p/20516538
 			let url = `https://web.ifzq.gtimg.cn/appstock/app/minute/query?code=${stockFullId}`;
@@ -304,6 +307,13 @@ const exportModule = {
 
 		exportModule.castKListToNumbers(myKList);
 		return myKList;
+	},
+
+	// 期权分时
+	requestOptionMinuteK: async function requestOptionMinuteK(stockFullId) {
+		let url = config.url;
+		let res = await axios.get(url + `/api/option/kline/minute?stockFullId=${stockFullId}`);
+		return res;
 	},
 
 	// 期权日线

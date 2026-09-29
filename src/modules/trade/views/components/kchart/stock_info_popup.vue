@@ -11,7 +11,7 @@
                 <div class="stock-info-popup-txt-box">
                     <div>价格</div>
                     <div class="space"></div>
-                    <div>{{ data.info.closePrice.toFixed(2) }}</div>
+                    <div>{{ data.info.closePrice.toFixed(4) }}</div>
                 </div>
             </template>
             <template v-else>

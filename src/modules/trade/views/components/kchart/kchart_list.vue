@@ -20,9 +20,11 @@
                 <ButtonGroup class="button-group">
                     <Button @click="onTypeChange('minute')" :type="data.type === 'minute' ? 'primary' : 'default'">分时</Button>
                     <Button @click="onTypeChange('day')" :type="data.type === 'day' ? 'primary' : 'default'">天</Button>
-                    <Button @click="onTypeChange('week')" :type="data.type === 'week' ? 'primary' : 'default'">周</Button>
-                    <Button @click="onTypeChange('month')" :type="data.type === 'month' ? 'primary' : 'default'">月</Button>
-                    <Button @click="onTypeChange('year')" :type="data.type === 'year' ? 'primary' : 'default'">年</Button>
+                    <template v-if="data.kChartLocalKey !== 'tradeOptionContractStocks'">
+                        <Button @click="onTypeChange('week')" :type="data.type === 'week' ? 'primary' : 'default'">周</Button>
+                        <Button @click="onTypeChange('month')" :type="data.type === 'month' ? 'primary' : 'default'">月</Button>
+                        <Button @click="onTypeChange('year')" :type="data.type === 'year' ? 'primary' : 'default'">年</Button>
+                    </template>
                 </ButtonGroup>
                 <Input v-model="data.myFilterData.stockInput" @on-clear="onClearStockInput" clearable placeholder="股票" style="width: 200px; margin-left: 15px" />
                 <Button type="primary" @click="onSearch" icon="ios-search" style="margin-left: 15px">搜素</Button>
@@ -35,7 +37,7 @@
         </Card>
         <div v-if="data.kCharts && data.kCharts.length">
             <KChart :key="i" :ref="el => { if (el) itemRefs[i] = el }" v-for="(kChartData, i) in data.kCharts" 
-                :type="props.type"
+                :type="data.type"
                 :refHighPriceVisible="props.refHighPriceVisible"
                 :relativeStrengthVisible="props.relativeStrengthVisible"
                 @stocks-remove-potential="onStocksRemovePotential" 
@@ -235,7 +237,10 @@ onMounted(async () => {
         data.value.start = props.start || data.value.start;
         data.value.end = props.end || data.value.end;
         data.value.isInited = true;
-        onRequest(props.type, props.stocks);
+        if (data.value.kChartLocalKey === 'tradeOptionContractStocks') {
+            data.value.type = 'minute';
+        }
+        onRequest(data.value.type, props.stocks);
     })
 });
 

@@ -30,6 +30,7 @@ export function init(app) {
     app.post('/api/statistics/daily/amount', stock_daily_amount.saveStockDailyAmount);
 
     // 股票相关的 API
+    app.get('/api/option/kline/minute', option_kline.queryKLineByMinute);
     app.get('/api/option/kline/day', option_kline.queryKLineByDay);
 
     app.get('/api/stocks/kline/minute', kline.requestMinuteK);
