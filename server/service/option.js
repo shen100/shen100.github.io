@@ -1,4 +1,5 @@
 import axios from 'axios';
+import iconv from 'iconv-lite';
 import config from '../config/config.js';
 import allOptionContracts from '../data/all_option_contracts.json' with { type: 'json' }
 
@@ -95,10 +96,12 @@ export async function requestOptionDayK(stockFullId, startStr, endStr) {
     const reg2 = /=\s*\(\s*(\[.*?\])\s*\)\s*;/s;
     const matchResult = res.data.match(reg2);
     let myKList = [];
+    let dateInDayK;
     if (matchResult) {
         let kList = JSON.parse(matchResult[1]);
         kList = kList.filter(item => item.d >= startStr && item.d <= endStr);
         kList.forEach(item => {
+            dateInDayK = item.d;
             myKList.push([
                 item.d,
                 item.o,
@@ -110,5 +113,63 @@ export async function requestOptionDayK(stockFullId, startStr, endStr) {
         });
     }
 
+    if (dateInDayK && dateInDayK < endStr) {
+        let resData = await getOptionQuote(contractId);
+        if (resData && resData.date === endStr) {
+            myKList.push([
+                resData.date,
+                resData.openPrice + '',
+                resData.closePrice + '',
+                resData.highPrice + '',
+                resData.lowPrice + '',
+                resData.volume + ''
+            ]);
+        }
+    }
+
     return myKList;
+}
+
+/**
+ * 实时盘口快照接口
+ */
+async function getOptionQuote(contractId) {
+    let reqUrl = config.sinaRealTimeOptionQuoteUrl.replaceAll('{contractId}', contractId);
+    reqUrl = reqUrl.replaceAll('{random}', Math.random);
+    const res = await axios.get(reqUrl, {
+        headers: {
+            'Referer': 'https://stock.finance.sina.com.cn/',
+            'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+        },
+        responseType: 'arraybuffer'
+    });
+
+    // 编码改为 gb18030
+    const buf = Buffer.from(res.data);
+    const text = iconv.decode(buf, 'gb18030');
+
+    const reg = /hq_str_(\w+)="([^"]*)"/g;
+    const result = {};
+    let m;
+    while ((m = reg.exec(text)) !== null) {
+        const code = m[1];
+        const arr = m[2].split(',');
+        result[code] = arr;
+    }
+
+    const list = result[`CON_OP_${contractId}`] || [];
+    for (let i = 0; i < list.length; i++) {
+        console.log(i, list[i]);
+    }
+    if (!list.length) {
+        return null;
+    }
+    return {
+        date: list[32].split(' ')[0],
+        closePrice: Number(list[2]),
+        openPrice: Number(list[9]),
+        highPrice: Number(list[39]),
+        lowPrice: Number(list[40]),
+        volume: Number(list[41]), // 成交量(张)
+    }
 }

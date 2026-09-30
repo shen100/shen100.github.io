@@ -139,7 +139,7 @@ const shiZhiChartOptions = ref({
 	},
 	yAxis: {
 		type: 'value',
-		min: 50, // 固定从 min 万亿开始
+		min: 60, // 固定从 min 万亿开始
 		scale: true, // 关键！开启后弱化0基线，适合观察波动
 	},
 	series: []
@@ -174,7 +174,7 @@ const volumeChartOptions = ref({
 	},
 	yAxis: {
 		type: 'value',
-		min: 0, // 固定从 min 开始
+		min: 5, // 固定从 min 开始
 		scale: true, // 关键！开启后弱化0基线，适合观察波动
 	},
 	series: []
@@ -329,8 +329,10 @@ function onShiZhiStartDateChange(dateStr) {
 	store.updateCompositeIndex({
 		...store.compositeIndex
 	});
-	if (dateStr >= '2025-01-01') {
-		// chartOptions.value.yAxis.min = 1150000;
+	if (dateStr >= '2026-01-01') {
+		shiZhiChartOptions.value.yAxis.min = 90;
+	} else {
+		shiZhiChartOptions.value.yAxis.min = 0;
 	}
 	updateShiZhiChart();
 }
