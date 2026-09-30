@@ -6,7 +6,7 @@
 					<div class="stock-name-left-box"></div>
 					<div class="stock-name-space"></div>
 					<div class="stock-name-txt">
-						<a class="stock-name-link" :href="`https://xueqiu.com/S/${data.stock && data.stock.stockFullId}`" target="_blank">
+						<a class="stock-name-link" :class="{'atm-strike-price': isAtmStrikePrice(data.stockName)}" :href="`https://xueqiu.com/S/${data.stock && data.stock.stockFullId}`" target="_blank">
 							{{ data.stockName }}
 						</a>
 						{{ data.stockDetail ? `&nbsp;(总市值&nbsp;${zongShiZhi})` : '' }}
@@ -79,6 +79,7 @@
 						:kLineType="data.type"
 						:date="item[0]"
 						:actionsInDate="getActionsInDate(item[0])"
+						:candleSelectedDates="props.candleSelectedDates"
 						:shockDates="data.stock.shockDates"
 						:openPrice="item[1]"
 						:closePrice="item[2]"
@@ -177,7 +178,9 @@ const props = defineProps([
 	'isNewPriceMode',
 	'auditTrailVisible',
 	'refHighPriceVisible',
-    'relativeStrengthVisible'
+    'relativeStrengthVisible',
+	'atmStrikePrice',
+	'candleSelectedDates'
 ]);
 
 let candlesContainerRef = ref(null);
@@ -234,12 +237,26 @@ let data = ref({
 	minuteList: [], // 分时点数据
 	candleStaticVar: {},
 	rangeStatsData: null,
-	relStrengthList: [] // 相对强度
+	relStrengthList: [], // 相对强度
+	candleSelectedDates: [ '2026-04-08', '2026-05-25' ]
 });
 
 onMounted(async () => {
 	data.value.type = props.type;
 });
+
+function isAtmStrikePrice(stockName) {
+	if (!props.atmStrikePrice) {
+		return false;
+	}
+	let index = stockName.indexOf('月');
+	let strikePrice = stockName.substring(index + 1); // 行权价
+	strikePrice = Number(strikePrice);
+	if (props.atmStrikePrice === strikePrice) {
+		return true;
+	}
+	return false;
+}
 
 function getActionsInDate(date) {
 	if (!data.value.stock) {
@@ -660,12 +677,12 @@ function updateChart(type) {
 		data.value.curPrice = item2[2];
 		data.value.dtPrice = item2[2] - item1[2];
 		data.value.dtRate = data.value.dtPrice / item1[2];
-		let openPrice = item2[1];
-		let closePrice = item2[2];
-		if (closePrice < openPrice) {
-			data.value.lastPriceUpColor = '#02b33d';
-		} else {
+		if (item2[2] > item1[2]) {
 			data.value.lastPriceUpColor = '#ee2500';
+		} else if (item1[2] === item2[2]) {
+			data.value.lastPriceUpColor = '#868686';
+		} else {
+			data.value.lastPriceUpColor = '#02b33d';
 		}
 	} else if (myKList.length === 1) {
 		let item2 = myKList[myKList.length - 1];
@@ -673,10 +690,12 @@ function updateChart(type) {
 		data.value.dtRate = 0;
 		let openPrice = item2[1];
 		let closePrice = item2[2];
-		if (closePrice < openPrice) {
-			data.value.lastPriceUpColor = '#02b33d';
-		} else {
+		if (closePrice > openPrice) {
 			data.value.lastPriceUpColor = '#ee2500';
+		} else if (closePrice === openPrice) {
+			data.value.lastPriceUpColor = '#868686';
+		} else {
+			data.value.lastPriceUpColor = '#02b33d';
 		}
 	} else {
 		data.value.curPrice = 0;
@@ -910,6 +929,11 @@ defineExpose({ requestMinuteK, requestDayK, requestWeekK, requestMonthK, request
 
 .stock-name-right-box {
 	font-size: 12px;
+}
+
+.atm-strike-price {
+	border: 1px #515a6e dashed;
+	padding: 2px 5px;
 }
 
 .stock-name-link {

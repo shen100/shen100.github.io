@@ -41,6 +41,8 @@
                 :type="data.type"
                 :refHighPriceVisible="props.refHighPriceVisible"
                 :relativeStrengthVisible="props.relativeStrengthVisible"
+                :atmStrikePrice="props.atmStrikePrice"
+                :candleSelectedDates="props.candleSelectedDates"
                 @stocks-remove-potential="onStocksRemovePotential" 
                 @audit-trail-change="onAuditTrailChange"
                 :kChartLocalKey="data.kChartLocalKey"
@@ -85,7 +87,9 @@ const props = defineProps([
     'end',
     'filterData',
     'refHighPriceVisible',
-    'relativeStrengthVisible'
+    'relativeStrengthVisible',
+    'atmStrikePrice',
+    'candleSelectedDates'
 ]);
 
 let data = ref({

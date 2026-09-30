@@ -10,6 +10,19 @@
             <FormItem label="交易训练页面只显示有交易行为的K线">
                 <Checkbox v-model="data.stockTrainingBuyFilter">过滤</Checkbox>
 			</FormItem>
+            <FormItem label="期权行权价平值">
+                <InputNumber :max="100000000" :min="1" v-model="data.atmStrikePrice"/>
+			</FormItem>
+            <FormItem label="K线图初始选中2个蜡烛">
+                <span style="margin: 0 10px 0 0;">开始日期</span>
+                <DatePicker :model-value="data.candleSelectedDateStart"
+						type="date" placeholder="Select date" style="width: 200px"
+						@on-change="onCandleSelectedDateStartChange"/>
+                <span style="margin: 0 10px;">结束日期</span>
+                <DatePicker :model-value="data.candleSelectedDateEnd"
+						type="date" placeholder="Select date" style="width: 200px"
+						@on-change="onCandleSelectedDateEndChange"/>
+			</FormItem>
             <FormItem label=" ">
                 <Button type="primary" @click="onSubmit">提交</Button>
 			</FormItem>
@@ -24,7 +37,11 @@ import { Modal, Message } from 'view-ui-plus';
 let data = ref({
     refHighPriceVisible: false,
     relativeStrengthVisible: false,
-    stockTrainingBuyFilter: false
+    stockTrainingBuyFilter: false,
+    atmStrikePrice: 0, // 期权行权价平值
+    candleSelectedDates: [],
+    candleSelectedDateStart: '',
+    candleSelectedDateEnd: ''
 });
 
 onMounted(async () => {
@@ -33,7 +50,22 @@ onMounted(async () => {
     data.value.refHighPriceVisible = !!settings.refHighPriceVisible;
     data.value.relativeStrengthVisible = !!settings.relativeStrengthVisible;
     data.value.stockTrainingBuyFilter = !!settings.stockTrainingBuyFilter;
+    data.value.atmStrikePrice = settings.atmStrikePrice || 0;
+    data.value.candleSelectedDates = settings.candleSelectedDates || [];
+    console.log('data.value.candleSelectedDates', data.value.candleSelectedDates);
+    if (data.value.candleSelectedDates.length) {
+        data.value.candleSelectedDateStart = data.value.candleSelectedDates[0];
+        data.value.candleSelectedDateEnd = data.value.candleSelectedDates[1];
+    }
 });
+
+function onCandleSelectedDateStartChange(dateStr) {
+    data.value.candleSelectedDateStart = dateStr;
+}
+
+function onCandleSelectedDateEndChange(dateStr) {
+    data.value.candleSelectedDateEnd = dateStr;
+}
 
 async function onSubmit() {
     const ok = await Modal.confirm({
@@ -47,6 +79,10 @@ async function onSubmit() {
             settings.refHighPriceVisible = data.value.refHighPriceVisible;
             settings.relativeStrengthVisible = data.value.relativeStrengthVisible;
             settings.stockTrainingBuyFilter = data.value.stockTrainingBuyFilter;
+            settings.atmStrikePrice = data.value.atmStrikePrice;
+            if (data.value.candleSelectedDateStart && data.value.candleSelectedDateEnd) {
+                settings.candleSelectedDates = [ data.value.candleSelectedDateStart, data.value.candleSelectedDateEnd ];
+            }
             let jsonStr = JSON.stringify(settings);
             localStorage.setItem('tradeTrackedStockKChartSettings', jsonStr);
             Message.success({

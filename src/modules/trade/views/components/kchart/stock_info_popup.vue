@@ -81,8 +81,8 @@ watch(
         if (newValue) {
             data.value.info = newValue;
             if (props.kChartLocalKey === 'tradeOptionContractStocks') {
-                data.value.right = 1200;
-                data.value.oldRight = 1200;
+                data.value.right = 900;
+                data.value.oldRight = 900;
             }
         }
     }

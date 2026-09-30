@@ -140,18 +140,18 @@ async function getOptionQuote(contractId) {
     }
 }
 
-doFilterOptionContracts({
-    stockFullId: 'sh588000',
-    stockId: '588000',
-    stockName: '科创50ETF华夏', 
-    optionType: '购',
-    endMonth: '202410'
-});
-
 // doFilterOptionContracts({
 //     stockFullId: 'sh588000',
 //     stockId: '588000',
 //     stockName: '科创50ETF华夏', 
 //     optionType: '购',
-//     endMonth: '202611'
+//     endMonth: '202606'
 // });
+
+doFilterOptionContracts({
+    stockFullId: 'sh588000',
+    stockId: '588000',
+    stockName: '科创50ETF华夏', 
+    optionType: '沽',
+    endMonth: '202607'
+});

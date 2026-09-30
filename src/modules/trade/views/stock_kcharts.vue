@@ -10,6 +10,8 @@
             :filterData="data.filterData"
             :refHighPriceVisible="data.refHighPriceVisible"
             :relativeStrengthVisible="data.relativeStrengthVisible"
+            :atmStrikePrice="data.atmStrikePrice"
+            :candleSelectedDates="data.candleSelectedDates"
             @start-change="onStartChange"
             @end-change="onEndChange"
             @type-change="onTypeChange"
@@ -51,7 +53,9 @@ let data = ref({
     page: 1,
     filterData: null,
     refHighPriceVisible: false,
-    relativeStrengthVisible: false
+    relativeStrengthVisible: false,
+    atmStrikePrice: 0,
+    candleSelectedDates: []
 })
 
 onMounted(async () => {
@@ -85,6 +89,8 @@ async function init() {
     }
     data.value.refHighPriceVisible = !!settings.refHighPriceVisible;
     data.value.relativeStrengthVisible = !!settings.relativeStrengthVisible;
+    data.value.atmStrikePrice = settings.atmStrikePrice || 0;
+    data.value.candleSelectedDates = settings.candleSelectedDates || [];
 
     // /trade/tracked_kcharts?selectShiZhiIndex=1&minValue=100&maxValue=500
     // 直接访问全部股票，市值 >= minValue 且 < maxValue

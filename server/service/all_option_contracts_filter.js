@@ -34,10 +34,11 @@ export function filterOptionContracts(stockId, contractType, sMonth) {
         let strikePriceB = b.name.substring(indexB + 1); // 行权价
         strikePriceA = Number(strikePriceA);
         strikePriceB = Number(strikePriceB);
-        if (strikePriceA > strikePriceB) {
-            return 1;
+
+        if (contractType === '购') {
+            return strikePriceA > strikePriceB ? 1 : -1;
         }
-        return -1;
+        return strikePriceA < strikePriceB ? 1 : -1;
     });
 
     const outputObjList = [];

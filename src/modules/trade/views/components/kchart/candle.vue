@@ -41,7 +41,8 @@ const props = defineProps([
     'candleMaxHeight',
     'actionsInDate',
     'shockDates',
-    'staticVar' // candle 组件的多个实例之间共用的静态变量
+    'staticVar', // candle 组件的多个实例之间共用的静态变量
+    'candleSelectedDates'
 ]);
 
 const emit = defineEmits(['mouse-over', 'mouse-out', 'mouse-move', 'range-change']);
@@ -258,6 +259,33 @@ onMounted(async () => {
     data.value.boxY = boxY;
     data.value.lineY = lineY;
     data.value.lineX = (data.value.boxWidth - data.value.lineWidth) / 2;
+
+    if (props.candleSelectedDates && props.candleSelectedDates.length === 2) {
+        for (let i = 0; i < props.candleSelectedDates.length; i++) {
+            if (props.candleSelectedDates[i] === props.date) {
+                isGlow.value = true;
+                props.staticVar.clickedCandles = props.staticVar.clickedCandles || [];
+                props.staticVar.clickedCandles.push({
+                    date: props.date,
+                    closePrice: props.closePrice,
+                    highPrice: props.highPrice,
+                    lowPrice: props.lowPrice,
+                });
+                if (props.staticVar.clickedCandles.length === 2) {
+                    let startData = props.staticVar.clickedCandles[0];
+                    let endData = props.staticVar.clickedCandles[1];
+                    if (startData.date > endData.date) {
+                        [ startData, endData ] = [ endData, startData ];
+                    }
+                    emit('range-change', {
+                        visible: true,
+                        startData,
+                        endData
+                    });
+                }
+            }
+        }
+    }
 });
 
 function getCandleData() {

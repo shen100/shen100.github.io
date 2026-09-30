@@ -76,8 +76,8 @@ const rate2 = computed(() => {
 
 onMounted(() => {
     if (props.kChartLocalKey === 'tradeOptionContractStocks') {
-        data.value.right = 980;
-        data.value.oldRight = 980;
+        data.value.right = 680;
+        data.value.oldRight = 680;
     }
 });
 

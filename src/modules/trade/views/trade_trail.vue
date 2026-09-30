@@ -80,6 +80,8 @@ let data = ref({
     refHighPriceVisible: false,
     relativeStrengthVisible: false,
     stockTrainingBuyFilter: false,
+    atmStrikePrice: 0,
+    candleSelectedDates: [],
     allStocks: [],
     allStocksMap: {},
     sumProfit: 0,
@@ -156,6 +158,8 @@ onMounted(async () => {
     data.value.refHighPriceVisible = !!settings.refHighPriceVisible;
     data.value.relativeStrengthVisible = !!settings.relativeStrengthVisible;
     data.value.stockTrainingBuyFilter = !!settings.stockTrainingBuyFilter;
+    data.value.atmStrikePrice = settings.atmStrikePrice || 0;
+    data.value.candleSelectedDates = settings.candleSelectedDates || [];
 
     initBreadcrumb();
 
