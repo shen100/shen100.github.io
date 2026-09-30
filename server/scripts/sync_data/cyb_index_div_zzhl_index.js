@@ -100,7 +100,7 @@ async function runTask(option) {
     for (let i = 0; i < 17; i++) {
         let startDate = new Date(startStr);
         let endDate = new Date(endStr);
-        count = Math.floor((endDate - startDate) / (24 * 3600 * 1000));
+        count = Math.floor((endDate - startDate) / (24 * 3600 * 1000)) + 1;
         await doRunTask(option, 'day', startStr, endStr, count);
 
         for (let i = 0; i < 365; i++) {

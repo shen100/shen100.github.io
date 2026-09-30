@@ -40,6 +40,7 @@
 import { onMounted, ref, computed } from 'vue';
 
 const props = defineProps([
+    'kChartLocalKey',
     'rangeStatsData'
 ]);
 
@@ -71,6 +72,13 @@ const rate2 = computed(() => {
         return '+' + (rate * 100).toFixed(2) + '%';
     }
     return (rate * 100).toFixed(2) + '%';
+});
+
+onMounted(() => {
+    if (props.kChartLocalKey === 'tradeOptionContractStocks') {
+        data.value.right = 980;
+        data.value.oldRight = 980;
+    }
 });
 
 function onMouseDown(event) {

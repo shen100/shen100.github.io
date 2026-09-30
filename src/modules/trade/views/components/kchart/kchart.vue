@@ -119,9 +119,9 @@
 						@mouse-move="(candleData) => onMinuteLineMouseMove(i, candleData)"
 					/>
 				</div>
-				<StockInfoPopup ref="stockInfoPopupRef" :activeKItemData="data.activeKItemData" />
+				<StockInfoPopup ref="stockInfoPopupRef" :activeKItemData="data.activeKItemData" :kChartLocalKey="props.kChartLocalKey" />
 				<AuditTrail v-if="props.auditTrailVisible" @audit-trail-change="onAuditTrailChange" :trailData="data.stock?.trailData"/>
-				<RangeStats v-if="data.rangeStatsData && data.rangeStatsData.visible" :rangeStatsData="data.rangeStatsData" />
+				<RangeStats v-if="data.rangeStatsData && data.rangeStatsData.visible" :kChartLocalKey="props.kChartLocalKey" :rangeStatsData="data.rangeStatsData" />
 			</div>
 			<RelativeStrength ref="relStrengthRef" v-if="props.relativeStrengthVisible && data.type === 'day'" :list="data.relStrengthList" :activeKItemData="data.activeKItemData" 
 				@mouse-over="onVolumeOrRelStrengthMouseOver"

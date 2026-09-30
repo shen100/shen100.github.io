@@ -62,7 +62,7 @@
 
 <script setup>
 import { onMounted, computed, ref, watch } from 'vue'
-const props = defineProps(['activeKItemData']);
+const props = defineProps(['activeKItemData', 'kChartLocalKey']);
 
 let data = ref({
     info: null,
@@ -80,6 +80,10 @@ watch(
     (newValue, oldValue) => {
         if (newValue) {
             data.value.info = newValue;
+            if (props.kChartLocalKey === 'tradeOptionContractStocks') {
+                data.value.right = 1200;
+                data.value.oldRight = 1200;
+            }
         }
     }
 )

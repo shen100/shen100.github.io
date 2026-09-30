@@ -238,7 +238,7 @@ onMounted(async () => {
         data.value.end = props.end || data.value.end;
         data.value.isInited = true;
         if (data.value.kChartLocalKey === 'tradeOptionContractStocks') {
-            data.value.type = 'minute';
+            data.value.type = 'day';
         }
         onRequest(data.value.type, props.stocks);
     })
@@ -337,7 +337,7 @@ async function onRequest(type, stocks) {
     if (type === 'minute') {
         // 
     } else if (type === "day") {
-        count = Math.floor((endDate - startDate) / (24 * 3600 * 1000));
+        count = Math.floor((endDate - startDate) / (24 * 3600 * 1000)) + 1;
     } else if (type === "week") {
         count = Math.floor((endDate - startDate) / (7 * 24 * 3600 * 1000));
     } else if (type === "month") {
