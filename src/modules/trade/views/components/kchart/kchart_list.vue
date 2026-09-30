@@ -16,6 +16,7 @@
                 <DatePicker :model-value="data.end" 
                     type="date" placeholder="Select date" style="width: 150px" 
                     @on-change="(dateStr, dateType) => onEndDateChange(dateStr, dateType, data.type)" />
+                <Button v-if="data.type === 'day'" type="text" @click="onPreDay">前一天</Button>
                 <Button v-if="data.type === 'day'" type="text" @click="onNextDay">下一天</Button>
                 <ButtonGroup class="button-group">
                     <Button @click="onTypeChange('minute')" :type="data.type === 'minute' ? 'primary' : 'default'">分时</Button>
@@ -58,7 +59,7 @@
 import { nextTick, onMounted, ref, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import KChart from './kchart.vue';
-import { formatLocalYMD, parseLocalYMDString, getNextDay } from '../../../util/date';
+import { formatLocalYMD, parseLocalYMDString, getPreDay, getNextDay } from '../../../util/date';
 import { trim } from '../../../util/str';
 import StocksUnionModal from './stocks_union_modal.vue';
 
@@ -304,6 +305,13 @@ function onEndDateChange(dateStr, dateType, type) {
     data.value.end = dateStr;
     onRequest(type, props.stocks);
     emit('end-change', dateStr);
+}
+
+async function onPreDay() {
+    const preDay = getPreDay(data.value.end);
+    data.value.end = preDay;
+    onRequest(data.value.type, props.stocks);
+    emit('end-change', preDay);
 }
 
 function onNextDay() {

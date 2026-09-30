@@ -10,7 +10,7 @@
                 <DatePicker :model-value="data.end" 
                     type="date" placeholder="Select date" style="width: 150px" 
                     @on-change="(dateStr, dateType) => onEndDateChange(dateStr, dateType, data.type)" />
-                    <Button v-if="data.type === 'day'" type="text" @click="onPreDay(data.type)">前一天</Button>
+                <Button v-if="data.type === 'day'" type="text" @click="onPreDay(data.type)">前一天</Button>
                 <Button v-if="data.type === 'day'" type="text" @click="onNextDay(data.type)">下一天</Button>
                 <ButtonGroup class="button-group">
                     <Button @click="onTypeChange('day')" :type="data.type === 'day' ? 'primary' : 'default'">天</Button>

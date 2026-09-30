@@ -660,19 +660,33 @@ function updateChart(type) {
 		data.value.curPrice = item2[2];
 		data.value.dtPrice = item2[2] - item1[2];
 		data.value.dtRate = data.value.dtPrice / item1[2];
-		if (item2[2] > item1[2]) {
-			data.value.lastPriceUpColor = '#ee2500'
-		} else if (item1[2] === item2[2]) {
-			data.value.lastPriceUpColor = '#868686';
-		} else {
+		let openPrice = item2[1];
+		let closePrice = item2[2];
+		if (closePrice < openPrice) {
 			data.value.lastPriceUpColor = '#02b33d';
+		} else {
+			data.value.lastPriceUpColor = '#ee2500';
 		}
+	} else if (myKList.length === 1) {
+		let item2 = myKList[myKList.length - 1];
+		data.value.curPrice = item2[2];
+		data.value.dtRate = 0;
+		let openPrice = item2[1];
+		let closePrice = item2[2];
+		if (closePrice < openPrice) {
+			data.value.lastPriceUpColor = '#02b33d';
+		} else {
+			data.value.lastPriceUpColor = '#ee2500';
+		}
+	} else {
+		data.value.curPrice = 0;
+		data.value.dtRate = 0;
+		data.value.lastPriceUpColor = '#868686';
 	}
 
 	data.value.lowPriceInAll = lowPriceInAll;
 	data.value.highPriceInAll = highPriceInAll;
 	
-
 	data.value.yAxis1 = 0 * data.value.candleMaxHeight / 4 + 55;
 	data.value.yAxis2 = 1 * data.value.candleMaxHeight / 4 + 55;
 	data.value.yAxis3 = 2 * data.value.candleMaxHeight / 4 + 55;
