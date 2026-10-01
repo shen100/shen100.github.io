@@ -52,7 +52,6 @@ onMounted(async () => {
     data.value.stockTrainingBuyFilter = !!settings.stockTrainingBuyFilter;
     data.value.atmStrikePrice = settings.atmStrikePrice || 0;
     data.value.candleSelectedDates = settings.candleSelectedDates || [];
-    console.log('data.value.candleSelectedDates', data.value.candleSelectedDates);
     if (data.value.candleSelectedDates.length) {
         data.value.candleSelectedDateStart = data.value.candleSelectedDates[0];
         data.value.candleSelectedDateEnd = data.value.candleSelectedDates[1];
@@ -61,6 +60,7 @@ onMounted(async () => {
 
 function onCandleSelectedDateStartChange(dateStr) {
     data.value.candleSelectedDateStart = dateStr;
+    console.log('onCandleSelectedDateStartChange', dateStr);
 }
 
 function onCandleSelectedDateEndChange(dateStr) {
@@ -82,6 +82,8 @@ async function onSubmit() {
             settings.atmStrikePrice = data.value.atmStrikePrice;
             if (data.value.candleSelectedDateStart && data.value.candleSelectedDateEnd) {
                 settings.candleSelectedDates = [ data.value.candleSelectedDateStart, data.value.candleSelectedDateEnd ];
+            } else {
+                settings.candleSelectedDates = null;
             }
             let jsonStr = JSON.stringify(settings);
             localStorage.setItem('tradeTrackedStockKChartSettings', jsonStr);
