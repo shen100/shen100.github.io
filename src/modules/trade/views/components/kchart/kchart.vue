@@ -766,7 +766,7 @@ function onCandleMouseMove(i, candleData) {
 
 function onKRangeChange(rangeStatsData) {
 	data.value.rangeStatsData = rangeStatsData;
-	if (!data.value.rangeStatsData.visible) {
+	if (data.value.rangeStatsData.hideAllGlow) {
 		candleRefs.value.forEach((el, index) => {
 			el.hideGlow();
 		});

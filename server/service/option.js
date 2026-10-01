@@ -153,5 +153,5 @@ doFilterOptionContracts({
     stockId: '588000',
     stockName: '科创50ETF华夏', 
     optionType: '沽',
-    endMonth: '202607'
+    endMonth: '202603'
 });

@@ -278,7 +278,7 @@ onMounted(async () => {
                         [ startData, endData ] = [ endData, startData ];
                     }
                     emit('range-change', {
-                        visible: true,
+                        visible: true, // 显示区间统计弹窗
                         startData,
                         endData
                     });
@@ -352,7 +352,7 @@ async function onDoubleClick() {
             if (props.staticVar.clickedCandles[i].date === props.date) {
                 props.staticVar.clickedCandles.splice(i, 1);
                 emit('range-change', {
-                    visible: false
+                    visible: false // 隐藏区间统计弹窗
                 });
                 break;
             }
@@ -363,7 +363,8 @@ async function onDoubleClick() {
     if (props.staticVar.clickedCandles.length === 2) {
         props.staticVar.clickedCandles = [];
         emit('range-change', {
-            visible: false
+            visible: false, // 隐藏区间统计弹窗
+            hideAllGlow: true
         });
     }
 
@@ -382,7 +383,7 @@ async function onDoubleClick() {
             [ startData, endData ] = [ endData, startData ];
         }
         emit('range-change', {
-            visible: true,
+            visible: true, // 显示区间统计弹窗
             startData,
             endData
         });
