@@ -237,8 +237,7 @@ let data = ref({
 	minuteList: [], // 分时点数据
 	candleStaticVar: {},
 	rangeStatsData: null,
-	relStrengthList: [], // 相对强度
-	candleSelectedDates: [ '2026-04-08', '2026-05-25' ]
+	relStrengthList: [] // 相对强度
 });
 
 onMounted(async () => {
@@ -767,9 +766,9 @@ function onCandleMouseMove(i, candleData) {
 
 function onKRangeChange(rangeStatsData) {
 	data.value.rangeStatsData = rangeStatsData;
-	if (!data.value.rangeStatsData.visible && data.value.rangeStatsData.date) {
+	if (!data.value.rangeStatsData.visible) {
 		candleRefs.value.forEach((el, index) => {
-			el.hideGlowExceptDate(rangeStatsData.date);
+			el.hideGlow();
 		});
 	}
 }

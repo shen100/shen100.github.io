@@ -15,13 +15,11 @@
 			</FormItem>
             <FormItem label="K线图初始选中2个蜡烛">
                 <span style="margin: 0 10px 0 0;">开始日期</span>
-                <DatePicker :model-value="data.candleSelectedDateStart"
-						type="date" placeholder="Select date" style="width: 200px"
-						@on-change="onCandleSelectedDateStartChange"/>
+                <DatePicker :model-value="data.candleSelectedDateStart" type="date" placeholder="Select date" style="width: 200px"
+                    @on-change="onCandleSelectedDateStartChange"/>
                 <span style="margin: 0 10px;">结束日期</span>
-                <DatePicker :model-value="data.candleSelectedDateEnd"
-						type="date" placeholder="Select date" style="width: 200px"
-						@on-change="onCandleSelectedDateEndChange"/>
+                <DatePicker :model-value="data.candleSelectedDateEnd" type="date" placeholder="Select date" style="width: 200px"
+                    @on-change="onCandleSelectedDateEndChange"/>
 			</FormItem>
             <FormItem label=" ">
                 <Button type="primary" @click="onSubmit">提交</Button>
@@ -60,7 +58,6 @@ onMounted(async () => {
 
 function onCandleSelectedDateStartChange(dateStr) {
     data.value.candleSelectedDateStart = dateStr;
-    console.log('onCandleSelectedDateStartChange', dateStr);
 }
 
 function onCandleSelectedDateEndChange(dateStr) {

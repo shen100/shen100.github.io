@@ -363,8 +363,7 @@ async function onDoubleClick() {
     if (props.staticVar.clickedCandles.length === 2) {
         props.staticVar.clickedCandles = [];
         emit('range-change', {
-            visible: false,
-            date: props.date
+            visible: false
         });
     }
 
@@ -390,13 +389,11 @@ async function onDoubleClick() {
     }
 }
 
-function hideGlowExceptDate(date) {
-    if (props.date !== date) {
-        isGlow.value = false;
-    }
+function hideGlow() {
+    isGlow.value = false;
 }
 
-defineExpose({ getCandleData, setMouseOver, setMouseOut, hideGlowExceptDate });
+defineExpose({ getCandleData, setMouseOver, setMouseOut, hideGlow });
 </script>
 
 <style scoped>
