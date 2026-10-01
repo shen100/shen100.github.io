@@ -75,9 +75,11 @@ const rate2 = computed(() => {
 });
 
 onMounted(() => {
-    if (props.kChartLocalKey === 'tradeOptionContractStocks') {
-        data.value.right = 680;
-        data.value.oldRight = 680;
+    let settingsStr = localStorage.getItem('tradeTrackedStockKChartSettings') || '{}';
+    let settings = JSON.parse(settingsStr);
+    if (settings && settings.klineRangeStatsFixedRight) {
+        data.value.right = settings.klineRangeStatsFixedRight;
+        data.value.oldRight = settings.klineRangeStatsFixedRight;
     }
 });
 

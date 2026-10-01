@@ -65,6 +65,7 @@ import { onMounted, computed, ref, watch } from 'vue'
 const props = defineProps(['activeKItemData', 'kChartLocalKey']);
 
 let data = ref({
+    settings: null,
     info: null,
     right: 0,
     top: 55,
@@ -80,9 +81,9 @@ watch(
     (newValue, oldValue) => {
         if (newValue) {
             data.value.info = newValue;
-            if (props.kChartLocalKey === 'tradeOptionContractStocks') {
-                data.value.right = 900;
-                data.value.oldRight = 900;
+            if (data.value.settings && data.value.settings.klineTooltipFixedRight) {
+                data.value.right = data.value.settings.klineTooltipFixedRight;
+                data.value.oldRight = data.value.settings.klineTooltipFixedRight;
             }
         }
     }
@@ -140,6 +141,10 @@ const amount = computed({
 })
 
 onMounted(async () => {
+    let settingsStr = localStorage.getItem('tradeTrackedStockKChartSettings') || '{}';
+    let settings = JSON.parse(settingsStr);
+    data.value.settings = settings;
+
     data.value.info = props.activeKItemData;
     if (!data.value.info) {
         return;
